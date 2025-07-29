@@ -20,8 +20,8 @@ const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'));
 const SellPage = lazy(() => import('@/pages/dashboard/SellPage'));
 const OrdersPage = lazy(() => import('@/pages/dashboard/OrdersPage'));
 // const OrderDetailPage = lazy(() => import('@/pages/dashboard/OrderDetailPage'));
-// const PaymentsPage = lazy(() => import('@/pages/dashboard/PaymentsPage'));
-// const ReferralsPage = lazy(() => import('@/pages/dashboard/ReferralsPage'));
+const PaymentsPage = lazy(() => import('@/pages/dashboard/PaymentsPage'));
+const ReferralsPage = lazy(() => import('@/pages/dashboard/ReferralsPage'));
 // const RewardsPage = lazy(() => import('@/pages/dashboard/RewardsPage'));
 const StatsPage = lazy(() => import('@/pages/dashboard/StatsPage'));
 // const ProfilePage = lazy(() => import('@/pages/dashboard/ProfilePage'));
@@ -177,22 +177,22 @@ export const protectedRoutes: RouteConfig[] = [
 //     title: 'Detalle de Orden',
 //     description: 'Información completa de la orden'
 //   },
-//   {
-//     path: '/payments',
-//     component: PaymentsPage,
-//     requireAuth: true,
-//     layout: 'dashboard',
-//     title: 'Pagos',
-//     description: 'Historial de pagos y transferencias'
-//   },
-//   {
-//     path: '/referrals',
-//     component: ReferralsPage,
-//     requireAuth: true,
-//     layout: 'dashboard',
-//     title: 'Referidos',
-//     description: 'Programa de referidos y recompensas'
-//   },
+  {
+    path: '/payments',
+    component: PaymentsPage,
+    requireAuth: true,
+    layout: 'dashboard',
+    title: 'Pagos',
+    description: 'Historial de pagos y transferencias'
+  },
+  {
+    path: '/referrals',
+    component: ReferralsPage,
+    requireAuth: true,
+    layout: 'dashboard',
+    title: 'Referidos',
+    description: 'Programa de referidos y recompensas'
+  },
 //   {
 //     path: '/rewards',
 //     component: RewardsPage,

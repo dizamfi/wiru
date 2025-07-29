@@ -563,7 +563,7 @@ function App() {
             path="sell" 
             element={
               <ProtectedRoute requireAuth={true} requireEmailVerification={true}>
-                <SEOHead title="Vender Chatarra" noIndex />
+                <SEOHead title="Vender" noIndex />
                 <SellPage />
               </ProtectedRoute>
             } 
