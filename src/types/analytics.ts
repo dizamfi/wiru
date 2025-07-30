@@ -1,71 +1,84 @@
 // src/types/analytics.ts
 
-export interface AnalyticsPeriod {
-  value: 'today' | 'week' | 'month' | 'quarter' | 'year' | 'custom';
-  label: string;
-  days: number;
-}
-
+// Base types
 export interface DateRange {
   from: string;
   to: string;
-  preset?: AnalyticsPeriod['value'];
+  preset?: 'today' | 'week' | 'month' | 'quarter' | 'year' | 'custom';
 }
 
-export interface BaseMetric {
-  current: number;
-  previous: number;
-  change: number;
-  changePercentage: number;
-  trend: 'up' | 'down' | 'stable';
+export interface AnalyticsPeriod {
+  label: string;
+  value: 'today' | 'week' | 'month' | 'quarter' | 'year' | 'custom';
+  days: number;
 }
 
-export interface EarningsMetrics extends BaseMetric {
-  totalEarnings: number;
-  averagePerOrder: number;
-  averagePerKg: number;
-  projectedMonthly: number;
-  currency: string;
-}
-
-export interface OrdersMetrics extends BaseMetric {
-  totalOrders: number;
-  completedOrders: number;
-  pendingOrders: number;
-  completionRate: number;
+// Core metrics interfaces
+export interface EarningsMetrics {
+  total: number;
+  previousPeriod: number;
+  growthRate: number;
   averageOrderValue: number;
+  projection: number;
+  breakdown: {
+    sales: number;
+    referrals: number;
+    bonuses: number;
+  };
 }
 
-export interface EnvironmentalMetrics extends BaseMetric {
-  totalWeight: number; // kg reciclados
-  co2Saved: number; // kg CO2 equivalente
-  treesEquivalent: number; // árboles plantados equivalente
-  energySaved: number; // kWh ahorrados
-  waterSaved: number; // litros de agua ahorrados
+export interface OrdersMetrics {
+  total: number;
+  previousPeriod: number;
+  growthRate: number;
+  averageValue: number;
+  completed: number;
+  pending: number;
+  cancelled: number;
+  conversionRate: number;
 }
 
-export interface ReferralMetrics extends BaseMetric {
+export interface EnvironmentalMetrics {
+  totalWeight: number;
+  previousWeight?: number;
+  co2Saved: number;
+  treesEquivalent: number;
+  energySaved: number; // kWh
+  waterSaved: number; // liters
+  impactScore: number; // 0-100
+  categoryBreakdown: Array<{
+    category: string;
+    weight: number;
+    percentage: number;
+  }>;
+}
+
+export interface ReferralMetrics {
   totalReferrals: number;
   activeReferrals: number;
-  referralEarnings: number;
-  conversionRate: number;
-  activationRate: number;
-}
-
-export interface DeviceCategory {
-  category: string;
-  count: number;
-  weight: number;
   earnings: number;
-  percentage: number;
-  avgPricePerKg: number;
-  color: string;
+  previousEarnings: number;
+  conversionRate: number;
+  tier: 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond';
 }
 
+// Device and category types
+export interface DeviceCategory {
+  id: string;
+  name: string;
+  count: number;
+  totalWeight: number;
+  earnings: number;
+  averageValue: number;
+  growthRate: number;
+  topBrands: string[];
+}
+
+// Chart and visualization types
 export interface TimeSeriesDataPoint {
   date: string;
   value: number;
-  secondaryValue?: number;
+  label?: string;
   category?: string;
 }
 
@@ -95,6 +108,7 @@ export interface TopPerformance {
   bestCategory: DeviceCategory;
 }
 
+// Goals and progress
 export interface GoalsProgress {
   monthly: {
     target: number;
@@ -119,6 +133,7 @@ export interface GoalsProgress {
   };
 }
 
+// Main dashboard interface
 export interface AnalyticsDashboard {
   period: DateRange;
   lastUpdated: string;
@@ -142,6 +157,7 @@ export interface AnalyticsDashboard {
   predictions: AnalyticsPrediction[];
 }
 
+// Insights and predictions
 export interface AnalyticsInsight {
   id: string;
   type: 'positive' | 'negative' | 'neutral' | 'warning';
@@ -166,6 +182,7 @@ export interface AnalyticsPrediction {
   methodology: string;
 }
 
+// Comparison and benchmarking
 export interface ComparisonData {
   industry: {
     averageEarningsPerKg: number;
@@ -187,6 +204,7 @@ export interface ComparisonData {
   };
 }
 
+// Advanced analytics
 export interface AdvancedAnalytics {
   cohortAnalysis: CohortData;
   retention: RetentionData;
@@ -245,6 +263,7 @@ export interface ProfitabilityData {
   trends: TimeSeriesDataPoint[];
 }
 
+// Export and filtering
 export interface ExportOptions {
   format: 'pdf' | 'excel' | 'csv' | 'png' | 'jpg';
   sections: string[];
@@ -277,7 +296,7 @@ export interface AnalyticsState {
   // Filters
   currentPeriod: DateRange;
   selectedMetrics: string[];
-  chartType: 'line' | 'bar' | 'area' | 'pie';
+  chartType: 'line' | 'bar' | 'area';
   
   // Cache
   cachedData: Map<string, any>;
@@ -288,12 +307,12 @@ export interface AnalyticsActions {
   // Data fetching
   fetchDashboard: (period?: DateRange) => Promise<void>;
   fetchComparison: () => Promise<void>;
-  fetchAdvanced: () => Promise<void>;
-  refreshData: () => Promise<void>;
+  fetchAdvancedAnalytics: () => Promise<void>;
+  refreshDashboard: () => Promise<void>;
   
   // Period management
   setPeriod: (period: DateRange) => void;
-  setPresetPeriod: (preset: AnalyticsPeriod['value']) => void;
+  setPresetPeriod: (preset: 'today' | 'week' | 'month' | 'quarter' | 'year' | 'custom') => void;
   
   // Chart configuration
   setChartType: (type: AnalyticsState['chartType']) => void;
@@ -318,20 +337,161 @@ export interface AnalyticsActions {
   reset: () => void;
 }
 
-// Chart configuration types
-export interface ChartConfig {
-  id: string;
-  title: string;
-  type: 'line' | 'bar' | 'area' | 'pie' | 'doughnut' | 'radar';
-  data: any;
-  options: any;
-  responsive: boolean;
+// Component props types
+export interface ChartProps {
+  data: TimeSeriesDataPoint[];
+  type: 'line' | 'bar' | 'area';
   height?: number;
   showLegend?: boolean;
-  showTooltip?: boolean;
-  colors?: string[];
+  showGrid?: boolean;
+  loading?: boolean;
+  period?: DateRange;
+  metric?: string;
+  showComparison?: boolean;
 }
 
+export interface OverviewCardProps {
+  title: string;
+  value: string | number;
+  previousValue?: string | number;
+  trend?: 'up' | 'down' | 'neutral';
+  trendValue?: number;
+  icon?: React.ReactNode;
+  color?: 'primary' | 'success' | 'warning' | 'danger';
+  loading?: boolean;
+}
+
+export interface InsightCardProps {
+  insight: AnalyticsInsight;
+  onAction?: (insight: AnalyticsInsight) => void;
+}
+
+export interface PredictionCardProps {
+  prediction: AnalyticsPrediction;
+  onRefresh?: (type: AnalyticsPrediction['type']) => void;
+}
+
+export interface GoalCardProps {
+  type: 'monthly' | 'quarterly' | 'yearly';
+  goal: GoalsProgress['monthly'] | GoalsProgress['quarterly'] | GoalsProgress['yearly'];
+  onUpdateGoal?: (type: string, target: number) => void;
+}
+
+// Form types
+export interface AnalyticsFiltersForm {
+  dateRange: DateRange;
+  categories: string[];
+  minOrderValue?: number;
+  maxOrderValue?: number;
+  includeReferrals: boolean;
+  groupBy: 'day' | 'week' | 'month' | 'quarter';
+}
+
+export interface ExportForm {
+  format: ExportOptions['format'];
+  sections: string[];
+  includeCharts: boolean;
+  includeRawData: boolean;
+  includeInsights: boolean;
+  dateRange: DateRange;
+}
+
+export interface GoalForm {
+  type: 'monthly' | 'quarterly' | 'yearly';
+  target: number;
+  description?: string;
+}
+
+// Notification and alert types
+export interface AnalyticsNotification {
+  id: string;
+  type: 'goal_achieved' | 'insight_generated' | 'prediction_updated' | 'milestone_reached';
+  title: string;
+  message: string;
+  data?: {
+    goalType?: string;
+    insightId?: string;
+    predictionId?: string;
+    milestone?: string;
+    value?: number;
+  };
+  createdAt: string;
+  read: boolean;
+}
+
+// Trend analysis types
+export interface TrendAnalysis {
+  direction: 'increasing' | 'decreasing' | 'stable';
+  strength: 'strong' | 'moderate' | 'weak';
+  confidence: number;
+  description: string;
+  factors: string[];
+}
+
+// Anomaly detection
+export interface Anomaly {
+  id: string;
+  type: 'spike' | 'dip' | 'pattern_break' | 'outlier';
+  metric: string;
+  date: string;
+  expectedValue: number;
+  actualValue: number;
+  severity: 'low' | 'medium' | 'high';
+  description: string;
+  possibleCauses: string[];
+}
+
+// Forecast types
+export interface Forecast {
+  metric: string;
+  timeframe: string;
+  predictions: Array<{
+    date: string;
+    value: number;
+    confidenceInterval: {
+      lower: number;
+      upper: number;
+    };
+  }>;
+  accuracy: number;
+  methodology: string;
+}
+
+// Report types
+export interface AnalyticsReport {
+  id: string;
+  name: string;
+  type: 'summary' | 'detailed' | 'executive' | 'custom';
+  period: DateRange;
+  sections: string[];
+  generatedAt: string;
+  downloadUrl?: string;
+  status: 'generating' | 'ready' | 'expired';
+  format: 'pdf' | 'excel' | 'html';
+}
+
+// Widget configuration for dashboard
+export interface DashboardWidget {
+  id: string;
+  type: 'chart' | 'metric' | 'table' | 'map' | 'calendar';
+  title: string;
+  position: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+  config: {
+    metric?: string;
+    chartType?: 'line' | 'bar' | 'pie' | 'area';
+    timeframe?: string;
+    filters?: AnalyticsFilter;
+    customization?: Record<string, any>;
+  };
+  isVisible: boolean;
+}
+
+// Dashboard layout
 export interface DashboardLayout {
   id: string;
   name: string;
@@ -341,42 +501,69 @@ export interface DashboardLayout {
   updatedAt: string;
 }
 
-export interface DashboardWidget {
-  id: string;
-  type: 'metric' | 'chart' | 'insight' | 'goal' | 'comparison';
-  title: string;
-  size: 'small' | 'medium' | 'large';
-  position: { x: number; y: number; w: number; h: number };
-  config: any;
-  visible: boolean;
+// Performance metrics
+export interface PerformanceMetrics {
+  pageLoadTime: number;
+  chartRenderTime: number;
+  dataFetchTime: number;
+  totalMemoryUsage: number;
+  cacheHitRate: number;
 }
 
-// API response types
-export interface AnalyticsResponse<T = any> {
+// API response wrappers
+export interface AnalyticsApiResponse<T> {
+  success: boolean;
   data: T;
-  meta: {
-    period: DateRange;
-    generatedAt: string;
+  message?: string;
+  errors?: string[];
+  metadata?: {
+    requestId: string;
+    timestamp: string;
     version: string;
-    cacheKey?: string;
+    cacheable: boolean;
+    ttl?: number;
   };
 }
 
-export interface InsightResponse {
-  insights: AnalyticsInsight[];
-  meta: {
-    algorithmsUsed: string[];
-    confidence: number;
-    generatedAt: string;
-  };
+export interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+  hasNext: boolean;
+  hasPrev: boolean;
 }
 
-export interface PredictionResponse {
-  predictions: AnalyticsPrediction[];
-  meta: {
-    model: string;
-    accuracy: number;
-    lastTrained: string;
-    dataPoints: number;
+// Error types
+export interface AnalyticsError {
+  code: string;
+  message: string;
+  details?: Record<string, any>;
+  timestamp: string;
+  requestId?: string;
+}
+
+// Theme and styling
+export interface ChartTheme {
+  colors: {
+    primary: string;
+    secondary: string;
+    success: string;
+    warning: string;
+    danger: string;
+    neutral: string[];
+  };
+  fonts: {
+    family: string;
+    sizes: {
+      small: number;
+      medium: number;
+      large: number;
+    };
+  };
+  spacing: {
+    small: number;
+    medium: number;
+    large: number;
   };
 }
