@@ -1,9 +1,11 @@
-// src/types/order.ts
+// src/types/order.ts - VERSIÓN MEJORADA COMPLETA
+
+import { User } from './auth';
 
 // Estados de la orden
 export type OrderStatus = 
   | 'draft'           // Borrador (en carrito)
-  | 'pending'         // Pendiente de confirmación
+  | 'pending'         // Pendiente de confirmación  
   | 'confirmed'       // Confirmada, esperando recolección
   | 'pickup_scheduled'// Recolección programada
   | 'in_transit'      // En tránsito a verificación
@@ -32,6 +34,18 @@ export type DeviceCondition =
   | 'fair'       // Estado regular
   | 'poor'       // Mal estado
   | 'broken';    // No funciona
+
+// Fuentes de invitación para referidos
+export type InvitationSource = 
+  | 'whatsapp'
+  | 'facebook' 
+  | 'twitter'
+  | 'instagram'
+  | 'linkedin'
+  | 'email'
+  | 'copy_link'
+  | 'qr_code'
+  | 'direct';
 
 // Dirección
 export interface Address {
@@ -110,6 +124,103 @@ export interface OrderItem {
   updatedAt: string;
 }
 
+// Información de envío con Servientrega
+export interface ShippingInfo {
+  // Información básica
+  pickupAddress: Address;
+  deliveryAddress: Address;
+  
+  // Programación de recolección
+  pickupScheduled: boolean;
+  pickupDate?: string;
+  pickupTimeSlot?: string;
+  
+  // Servientrega
+  guideNumber?: string; // Número de guía
+  trackingNumber?: string;
+  trackingUrl?: string;
+  
+  // Estados de envío
+  status: 'pending' | 'scheduled' | 'picked_up' | 'in_transit' | 'delivered' | 'failed';
+  estimatedDelivery?: string;
+  actualDelivery?: string;
+  
+  // Eventos de seguimiento
+  shippingEvents: ShippingEvent[];
+  
+  // Información del conductor/recolector
+  driverInfo?: {
+    name: string;
+    phone: string;
+    vehicleInfo?: string;
+  };
+  
+  // Metadatos
+  cost?: number;
+  weight?: number;
+  dimensions?: {
+    length: number;
+    width: number;
+    height: number;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ShippingEvent {
+  id: string;
+  timestamp: string;
+  status: string;
+  location: string;
+  description: string;
+  isDelivered: boolean;
+  metadata?: {
+    driverName?: string;
+    receivedBy?: string;
+    signature?: string;
+    photo?: string;
+  };
+}
+
+// Información de verificación
+export interface VerificationInfo {
+  id: string;
+  orderId: string;
+  
+  // Proceso de verificación
+  status: 'pending' | 'in_progress' | 'completed' | 'rejected';
+  verifiedBy?: string;
+  verifiedAt?: string;
+  
+  // Ajustes de peso y valor
+  originalWeight: number;
+  verifiedWeight: number;
+  weightVariance: number;
+  
+  originalValue: number;
+  verifiedValue: number;
+  valueVariance: number;
+  
+  // Fotos de verificación
+  verificationPhotos: string[];
+  beforePhotos?: string[];
+  afterPhotos?: string[];
+  
+  // Notas
+  verificationNotes: string;
+  adjustmentReason?: string;
+  
+  // Aprobación
+  requiresApproval: boolean;
+  approvedBy?: string;
+  approvedAt?: string;
+  rejectionReason?: string;
+  
+  // Metadatos
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Timeline de la orden
 export interface OrderTimelineEvent {
   id: string;
@@ -119,85 +230,14 @@ export interface OrderTimelineEvent {
   description: string;
   timestamp: string;
   actor?: string; // Usuario, sistema, admin
+  isVisible: boolean; // Visible al usuario o solo interno
   metadata?: {
     previousValue?: any;
     newValue?: any;
     automaticAction?: boolean;
-    [key: string]: any;
+    estimatedDuration?: string;
+    nextActions?: string[];
   };
-  isVisible: boolean;
-}
-
-// Información de envío/logística
-export interface ShippingInfo {
-  provider: 'servientrega' | 'other';
-  trackingNumber?: string;
-  guideNumber?: string;
-  
-  // Recolección
-  pickupScheduled: boolean;
-  pickupDate?: string;
-  pickupTimeSlot?: string;
-  pickupAddress: Address;
-  pickupInstructions?: string;
-  
-  // Envío
-  shippedAt?: string;
-  estimatedDelivery?: string;
-  actualDelivery?: string;
-  
-  // Estado del envío
-  shippingStatus: 'pending' | 'scheduled' | 'collected' | 'in_transit' | 'delivered' | 'failed';
-  shippingEvents: ShippingEvent[];
-}
-
-export interface ShippingEvent {
-  timestamp: string;
-  status: string;
-  location: string;
-  description: string;
-  isDelivery?: boolean;
-}
-
-// Información de verificación
-export interface VerificationInfo {
-  verificationId: string;
-  verifiedAt: string;
-  verifiedBy: string;
-  
-  // Resultados
-  totalEstimatedWeight: number;
-  totalActualWeight: number;
-  weightVariance: number;
-  
-  totalEstimatedValue: number;
-  totalActualValue: number;
-  valueVariance: number;
-  
-  // Detalles por item
-  itemVerifications: ItemVerification[];
-  
-  // Notas y observaciones
-  notes?: string;
-  images?: string[];
-  rejectionReason?: string;
-  
-  // Aprobación
-  requiresApproval: boolean;
-  approvedAt?: string;
-  approvedBy?: string;
-  customerNotified: boolean;
-}
-
-export interface ItemVerification {
-  itemId: string;
-  actualWeight: number;
-  actualValue: number;
-  condition: DeviceCondition;
-  functionalityTest: boolean;
-  cosmeticAssessment: string;
-  notes?: string;
-  images?: string[];
 }
 
 // Orden principal
@@ -205,17 +245,17 @@ export interface Order {
   id: string;
   orderNumber: string;
   userId: string;
+  user?: User;
   
-  // Estado general
+  // Estado
   status: OrderStatus;
   paymentStatus: PaymentStatus;
   
   // Items
   items: OrderItem[];
   
-  // Valores totales
+  // Valores
   estimatedTotal: number;
-  actualTotal?: number;
   finalTotal?: number; // Después de ajustes
   
   // Peso total
@@ -370,7 +410,7 @@ export interface VerificationModalProps {
   onVerificationComplete?: (verification: VerificationInfo) => void;
 }
 
-// Configuración de estados
+// Configuración completa de estados
 export const ORDER_STATUS_CONFIG: Record<OrderStatus, {
   label: string;
   description: string;
@@ -381,6 +421,8 @@ export const ORDER_STATUS_CONFIG: Record<OrderStatus, {
   allowedTransitions: OrderStatus[];
   isTerminal: boolean;
   requiresAction: boolean;
+  estimatedDuration?: string;
+  userMessage?: string;
 }> = {
   draft: {
     label: 'Borrador',
@@ -391,7 +433,8 @@ export const ORDER_STATUS_CONFIG: Record<OrderStatus, {
     icon: 'DocumentIcon',
     allowedTransitions: ['pending', 'cancelled'],
     isTerminal: false,
-    requiresAction: true
+    requiresAction: true,
+    userMessage: 'Completa la información para enviar tu orden'
   },
   pending: {
     label: 'Pendiente',
@@ -402,7 +445,9 @@ export const ORDER_STATUS_CONFIG: Record<OrderStatus, {
     icon: 'ClockIcon',
     allowedTransitions: ['confirmed', 'cancelled'],
     isTerminal: false,
-    requiresAction: true
+    requiresAction: true,
+    estimatedDuration: '2-4 horas',
+    userMessage: 'Estamos revisando tu orden'
   },
   confirmed: {
     label: 'Confirmada',
@@ -413,116 +458,273 @@ export const ORDER_STATUS_CONFIG: Record<OrderStatus, {
     icon: 'CheckCircleIcon',
     allowedTransitions: ['pickup_scheduled', 'cancelled'],
     isTerminal: false,
-    requiresAction: false
+    requiresAction: false,
+    estimatedDuration: '1-2 días',
+    userMessage: 'Tu orden fue confirmada. Programaremos la recolección'
   },
   pickup_scheduled: {
     label: 'Recolección Programada',
-    description: 'Recolección programada',
+    description: 'Recolección programada con Servientrega',
     color: 'indigo',
-    bgColor: 'bg-indigo-100',
+    bgColor: 'bg-indigo-100', 
     textColor: 'text-indigo-800',
-    icon: 'CalendarIcon',
+    icon: 'TruckIcon',
     allowedTransitions: ['in_transit', 'cancelled'],
     isTerminal: false,
-    requiresAction: false
+    requiresAction: false,
+    userMessage: 'Prepara tu equipo para la recolección'
   },
   in_transit: {
     label: 'En Tránsito',
-    description: 'En camino a verificación',
+    description: 'Paquete en camino a nuestras instalaciones',
     color: 'purple',
     bgColor: 'bg-purple-100',
     textColor: 'text-purple-800',
-    icon: 'TruckIcon',
-    allowedTransitions: ['received', 'cancelled'],
+    icon: 'ArrowPathIcon',
+    allowedTransitions: ['received'],
     isTerminal: false,
-    requiresAction: false
+    requiresAction: false,
+    estimatedDuration: '2-3 días',
+    userMessage: 'Tu equipo está en camino para verificación'
   },
   received: {
     label: 'Recibido',
-    description: 'Recibido en instalaciones',
-    color: 'green',
-    bgColor: 'bg-green-100',
-    textColor: 'text-green-800',
-    icon: 'InboxIcon',
+    description: 'Recibido en nuestras instalaciones',
+    color: 'cyan',
+    bgColor: 'bg-cyan-100',
+    textColor: 'text-cyan-800',
+    icon: 'BuildingOfficeIcon',
     allowedTransitions: ['in_verification'],
     isTerminal: false,
-    requiresAction: false
+    requiresAction: false,
+    estimatedDuration: '1 día',
+    userMessage: 'Recibimos tu equipo, iniciando verificación'
   },
   in_verification: {
     label: 'En Verificación',
-    description: 'Verificando peso y estado',
+    description: 'Verificando peso, estado y valor',
     color: 'orange',
     bgColor: 'bg-orange-100',
     textColor: 'text-orange-800',
     icon: 'MagnifyingGlassIcon',
     allowedTransitions: ['verified', 'rejected'],
     isTerminal: false,
-    requiresAction: false
+    requiresAction: false,
+    estimatedDuration: '1-2 días',
+    userMessage: 'Estamos verificando tu equipo'
   },
   verified: {
     label: 'Verificado',
-    description: 'Verificado, procesando pago',
-    color: 'emerald',
-    bgColor: 'bg-emerald-100',
-    textColor: 'text-emerald-800',
-    icon: 'ShieldCheckIcon',
-    allowedTransitions: ['payment_pending'],
-    isTerminal: false,
-    requiresAction: false
-  },
-  payment_pending: {
-    label: 'Pago Pendiente',
-    description: 'Procesando pago al usuario',
-    color: 'cyan',
-    bgColor: 'bg-cyan-100',
-    textColor: 'text-cyan-800',
-    icon: 'CreditCardIcon',
-    allowedTransitions: ['paid'],
-    isTerminal: false,
-    requiresAction: false
-  },
-  paid: {
-    label: 'Pagado',
-    description: 'Pago completado',
+    description: 'Verificación completa, valor ajustado',
     color: 'green',
     bgColor: 'bg-green-100',
     textColor: 'text-green-800',
-    icon: 'CheckIcon',
+    icon: 'CheckBadgeIcon',
+    allowedTransitions: ['payment_pending'],
+    isTerminal: false,
+    requiresAction: false,
+    userMessage: 'Verificación completa. Procesando pago'
+  },
+  payment_pending: {
+    label: 'Pago Pendiente',
+    description: 'Procesando transferencia',
+    color: 'amber',
+    bgColor: 'bg-amber-100',
+    textColor: 'text-amber-800',
+    icon: 'BanknotesIcon',
+    allowedTransitions: ['paid'],
+    isTerminal: false,
+    requiresAction: false,
+    estimatedDuration: '1-2 días',
+    userMessage: 'Procesando tu pago'
+  },
+  paid: {
+    label: 'Pagado',
+    description: 'Pago transferido exitosamente',
+    color: 'emerald',
+    bgColor: 'bg-emerald-100',
+    textColor: 'text-emerald-800',
+    icon: 'CheckCircleIcon',
     allowedTransitions: ['completed'],
     isTerminal: false,
-    requiresAction: false
+    requiresAction: false,
+    userMessage: '¡Pago realizado! Revisa tu cuenta'
   },
   completed: {
     label: 'Completado',
     description: 'Orden completada exitosamente',
     color: 'green',
     bgColor: 'bg-green-100',
-    textColor: 'text-green-800',
-    icon: 'CheckBadgeIcon',
+    textColor: 'text-green-800', 
+    icon: 'SparklesIcon',
     allowedTransitions: [],
     isTerminal: true,
-    requiresAction: false
+    requiresAction: false,
+    userMessage: '¡Orden completada! Gracias por reciclar con nosotros'
   },
   cancelled: {
     label: 'Cancelado',
     description: 'Orden cancelada',
-    color: 'red',
-    bgColor: 'bg-red-100',
-    textColor: 'text-red-800',
+    color: 'gray',
+    bgColor: 'bg-gray-100',
+    textColor: 'text-gray-800',
     icon: 'XCircleIcon',
     allowedTransitions: [],
     isTerminal: true,
-    requiresAction: false
+    requiresAction: false,
+    userMessage: 'Orden cancelada'
   },
   rejected: {
     label: 'Rechazado',
-    description: 'Rechazado en verificación',
+    description: 'Orden rechazada en verificación',
     color: 'red',
     bgColor: 'bg-red-100',
     textColor: 'text-red-800',
-    icon: 'XMarkIcon',
-    allowedTransitions: ['cancelled'],
-    isTerminal: false,
-    requiresAction: true
+    icon: 'ExclamationTriangleIcon',
+    allowedTransitions: [],
+    isTerminal: true,
+    requiresAction: false,
+    userMessage: 'Orden rechazada. Contacta soporte para más info'
+  }
+};
+
+// Configuración de estados de pago
+export const PAYMENT_STATUS_CONFIG: Record<PaymentStatus, {
+  label: string;
+  color: string;
+  bgColor: string;
+  textColor: string;
+  icon: string;
+}> = {
+  pending: {
+    label: 'Pendiente',
+    color: 'yellow',
+    bgColor: 'bg-yellow-100',
+    textColor: 'text-yellow-800',
+    icon: 'ClockIcon'
+  },
+  processing: {
+    label: 'Procesando',
+    color: 'blue',
+    bgColor: 'bg-blue-100',
+    textColor: 'text-blue-800',
+    icon: 'ArrowPathIcon'
+  },
+  completed: {
+    label: 'Completado',
+    color: 'green',
+    bgColor: 'bg-green-100',
+    textColor: 'text-green-800',
+    icon: 'CheckCircleIcon'
+  },
+  failed: {
+    label: 'Fallido',
+    color: 'red',
+    bgColor: 'bg-red-100',
+    textColor: 'text-red-800',
+    icon: 'ExclamationTriangleIcon'
+  },
+  cancelled: {
+    label: 'Cancelado',
+    color: 'gray',
+    bgColor: 'bg-gray-100',
+    textColor: 'text-gray-800',
+    icon: 'XCircleIcon'
+  },
+  refunded: {
+    label: 'Reembolsado',
+    color: 'purple',
+    bgColor: 'bg-purple-100',
+    textColor: 'text-purple-800',
+    icon: 'ArrowUturnLeftIcon'
+  }
+};
+
+// Configuración de condiciones de dispositivos
+export const DEVICE_CONDITION_CONFIG: Record<DeviceCondition, {
+  label: string;
+  description: string;
+  priceMultiplier: number;
+  color: string;
+  icon: string;
+}> = {
+  excellent: {
+    label: 'Excelente',
+    description: 'Como nuevo, sin marcas de uso',
+    priceMultiplier: 1.0,
+    color: 'text-green-600',
+    icon: 'SparklesIcon'
+  },
+  good: {
+    label: 'Buen Estado',
+    description: 'Ligeras marcas de uso normal',
+    priceMultiplier: 0.85,
+    color: 'text-blue-600',
+    icon: 'CheckCircleIcon'
+  },
+  fair: {
+    label: 'Estado Regular',
+    description: 'Marcas visibles pero funcional',
+    priceMultiplier: 0.70,
+    color: 'text-yellow-600',
+    icon: 'ExclamationTriangleIcon'
+  },
+  poor: {
+    label: 'Mal Estado',
+    description: 'Daños visibles, funcionalidad limitada',
+    priceMultiplier: 0.50,
+    color: 'text-orange-600',
+    icon: 'XMarkIcon'
+  },
+  broken: {
+    label: 'No Funciona',
+    description: 'No enciende o no funciona',
+    priceMultiplier: 0.30,
+    color: 'text-red-600',
+    icon: 'XCircleIcon'
+  }
+};
+
+// Utilidades para trabajar con órdenes
+export const OrderUtils = {
+  // Obtener siguiente estado posible
+  getNextStatus: (currentStatus: OrderStatus): OrderStatus[] => {
+    return ORDER_STATUS_CONFIG[currentStatus].allowedTransitions;
+  },
+  
+  // Verificar si se puede transicionar a un estado
+  canTransitionTo: (from: OrderStatus, to: OrderStatus): boolean => {
+    return ORDER_STATUS_CONFIG[from].allowedTransitions.includes(to);
+  },
+  
+  // Verificar si el estado es terminal
+  isTerminalStatus: (status: OrderStatus): boolean => {
+    return ORDER_STATUS_CONFIG[status].isTerminal;
+  },
+  
+  // Verificar si requiere acción del usuario
+  requiresUserAction: (status: OrderStatus): boolean => {
+    return ORDER_STATUS_CONFIG[status].requiresAction;
+  },
+  
+  // Calcular progreso del estado (0-100%)
+  getStatusProgress: (status: OrderStatus): number => {
+    const statusOrder: OrderStatus[] = [
+      'draft', 'pending', 'confirmed', 'pickup_scheduled', 
+      'in_transit', 'received', 'in_verification', 'verified', 
+      'payment_pending', 'paid', 'completed'
+    ];
+    
+    const index = statusOrder.indexOf(status);
+    return index >= 0 ? Math.round((index / (statusOrder.length - 1)) * 100) : 0;
+  },
+  
+  // Obtener color de progreso
+  getProgressColor: (status: OrderStatus): string => {
+    const progress = OrderUtils.getStatusProgress(status);
+    if (progress < 30) return 'bg-red-500';
+    if (progress < 60) return 'bg-yellow-500'; 
+    if (progress < 90) return 'bg-blue-500';
+    return 'bg-green-500';
   }
 };
