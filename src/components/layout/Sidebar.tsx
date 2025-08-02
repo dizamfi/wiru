@@ -256,8 +256,7 @@
 
 
 
-
-// src/components/layout/Sidebar.tsx - Limpiado y corregido para móvil
+// src/components/layout/Sidebar.tsx - Fijo al hacer scroll y color principal #D0FF5B
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
@@ -380,14 +379,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         className={cn(
           'group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200',
           active
-            ? 'bg-primary-100 text-primary-700 border-r-2 border-primary-600'
+            ? 'bg-[#D0FF5B] text-gray-900 border-r-2 border-[#08673B]' // Color principal #D0FF5B
             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
         )}
       >
         <Icon
           className={cn(
             'mr-3 h-5 w-5 flex-shrink-0',
-            active ? 'text-primary-600' : 'text-gray-400 group-hover:text-gray-600'
+            active ? 'text-[#08673B]' : 'text-gray-400 group-hover:text-gray-600' // Verde oscuro para iconos activos
           )}
         />
         <span className="flex-1">{item.name}</span>
@@ -415,14 +414,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - FIJO en desktop */}
       <div
         className={cn(
           'z-30 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out flex flex-col',
-          // En desktop: altura desde el header hasta abajo, position relative, siempre visible
-          'lg:relative lg:translate-x-0 lg:shadow-none lg:h-[calc(100vh-4rem)]',
+          // En desktop: FIXED position para que se quede fijo al hacer scroll
+          'lg:fixed lg:left-0 lg:top-16 lg:bottom-0 lg:translate-x-0 lg:shadow-lg',
           // En móvil: fixed overlay que se muestra/oculta según isOpen
-          'fixed inset-y-0 left-0 lg:static',
+          'fixed inset-y-0 left-0',
           // Clase condicional para móvil
           isOpen ? 'translate-x-0' : '-translate-x-full',
           // En desktop siempre visible
@@ -441,7 +440,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Navegación principal */}
-        <div className="flex-1 px-4 py-6 space-y-1 overflow-y-auto lg:pt-6">
+        <div className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
           {/* Primary Navigation */}
           <div className="space-y-1">
             {navigation.map((item) => (
@@ -481,20 +480,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </div>
         </div>
 
-        {/* Footer del sidebar - SOLO "Recicla más" */}
+        {/* Footer del sidebar - SOLO "Recicla más" con nuevos colores */}
         <div className="p-4 border-t border-gray-200">
           {/* Promoción/Incentivo - SOLO esto */}
-          <div className="bg-gradient-to-r from-primary-50 to-secondary-50 rounded-lg p-3">
+          <div className="bg-gradient-to-r from-[#D0FF5B]/20 to-[#08673B]/10 rounded-lg p-3 border border-[#D0FF5B]/30">
             <div className="flex items-center">
               <div className="flex-1">
-                <p className="text-xs font-medium text-primary-900">
+                <p className="text-xs font-medium text-[#08673B]">
                   ¡Recicla más!
                 </p>
-                <p className="text-xs text-primary-700">
+                <p className="text-xs text-gray-700">
                   Gana puntos extra
                 </p>
               </div>
-              <div className="text-primary-600">
+              <div className="text-[#D0FF5B] text-lg">
                 🎯
               </div>
             </div>

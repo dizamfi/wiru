@@ -101,7 +101,7 @@
 
 
 
-// src/components/layout/Layout.tsx - Corregido para móvil
+// src/components/layout/Layout.tsx - Sidebar fijo y margen para contenido
 
 import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
@@ -145,33 +145,22 @@ export const Layout: React.FC<LayoutProps> = ({
           showMenuButton={true}
         />
         
-        {/* Container para sidebar y contenido principal - CON MARGEN TOP PARA EL HEADER */}
-        <div className="flex pt-16"> {/* pt-16 = 64px para compensar el header fijo */}
-          {/* Sidebar SOLO desktop - NO fijo, scrolleable, con margen top negativo para llegar hasta arriba */}
-          <div className="w-64 hidden lg:block -mt-16"> {/* -mt-16 para que el sidebar llegue hasta arriba */}
-            <Sidebar 
-              isOpen={true} 
-              onClose={() => {}} 
-            />
-          </div>
-          
-          {/* Contenido principal */}
-          <main className="flex-1 min-w-0">
-            <div className="py-6">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <Outlet />
-              </div>
-            </div>
-            
-            {showFooter && <Footer />}
-          </main>
-        </div>
-
-        {/* Sidebar móvil - SEPARADO del desktop */}
+        {/* Sidebar fijo - SIEMPRE en la posición */}
         <Sidebar 
           isOpen={sidebarOpen} 
           onClose={() => setSidebarOpen(false)} 
         />
+        
+        {/* Contenido principal - CON MARGEN IZQUIERDO PARA EL SIDEBAR FIJO */}
+        <main className="lg:ml-64 pt-16"> {/* ml-64 = 256px para compensar el sidebar fijo */}
+          <div className="py-6">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <Outlet />
+            </div>
+          </div>
+          
+          {showFooter && <Footer />}
+        </main>
       </div>
     );
   }
