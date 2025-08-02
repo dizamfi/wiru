@@ -17,3 +17,4 @@ export { MiniProgress, type MiniProgressProps } from './MiniProgress';
 export { CircularProgress, type CircularProgressProps } from './CircularProgress';
 export type { CheckboxProps, CheckboxGroupProps } from './Checkbox';
 export { default as Checkbox, CheckboxGroup } from './Checkbox';
+export { TextArea, type TextAreaProps } from './TextArea';

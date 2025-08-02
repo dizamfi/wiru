@@ -1,1128 +1,1228 @@
-// // import React, { useState } from 'react';
-// // import { useParams, useLocation, Link } from 'react-router-dom';
-// // import { 
-// //   ArrowLeftIcon,
-// //   TruckIcon,
-// //   CheckCircleIcon,
-// //   ClockIcon,
-// //   XCircleIcon,
-// //   PhotoIcon,
-// //   DocumentTextIcon,
-// //   PhoneIcon,
-// //   EnvelopeIcon
-// // } from '@heroicons/react/24/outline';
-// // import { 
-// //   Button, 
-// //   Card, 
-// //   CardContent, 
-// //   Badge, 
-// //   Alert,
-// //   Modal,
-// //   ModalContent,
-// //   ModalFooter
-// // } from '@/components/ui';
-// // import { PageHeader } from '@/components/layout';
+// src/pages/dashboard/OrderDetailPage.tsx - VERSIÓN COMPLETA E INTEGRADA
 
-// // // Mock order data
-// // const mockOrderDetail = {
-// //   id: 'ORD-1234',
-// //   orderNumber: 'ORD-1234',
-// //   device: 'MacBook Pro 13" 2019',
-// //   brand: 'Apple',
-// //   model: 'A2159',
-// //   category: 'Laptops',
-// //   status: 'in_transit',
-// //   estimatedValue: 850,
-// //   actualValue: null,
-// //   estimatedWeight: 1.8,
-// //   actualWeight: null,
-// //   condition: 'good',
-// //   description: 'MacBook Pro en muy buen estado, solo algunos rayones menores en la tapa. La batería mantiene buena duración y todos los puertos funcionan correctamente. Incluye cargador original.',
-// //   hasCharger: true,
-// //   hasBox: false,
-// //   hasDocuments: true,
-// //   images: [
-// //     '/images/orders/macbook-1.jpg',
-// //     '/images/orders/macbook-2.jpg',
-// //     '/images/orders/macbook-3.jpg'
-// //   ],
-// //   createdAt: '2025-01-20T10:30:00Z',
-// //   updatedAt: '2025-01-21T14:20:00Z',
-// //   trackingNumber: 'TRK123456789',
-// //   pickupAddress: {
-// //     street: 'Calle 123 #45-67',
-// //     city: 'Bogotá',
-// //     state: 'Cundinamarca',
-// //     zipCode: '110111'
-// //   },
-// //   pickupDate: '2025-01-22T09:00:00Z',
-// //   timeline: [
-// //     {
-// //       status: 'created',
-// //       timestamp: '2025-01-20T10:30:00Z',
-// //       title: 'Orden creada',
-// //       description: 'Tu orden ha sido creada exitosamente'
-// //     },
-// //     {
-// //       status: 'confirmed',
-// //       timestamp: '2025-01-20T11:15:00Z',
-// //       title: 'Orden confirmada',
-// //       description: 'Hemos confirmado tu orden y programado la recolección'
-// //     },
-// //     {
-// //       status: 'pickup_scheduled',
-// //       timestamp: '2025-01-20T11:15:00Z',
-// //       title: 'Recolección programada',
-// //       description: 'Recolección programada para el 22 de enero a las 9:00 AM'
-// //     },
-// //     {
-// //       status: 'in_transit',
-// //       timestamp: '2025-01-21T14:20:00Z',
-// //       title: 'En tránsito',
-// //       description: 'Tu dispositivo está en camino a nuestras instalaciones'
-// //     }
-// //   ]
-// // };
+import React, { useState, useEffect } from 'react';
+import { useParams, useLocation, Link, useNavigate } from 'react-router-dom';
+import {
+  ArrowLeftIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  PencilIcon,
+  EyeIcon,
+  TruckIcon,
+  PhoneIcon,
+  MapPinIcon,
+  CurrencyDollarIcon,
+  ScaleIcon,
+  ClockIcon,
+  ExclamationTriangleIcon,
+  ArrowPathIcon,
+  DocumentDuplicateIcon,
+  ChatBubbleLeftRightIcon,
+  PrinterIcon,
+  ShareIcon,
+  SparklesIcon,
+  BuildingOfficeIcon,
+  UserIcon,
+  DocumentTextIcon,
+  CameraIcon,
+  ShieldCheckIcon,
+  BanknotesIcon
+} from '@heroicons/react/24/outline';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 
-// // const statusConfig = {
-// //   pending: { label: 'Pendiente', variant: 'warning' as const, icon: ClockIcon },
-// //   confirmed: { label: 'Confirmado', variant: 'default' as const, icon: CheckCircleIcon },
-// //   in_transit: { label: 'En tránsito', variant: 'default' as const, icon: TruckIcon },
-// //   verified: { label: 'Verificado', variant: 'success' as const, icon: CheckCircleIcon },
-// //   paid: { label: 'Pagado', variant: 'success' as const, icon: CheckCircleIcon },
-// //   cancelled: { label: 'Cancelado', variant: 'danger' as const, icon: XCircleIcon }
-// // };
+// Components
+import { PageHeader } from '@/components/layout/PageHeader';
+import { Card, CardContent } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
+import { Alert } from '@/components/ui/Alert';
+import { Modal } from '@/components/ui/Modal';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { toast } from '@/components/ui/use-toast';
 
-// // const conditionLabels = {
-// //   excellent: 'Excelente',
-// //   good: 'Bueno',
-// //   fair: 'Regular',
-// //   poor: 'Malo'
-// // };
+// Order components
+import OrderTimeline from '@/components/orders/OrderTimeline';
+import OrderStatusTracker from '@/components/orders/OrderStatusTracker';
+import ShippingTracker from '@/components/orders/ShippingTracker';
+import DocumentUploader from '@/components/orders/DocumentUploader';
+import ValueAdjustmentModal from '@/components/orders/ValueAdjustmentModal';
 
-// // const OrderDetailPage: React.FC = () => {
-// //   const { id } = useParams<{ id: string }>();
-// //   const location = useLocation();
-// //   const [showCancelModal, setShowCancelModal] = useState(false);
-// //   const [showImageModal, setShowImageModal] = useState(false);
-// //   const [selectedImage, setSelectedImage] = useState<string>('');
+// Types y hooks
+import { 
+  Order, 
+  OrderStatus, 
+  ORDER_STATUS_CONFIG, 
+  DEVICE_CONDITION_CONFIG,
+  VerificationInfo,
+  OrderUtils
+} from '@/types/order';
+import { useAuth } from '@/hooks/useAuth';
 
-// //   // Check if we have success message from creation
-// //   const successMessage = location.state?.message;
-// //   const orderData = location.state?.orderData;
+// MOCK DATA COMPLETO PARA TESTING
+const mockOrderDetail: Order = {
+  id: 'order-123',
+  orderNumber: 'ORD-2024-001234',
+  userId: 'user-1',
+  status: 'in_verification',
+  paymentStatus: 'pending',
+  items: [
+    {
+      id: 'item-1',
+      orderId: 'order-123',
+      categoryId: 'laptops',
+      deviceName: 'MacBook Pro 13"',
+      brand: 'Apple',
+      model: 'MacBook Pro 2020',
+      description: 'Laptop en excelente estado funcional. Batería mantiene buena capacidad. Ligeras marcas de uso normal en la carcasa que no afectan el funcionamiento.',
+      condition: 'good',
+      estimatedWeight: 1.4,
+      actualWeight: 1.37,
+      estimatedValue: 850.00,
+      actualValue: 820.00,
+      hasCharger: true,
+      hasBox: false,
+      hasDocuments: true,
+      accessories: ['Cargador original MagSafe', 'Manual de usuario', 'Paño de limpieza'],
+      images: [
+        'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400',
+        'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=400',
+        'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400'
+      ],
+      verificationNotes: 'Dispositivo funcional al 100%. Batería en excelente estado (87% de capacidad). Ligeras marcas de uso en carcasa superior.',
+      verifiedAt: '2024-01-17T18:00:00Z',
+      verifiedBy: 'tech-specialist-1',
+      createdAt: '2024-01-15T10:00:00Z',
+      updatedAt: '2024-01-17T18:00:00Z'
+    }
+  ],
+  estimatedTotal: 850.00,
+  finalTotal: 820.00,
+  estimatedWeight: 1.4,
+  actualWeight: 1.37,
+  contactInfo: {
+    firstName: 'Juan Carlos',
+    lastName: 'Pérez González',
+    email: 'juan.perez@email.com',
+    phone: '+593 99 123 4567'
+  },
+  shipping: {
+    pickupAddress: {
+      street: 'Av. 9 de Octubre 1234, Edificio Torre Azul',
+      neighborhood: 'Centro Histórico',
+      city: 'Guayaquil',
+      state: 'Guayas',
+      zipCode: '090313',
+      country: 'Ecuador',
+      instructions: 'Piso 3, oficina 301. Llamar al llegar. Disponible de 9AM a 6PM.'
+    },
+    deliveryAddress: {
+      street: 'Zona Industrial Norte, Manzana 45, Solar 12',
+      neighborhood: 'Parque Industrial',
+      city: 'Guayaquil',
+      state: 'Guayas',
+      zipCode: '090514',
+      country: 'Ecuador'
+    },
+    pickupScheduled: true,
+    pickupDate: '2024-01-16T09:00:00Z',
+    pickupTimeSlot: '9:00 AM - 12:00 PM',
+    guideNumber: 'SRV240116001234',
+    trackingNumber: 'TRK-SRV-001234',
+    trackingUrl: 'https://servientrega.com/tracking/TRK-SRV-001234',
+    status: 'delivered',
+    estimatedDelivery: '2024-01-17T17:00:00Z',
+    actualDelivery: '2024-01-17T16:45:00Z',
+    shippingEvents: [
+      {
+        id: 'event-1',
+        timestamp: '2024-01-16T09:15:00Z',
+        status: 'Recolectado',
+        location: 'Guayaquil Centro - Av. 9 de Octubre',
+        description: 'Paquete recolectado exitosamente en la dirección indicada',
+        isDelivered: false
+      },
+      {
+        id: 'event-2',
+        timestamp: '2024-01-16T14:30:00Z',
+        status: 'En tránsito',
+        location: 'Centro de Distribución Guayaquil',
+        description: 'Paquete en proceso de clasificación y envío',
+        isDelivered: false
+      },
+      {
+        id: 'event-3',
+        timestamp: '2024-01-17T16:45:00Z',
+        status: 'Entregado',
+        location: 'Bodega Wiru - Zona Industrial Norte',
+        description: 'Paquete entregado exitosamente y recibido por personal autorizado',
+        isDelivered: true
+      }
+    ],
+    createdAt: '2024-01-15T12:30:00Z',
+    updatedAt: '2024-01-17T16:45:00Z'
+  },
+  verification: {
+    id: 'verification-1',
+    orderId: 'order-123',
+    verifiedBy: 'tech-specialist-1',
+    verifiedAt: '2024-01-17T18:00:00Z',
+    verifiedWeight: 1.37,
+    verifiedValue: 820.00,
+    photos: true,
+    notes: 'Todas las especificaciones coinciden con lo declarado. Batería mantiene 87% de capacidad original.',
+    adjustmentReason: 'Peso ligeramente inferior al estimado inicialmente debido a las especificaciones exactas del modelo específico.',
+    requiresApproval: false,
+    createdAt: '2024-01-17T17:00:00Z',
+    updatedAt: '2024-01-17T18:30:00Z',
+    status: 'pending',
+    originalWeight: 0,
+    weightVariance: 0,
+    originalValue: 0,
+    valueVariance: 0,
+    verificationPhotos: [
+      'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400',
+      'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=400'
+    ],
+    verificationNotes: ''
+  },
+  timeline: [
+    {
+      id: 'timeline-1',
+      orderId: 'order-123',
+      status: 'pending',
+      title: 'Orden Creada',
+      description: 'Tu orden ha sido creada exitosamente y está pendiente de confirmación',
+      timestamp: '2024-01-15T10:00:00Z',
+      actor: 'user',
+      isVisible: true
+    },
+    {
+      id: 'timeline-2',
+      orderId: 'order-123',
+      status: 'confirmed',
+      title: 'Orden Confirmada',
+      description: 'Tu orden ha sido confirmada por nuestro equipo',
+      timestamp: '2024-01-15T12:30:00Z',
+      actor: 'system',
+      isVisible: true
+    },
+    {
+      id: 'timeline-3',
+      orderId: 'order-123',
+      status: 'pickup_scheduled',
+      title: 'Recolección Programada',
+      description: 'Se ha programado la recolección con Servientrega',
+      timestamp: '2024-01-15T14:00:00Z',
+      actor: 'system',
+      isVisible: true
+    },
+    {
+      id: 'timeline-4',
+      orderId: 'order-123',
+      status: 'in_transit',
+      title: 'En Tránsito',
+      description: 'Tu orden está en camino a nuestras instalaciones',
+      timestamp: '2024-01-16T09:15:00Z',
+      actor: 'system',
+      isVisible: true
+    },
+    {
+      id: 'timeline-5',
+      orderId: 'order-123',
+      status: 'received',
+      title: 'Recibido en Bodega',
+      description: 'Tu orden ha llegado a nuestras instalaciones',
+      timestamp: '2024-01-17T16:45:00Z',
+      actor: 'system',
+      isVisible: true
+    },
+    {
+      id: 'timeline-6',
+      orderId: 'order-123',
+      status: 'in_verification',
+      title: 'En Verificación',
+      description: 'Nuestro equipo técnico está verificando tu dispositivo',
+      timestamp: '2024-01-17T17:00:00Z',
+      actor: 'tech-specialist-1',
+      isVisible: true
+    }
+  ],
+  notes: 'Dispositivo reportado en muy buen estado según fotos iniciales. Solicitud especial: manejar con cuidado por valor sentimental.',
+  priority: 'normal',
+  allowPartialValue: true,
+  requirePhotos: true,
+  autoAcceptVerification: false,
+  createdAt: '2024-01-15T10:00:00Z',
+  updatedAt: '2024-01-17T18:30:00Z',
+  confirmedAt: '2024-01-15T12:30:00Z'
+};
 
-// //   const order = mockOrderDetail; // In real app, fetch by ID
-// //   const status = statusConfig[order.status as keyof typeof statusConfig];
-// //   const StatusIcon = status.icon;
+// COMPONENTE PRINCIPAL
+const OrderDetailPage: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
-// //   const handleCancelOrder = () => {
-// //     // In real app, make API call to cancel
-// //     console.log('Cancelling order', id);
-// //     setShowCancelModal(false);
-// //   };
+  // STATE MANAGEMENT
+  const [order, setOrder] = useState<Order | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [showValueAdjustmentModal, setShowValueAdjustmentModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<'overview' | 'timeline' | 'shipping' | 'verification' | 'documents'>('overview');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-// //   const canCancel = ['pending', 'confirmed'].includes(order.status);
-// //   const showTracking = ['in_transit', 'verified', 'paid'].includes(order.status);
+  // Get success message from navigation state
+  const successMessage = location.state?.message;
 
-// //   return (
-// //     <div className="space-y-6">
-// //       <PageHeader
-// //         title={`Orden ${order.orderNumber}`}
-// //         description={order.device}
-// //         action={
-// //           <div className="flex gap-3">
-// //             <Link to="/orders">
-// //               <Button variant="outline" leftIcon={<ArrowLeftIcon className="h-4 w-4" />}>
-// //                 Volver a órdenes
-// //               </Button>
-// //             </Link>
-// //             {canCancel && (
-// //               <Button 
-// //                 variant="danger" 
-// //                 onClick={() => setShowCancelModal(true)}
-// //               >
-// //                 Cancelar orden
-// //               </Button>
-// //             )}
-// //           </div>
-// //         }
-// //       />
+  // LOAD ORDER DATA ON MOUNT
+  useEffect(() => {
+    const loadOrder = async () => {
+      if (!id) {
+        setError('ID de orden no válido');
+        setLoading(false);
+        return;
+      }
 
-// //       {/* Success Message */}
-// //       {successMessage && (
-// //         <Alert variant="success">
-// //           <CheckCircleIcon className="h-4 w-4" />
-// //           <div>
-// //             <p className="font-medium">¡Orden creada exitosamente!</p>
-// //             <p className="text-sm">{successMessage}</p>
-// //           </div>
-// //         </Alert>
-// //       )}
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Simulate API call with delay
+        await new Promise(resolve => setTimeout(resolve, 1200));
+        
+        // In real implementation: const fetchedOrder = await orderApi.getOrderById(id);
+        if (id === 'order-123' || id === mockOrderDetail.id) {
+          setOrder(mockOrderDetail);
+        } else {
+          throw new Error(`Orden con ID ${id} no encontrada`);
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Error al cargar la orden';
+        setError(errorMessage);
+        console.error('Error loading order:', err);
+        
+        toast({
+          title: 'Error al cargar orden',
+          description: errorMessage,
+          variant: 'destructive'
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
 
-// //       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-// //         {/* Main Content */}
-// //         <div className="lg:col-span-2 space-y-6">
-// //           {/* Order Status */}
-// //           <Card>
-// //             <CardContent className="p-6">
-// //               <div className="flex items-center justify-between mb-6">
-// //                 <div className="flex items-center space-x-3">
-// //                   <StatusIcon className="h-8 w-8 text-gray-600" />
-// //                   <div>
-// //                     <h3 className="text-lg font-semibold">Estado actual</h3>
-// //                     <Badge variant={status.variant}>{status.label}</Badge>
-// //                   </div>
-// //                 </div>
+    loadOrder();
+  }, [id]);
+
+  // EVENT HANDLERS
+  const handleCancelOrder = async () => {
+    if (!order) return;
+
+    try {
+      // In real implementation: await orderApi.cancelOrder(order.id, reason);
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      toast({
+        title: 'Orden cancelada',
+        description: 'Tu orden ha sido cancelada exitosamente.',
+        variant: 'success'
+      });
+      
+      setShowCancelModal(false);
+      navigate('/dashboard/orders');
+    } catch (error) {
+      toast({
+        title: 'Error al cancelar',
+        description: 'No se pudo cancelar la orden. Intenta nuevamente.',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleVerificationComplete = async (verification: VerificationInfo) => {
+    if (!order) return;
+
+    try {
+      // In real implementation: await orderApi.submitVerification(order.id, verification);
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      const updatedOrder = {
+        ...order,
+        verification,
+        status: verification.requiresApproval ? 'verified' : 'payment_pending' as OrderStatus,
+        finalTotal: verification.verifiedValue,
+        actualWeight: verification.verifiedWeight,
+        updatedAt: new Date().toISOString()
+      };
+      
+      setOrder(updatedOrder);
+      setShowVerificationModal(false);
+      
+      toast({
+        title: 'Verificación completada',
+        description: verification.requiresApproval 
+          ? 'La verificación ha sido enviada para aprobación'
+          : 'Los valores han sido actualizados',
+        variant: 'success'
+      });
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const handleRefreshOrder = async () => {
+    if (!id || isRefreshing) return;
+
+    setIsRefreshing(true);
+    try {
+      // In real implementation: const refreshedOrder = await orderApi.getOrderById(id);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      if (order) {
+        const updatedOrder = {
+          ...order,
+          updatedAt: new Date().toISOString()
+        };
+        setOrder(updatedOrder);
+      }
+      
+      toast({
+        title: 'Orden actualizada',
+        description: 'La información ha sido sincronizada',
+        variant: 'success'
+      });
+    } catch (error) {
+      toast({
+        title: 'Error al actualizar',
+        description: 'No se pudo actualizar la información',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  const handleTrackingUpdate = async () => {
+    if (!order) return;
+    
+    try {
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      const newEvent = {
+        id: `event-auto-${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        status: 'Actualización de sistema',
+        location: 'Sistema automático',
+        description: 'Información sincronizada con Servientrega',
+        isDelivered: false
+      };
+      
+      setOrder(prev => prev ? {
+        ...prev,
+        shipping: {
+          ...prev.shipping,
+          shippingEvents: [newEvent, ...prev.shipping.shippingEvents],
+          updatedAt: new Date().toISOString()
+        }
+      } : null);
+      
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const handleDuplicateOrder = () => {
+    if (!order) return;
+    
+    const duplicateData = {
+      items: order.items.map(item => ({
+        ...item,
+        id: undefined,
+        orderId: undefined,
+        actualWeight: undefined,
+        actualValue: undefined
+      })),
+      shipping: {
+        pickupAddress: order.shipping.pickupAddress
+      }
+    };
+    
+    navigate('/sell', { 
+      state: { 
+        duplicateFrom: order.id,
+        orderData: duplicateData,
+        message: `Duplicando orden ${order.orderNumber}`
+      }
+    });
+  };
+
+  const handlePrintOrder = () => {
+    window.print();
+  };
+
+  const handleShareOrder = async () => {
+    if (!order) return;
+    
+    const shareData = {
+      title: `Orden ${order.orderNumber} - Wiru`,
+      text: `Mi orden de reciclaje está en estado: ${ORDER_STATUS_CONFIG[order.status].label}`,
+      url: window.location.href
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        toast({
+          title: 'Link copiado',
+          description: 'El enlace ha sido copiado al portapapeles',
+          variant: 'success'
+        });
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+    }
+  };
+
+  // RENDER HELPERS
+  const renderStatusIcon = (status: OrderStatus) => {
+    const config = ORDER_STATUS_CONFIG[status];
+    switch (status) {
+      case 'completed':
+        return <CheckCircleIcon className="h-8 w-8 text-green-600" />;
+      case 'cancelled':
+        return <XCircleIcon className="h-8 w-8 text-red-600" />;
+      case 'in_transit':
+        return <TruckIcon className="h-8 w-8 text-blue-600" />;
+      case 'in_verification':
+        return <ShieldCheckIcon className="h-8 w-8 text-orange-600" />;
+      case 'payment_pending':
+        return <BanknotesIcon className="h-8 w-8 text-purple-600" />;
+      default:
+        return <ClockIcon className="h-8 w-8 text-gray-600" />;
+    }
+  };
+
+  const renderItemImages = (images: string[]) => (
+    <div className="grid grid-cols-3 gap-2">
+      {images.slice(0, 3).map((image, index) => (
+        <div key={index} className="aspect-square rounded-lg overflow-hidden bg-gray-100">
+          <img 
+            src={image} 
+            alt={`Device ${index + 1}`}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderTabNavigation = () => (
+    <div className="border-b border-gray-200 mb-6">
+      <nav className="-mb-px flex space-x-8">
+        {[
+          { id: 'overview', label: 'Resumen', icon: EyeIcon },
+          { id: 'timeline', label: 'Timeline', icon: ClockIcon },
+          { id: 'shipping', label: 'Envío', icon: TruckIcon },
+          { id: 'verification', label: 'Verificación', icon: ShieldCheckIcon },
+          { id: 'documents', label: 'Documentos', icon: DocumentTextIcon }
+        ].map((tab) => {
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
+                activeTab === tab.id
+                  ? 'border-primary-500 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </nav>
+    </div>
+  );
+
+  // LOADING STATE
+  if (loading) {
+    return (
+      <div className="py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center space-x-4 mb-8">
+            <Skeleton className="h-8 w-8" />
+            <Skeleton className="h-8 w-48" />
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
+              <Skeleton className="h-64 w-full" />
+              <Skeleton className="h-48 w-full" />
+            </div>
+            <div className="space-y-6">
+              <Skeleton className="h-48 w-full" />
+              <Skeleton className="h-32 w-full" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ERROR STATE
+  if (error || !order) {
+    return (
+      <div className="py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Alert variant="danger" className="mb-6">
+            <ExclamationTriangleIcon className="h-4 w-4" />
+            <div>
+              <h3 className="font-medium">Error al cargar la orden</h3>
+              <p className="text-sm mt-1">{error || 'Orden no encontrada'}</p>
+            </div>
+          </Alert>
+          
+          <div className="text-center">
+            <Button onClick={() => navigate('/dashboard/orders')} variant="outline">
+              <ArrowLeftIcon className="h-4 w-4 mr-2" />
+              Volver a mis órdenes
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const statusConfig = ORDER_STATUS_CONFIG[order.status];
+
+  // MAIN RENDER
+  return (
+    <div className="py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        {/* Breadcrumbs (rendered manually) */}
+        <nav className="mb-2 text-sm text-gray-500" aria-label="Breadcrumb">
+          <ol className="list-none p-0 inline-flex">
+            <li className="flex items-center">
+              <Link to="/dashboard" className="hover:underline">Dashboard</Link>
+              <span className="mx-2">/</span>
+            </li>
+            <li className="flex items-center">
+              <Link to="/dashboard/orders" className="hover:underline">Órdenes</Link>
+              <span className="mx-2">/</span>
+            </li>
+            <li className="flex items-center text-gray-700">
+              {order.orderNumber}
+            </li>
+          </ol>
+        </nav>
+        <PageHeader
+          title={`Orden ${order.orderNumber}`}
+          action={
+            <div className="flex items-center space-x-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRefreshOrder}
+                disabled={isRefreshing}
+              >
+                <ArrowPathIcon className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                {isRefreshing ? 'Actualizando...' : 'Actualizar'}
+              </Button>
+              
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDuplicateOrder}
+                >
+                  <DocumentDuplicateIcon className="h-4 w-4 mr-2" />
+                  Duplicar
+                </Button>
                 
-// //                 {showTracking && order.trackingNumber && (
-// //                   <div className="text-right">
-// //                     <p className="text-sm text-gray-600">Número de seguimiento</p>
-// //                     <p className="font-mono text-sm">{order.trackingNumber}</p>
-// //                   </div>
-// //                 )}
-// //               </div>
-
-// //               {/* Timeline */}
-// //               <div className="space-y-4">
-// //                 <h4 className="font-medium text-gray-900">Seguimiento de la orden</h4>
-// //                 <div className="space-y-3">
-// //                   {order.timeline.map((event, index) => (
-// //                     <div key={index} className="flex items-start space-x-3">
-// //                       <div className="w-2 h-2 bg-primary-600 rounded-full mt-2"></div>
-// //                       <div className="flex-1">
-// //                         <div className="flex items-center justify-between">
-// //                           <p className="font-medium text-gray-900">{event.title}</p>
-// //                           <p className="text-xs text-gray-500">
-// //                             {new Date(event.timestamp).toLocaleDateString('es', {
-// //                               day: 'numeric',
-// //                               month: 'short',
-// //                               hour: '2-digit',
-// //                               minute: '2-digit'
-// //                             })}
-// //                           </p>
-// //                         </div>
-// //                         <p className="text-sm text-gray-600">{event.description}</p>
-// //                       </div>
-// //                     </div>
-// //                   ))}
-// //                 </div>
-// //               </div>
-// //             </CardContent>
-// //           </Card>
-
-// //           {/* Device Details */}
-// //           <Card>
-// //             <CardContent className="p-6">
-// //               <h3 className="text-lg font-semibold mb-4">Detalles del dispositivo</h3>
-              
-// //               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-// //                 <div className="space-y-3">
-// //                   <div>
-// //                     <p className="text-sm text-gray-600">Dispositivo</p>
-// //                     <p className="font-medium">{order.device}</p>
-// //                   </div>
-// //                   <div>
-// //                     <p className="text-sm text-gray-600">Marca</p>
-// //                     <p className="font-medium">{order.brand}</p>
-// //                   </div>
-// //                   <div>
-// //                     <p className="text-sm text-gray-600">Modelo</p>
-// //                     <p className="font-medium">{order.model}</p>
-// //                   </div>
-// //                   <div>
-// //                     <p className="text-sm text-gray-600">Categoría</p>
-// //                     <p className="font-medium">{order.category}</p>
-// //                   </div>
-// //                 </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePrintOrder}
+                  className="no-print"
+                >
+                  <PrinterIcon className="h-4 w-4" />
+                </Button>
                 
-// //                 <div className="space-y-3">
-// //                   <div>
-// //                     <p className="text-sm text-gray-600">Estado</p>
-// //                     <p className="font-medium">{conditionLabels[order.condition as keyof typeof conditionLabels]}</p>
-// //                   </div>
-// //                   <div>
-// //                     <p className="text-sm text-gray-600">Peso estimado</p>
-// //                     <p className="font-medium">{order.estimatedWeight} kg</p>
-// //                   </div>
-// //                   {order.actualWeight && (
-// //                     <div>
-// //                       <p className="text-sm text-gray-600">Peso real</p>
-// //                       <p className="font-medium">{order.actualWeight} kg</p>
-// //                     </div>
-// //                   )}
-// //                   <div>
-// //                     <p className="text-sm text-gray-600">Accesorios</p>
-// //                     <div className="flex flex-wrap gap-1 mt-1">
-// //                       {order.hasCharger && <Badge size="sm" variant="outline">Cargador</Badge>}
-// //                       {order.hasBox && <Badge size="sm" variant="outline">Caja</Badge>}
-// //                       {order.hasDocuments && <Badge size="sm" variant="outline">Documentos</Badge>}
-// //                       {!order.hasCharger && !order.hasBox && !order.hasDocuments && (
-// //                         <span className="text-sm text-gray-500">Ninguno</span>
-// //                       )}
-// //                     </div>
-// //                   </div>
-// //                 </div>
-// //               </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleShareOrder}
+                >
+                  <ShareIcon className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          }
+        >
+          <div className="text-gray-500 text-sm mt-1">
+            Creada el {format(new Date(order.createdAt), 'dd MMMM yyyy', { locale: es })}
+          </div>
+        </PageHeader>
 
-// //               <div className="mt-6">
-// //                 <p className="text-sm text-gray-600 mb-2">Descripción</p>
-// //                 <p className="text-gray-900 bg-gray-50 p-3 rounded-lg">{order.description}</p>
-// //               </div>
-// //             </CardContent>
-// //           </Card>
+        {/* Success Message */}
+        {successMessage && (
+          <Alert variant="success" className="mb-6">
+            <CheckCircleIcon className="h-4 w-4" />
+            <div>
+              <p className="font-medium">¡Operación exitosa!</p>
+              <p className="text-sm">{successMessage}</p>
+            </div>
+          </Alert>
+        )}
 
-// //           {/* Images */}
-// //           <Card>
-// //             <CardContent className="p-6">
-// //               <h3 className="text-lg font-semibold mb-4">Fotos del dispositivo</h3>
-              
-// //               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-// //                 {order.images.map((image, index) => (
-// //                   <div
-// //                     key={index}
-// //                     className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors"
-// //                     onClick={() => {
-// //                       setSelectedImage(image);
-// //                       setShowImageModal(true);
-// //                     }}
-// //                   >
-// //                     <PhotoIcon className="h-12 w-12 text-gray-400" />
-// //                   </div>
-// //                 ))}
-// //               </div>
-              
-// //               <p className="text-xs text-gray-500 mt-2">
-// //                 Haz clic en una imagen para verla en tamaño completo
-// //               </p>
-// //             </CardContent>
-// //           </Card>
-// //         </div>
+        {/* Tab Navigation */}
+        {renderTabNavigation()}
 
-// //         {/* Sidebar */}
-// //         <div className="space-y-6">
-// //           {/* Value Card */}
-// //           <Card>
-// //             <CardContent className="p-6">
-// //               <h3 className="text-lg font-semibold mb-4">Valor de la orden</h3>
-              
-// //               <div className="space-y-3">
-// //                 <div className="flex justify-between items-center">
-// //                   <span className="text-gray-600">Valor estimado</span>
-// //                   <span className="font-semibold text-lg">${order.estimatedValue}</span>
-// //                 </div>
-                
-// //                 {order.actualValue && (
-// //                   <>
-// //                     <div className="flex justify-between items-center">
-// //                       <span className="text-gray-600">Valor final</span>
-// //                       <span className="font-semibold text-lg text-success-600">
-// //                         ${order.actualValue}
-// //                       </span>
-// //                     </div>
+        {/* Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Primary Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Overview Tab */}
+            {activeTab === 'overview' && (
+              <>
+                {/* Order Status Card */}
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center space-x-4">
+                        {renderStatusIcon(order.status)}
+                        <div>
+                          <h3 className="text-lg font-semibold">Estado Actual</h3>
+                          <Badge variant={statusConfig.color as any}>
+                            {statusConfig.label}
+                          </Badge>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {statusConfig.description}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {order.shipping.trackingNumber && (
+                        <div className="text-right">
+                          <p className="text-sm text-gray-600">Número de seguimiento</p>
+                          <p className="font-mono text-sm font-medium">
+                            {order.shipping.trackingNumber}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div className="mb-6">
+                      <div className="flex justify-between text-sm text-gray-600 mb-2">
+                        <span>Progreso</span>
+                        <span>{OrderUtils.getStatusProgress(order.status)}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className={`h-2 rounded-full transition-all duration-300 ${OrderUtils.getProgressColor(order.status)}`}
+                          style={{ width: `${OrderUtils.getStatusProgress(order.status)}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Quick Actions */}
+                    <div className="flex flex-wrap gap-2">
+                      {order.status === 'in_verification' && (
+                        <Button 
+                          size="sm" 
+                          onClick={() => setShowVerificationModal(true)}
+                        >
+                          <ShieldCheckIcon className="h-4 w-4 mr-2" />
+                          Ver Verificación
+                        </Button>
+                      )}
+                      
+                      {order.verification && (
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => setShowValueAdjustmentModal(true)}
+                        >
+                          <PencilIcon className="h-4 w-4 mr-2" />
+                          Ajustar Valores
+                        </Button>
+                      )}
+                      
+                      {OrderUtils.canTransitionTo(order.status, 'cancelled') && (
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => setShowCancelModal(true)}
+                        >
+                          <XCircleIcon className="h-4 w-4 mr-2" />
+                          Cancelar Orden
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Items Card */}
+                <Card>
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-semibold mb-4">Dispositivos</h3>
                     
-// //                     {order.actualValue !== order.estimatedValue && (
-// //                       <div className="flex justify-between items-center text-sm">
-// //                         <span className="text-gray-500">Diferencia</span>
-// //                         <span className={order.actualValue > order.estimatedValue ? 'text-success-600' : 'text-warning-600'}>
-// //                           {order.actualValue > order.estimatedValue ? '+' : ''}
-// //                           ${order.actualValue - order.estimatedValue}
-// //                         </span>
-// //                       </div>
-// //                     )}
-// //                   </>
-// //                 )}
-// //               </div>
-              
-// //               {order.status === 'verified' && !order.actualValue && (
-// //                 <Alert variant="default" className="mt-4">
-// //                   <ClockIcon className="h-4 w-4" />
-// //                   <div>
-// //                     <p className="text-sm">
-// //                       Tu dispositivo ha sido verificado. El pago se procesará dentro de 24 horas.
-// //                     </p>
-// //                   </div>
-// //                 </Alert>
-// //               )}
-// //             </CardContent>
-// //           </Card>
+                    {order.items.map((item, index) => (
+                      <div key={item.id} className="border border-gray-200 rounded-lg p-4 mb-4 last:mb-0">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          {/* Item Info */}
+                          <div className="md:col-span-2">
+                            <div className="flex items-start justify-between mb-2">
+                              <div>
+                                <h4 className="font-medium text-gray-900">
+                                  {item.brand} {item.deviceName}
+                                </h4>
+                                <p className="text-sm text-gray-600">{item.model}</p>
+                              </div>
+                              <Badge variant={DEVICE_CONDITION_CONFIG[item.condition].color as any}>
+                                {DEVICE_CONDITION_CONFIG[item.condition].label}
+                              </Badge>
+                            </div>
+                            
+                            <p className="text-sm text-gray-700 mb-3">{item.description}</p>
+                            
+                            {/* Item Details */}
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <span className="text-gray-600">Peso estimado:</span>
+                                <span className="ml-2 font-medium">{item.estimatedWeight} kg</span>
+                                {item.actualWeight && (
+                                  <>
+                                    <br />
+                                    <span className="text-gray-600">Peso real:</span>
+                                    <span className="ml-2 font-medium text-green-600">
+                                      {item.actualWeight} kg
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Valor estimado:</span>
+                                <span className="ml-2 font-medium">${item.estimatedValue.toFixed(2)}</span>
+                                {item.actualValue && (
+                                  <>
+                                    <br />
+                                    <span className="text-gray-600">Valor real:</span>
+                                    <span className="ml-2 font-medium text-green-600">
+                                      ${item.actualValue.toFixed(2)}
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                            
+                            {/* Accessories */}
+                            {item.accessories && item.accessories.length > 0 && (
+                              <div className="mt-3">
+                                <p className="text-sm text-gray-600 mb-1">Accesorios incluidos:</p>
+                                <div className="flex flex-wrap gap-1">
+                                  {item.accessories.map((accessory, idx) => (
+                                    <Badge key={idx} variant="outline" className="text-xs">
+                                      {accessory}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            
+                            {/* Verification Notes */}
+                            {item.verificationNotes && (
+                              <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+                                <p className="text-sm text-blue-800">
+                                  <strong>Notas de verificación:</strong> {item.verificationNotes}
+                                </p>
+                                {item.verifiedAt && (
+                                  <p className="text-xs text-blue-600 mt-1">
+                                    Verificado el {format(new Date(item.verifiedAt), 'dd/MM/yyyy HH:mm', { locale: es })}
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Item Images */}
+                          <div>
+                            {item.images && item.images.length > 0 && renderItemImages(item.images)}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
 
-// //           {/* Pickup Info */}
-// //           {order.pickupAddress && (
-// //             <Card>
-// //               <CardContent className="p-6">
-// //                 <h3 className="text-lg font-semibold mb-4">Información de recolección</h3>
-                
-// //                 <div className="space-y-3">
-// //                   <div>
-// //                     <p className="text-sm text-gray-600">Dirección</p>
-// //                     <p className="font-medium">{order.pickupAddress.street}</p>
-// //                     <p className="font-medium">
-// //                       {order.pickupAddress.city}, {order.pickupAddress.state}
-// //                     </p>
-// //                     <p className="font-medium">{order.pickupAddress.zipCode}</p>
-// //                   </div>
+                {/* Value Summary */}
+                <Card>
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-semibold mb-4">Resumen de Valores</h3>
+                    
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Valor estimado total:</span>
+                        <span className="font-medium">${order.estimatedTotal.toFixed(2)}</span>
+                      </div>
+                      
+                      {order.finalTotal && (
+                        <div className="flex justify-between items-center text-green-600">
+                          <span>Valor final verificado:</span>
+                          <span className="font-semibold text-lg">${order.finalTotal.toFixed(2)}</span>
+                        </div>
+                      )}
+                      
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-600">Peso estimado total:</span>
+                        <span>{order.estimatedWeight} kg</span>
+                      </div>
+                      
+                      {order.actualWeight && (
+                        <div className="flex justify-between items-center text-sm text-green-600">
+                          <span>Peso real total:</span>
+                          <span className="font-medium">{order.actualWeight} kg</span>
+                        </div>
+                      )}
+                      
+                      {order.finalTotal && order.estimatedTotal !== order.finalTotal && (
+                        <div className="pt-3 border-t border-gray-200">
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-gray-600">Diferencia:</span>
+                            <span className={order.finalTotal > order.estimatedTotal ? 'text-green-600' : 'text-red-600'}>
+                              {order.finalTotal > order.estimatedTotal ? '+' : ''}
+                              ${(order.finalTotal - order.estimatedTotal).toFixed(2)}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            )}
+
+            {/* Timeline Tab */}
+            {activeTab === 'timeline' && (
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold mb-4">Timeline de la Orden</h3>
+                  <OrderTimeline 
+                    timeline={order.timeline}
+                    currentStatus={order.status}
+                    showAllEvents={true}
+                  />
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Shipping Tab */}
+            {activeTab === 'shipping' && (
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold mb-4">Información de Envío</h3>
+                  <ShippingTracker 
+                    shipping={order.shipping}
+                    orderId={order.id}
+                    onTrackingUpdate={handleTrackingUpdate} orderStatus={'in_verification'}                  />
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Verification Tab */}
+            {activeTab === 'verification' && (
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold mb-4">Verificación Técnica</h3>
                   
-// //                   {order.pickupDate && (
-// //                     <div>
-// //                       <p className="text-sm text-gray-600">Fecha programada</p>
-// //                       <p className="font-medium">
-// //                         {new Date(order.pickupDate).toLocaleDateString('es', {
-// //                           weekday: 'long',
-// //                           year: 'numeric',
-// //                           month: 'long',
-// //                           day: 'numeric',
-// //                           hour: '2-digit',
-// //                           minute: '2-digit'
-// //                         })}
-// //                       </p>
-// //                     </div>
-// //                   )}
-// //                 </div>
-// //               </CardContent>
-// //             </Card>
-// //           )}
+                  {order.verification ? (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <h4 className="font-medium text-gray-900 mb-2">Información de Verificación</h4>
+                          <div className="space-y-2 text-sm">
+                            <div>
+                              <span className="text-gray-600">Verificado por:</span>
+                              <span className="ml-2 font-medium">{order.verification.verifiedBy}</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-600">Fecha:</span>
+                              <span className="ml-2">
+                                {order.verification.verifiedAt
+                                  ? format(new Date(order.verification.verifiedAt), 'dd/MM/yyyy HH:mm', { locale: es })
+                                  : 'Fecha no disponible'}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-gray-600">Peso verificado:</span>
+                              <span className="ml-2 font-medium">{order.verification.verifiedWeight} kg</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-600">Valor verificado:</span>
+                              <span className="ml-2 font-medium text-green-600">
+                                ${order.verification.verifiedValue.toFixed(2)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {Array.isArray(order.verification.photos) && order.verification.photos.length > 0 && (
+                          <div>
+                            <h4 className="font-medium text-gray-900 mb-2">Fotos de Verificación</h4>
+                            <div className="grid grid-cols-2 gap-2">
+                              {order.verification.photos.map((photo, index) => (
+                                <div key={index} className="aspect-square rounded-lg overflow-hidden bg-gray-100">
+                                  <img 
+                                    src={photo} 
+                                    alt={`Verificación ${index + 1}`}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {order.verification.notes && (
+                        <div className="p-4 bg-blue-50 rounded-lg">
+                          <h4 className="font-medium text-blue-900 mb-2">Notas del Técnico</h4>
+                          <p className="text-sm text-blue-800">{order.verification.notes}</p>
+                        </div>
+                      )}
+                      
+                      {order.verification.adjustmentReason && (
+                        <div className="p-4 bg-yellow-50 rounded-lg">
+                          <h4 className="font-medium text-yellow-900 mb-2">Razón de Ajuste</h4>
+                          <p className="text-sm text-yellow-800">{order.verification.adjustmentReason}</p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <ShieldCheckIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                      <h4 className="text-lg font-medium text-gray-900 mb-2">
+                        Pendiente de Verificación
+                      </h4>
+                      <p className="text-gray-600">
+                        Tu orden aún no ha sido verificada por nuestro equipo técnico.
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
-// //           {/* Contact Info */}
-// //           <Card>
-// //             <CardContent className="p-6">
-// //               <h3 className="text-lg font-semibold mb-4">¿Necesitas ayuda?</h3>
-              
-// //               <div className="space-y-3">
-// //                 <Button 
-// //                   variant="outline" 
-// //                   fullWidth 
-// //                   leftIcon={<PhoneIcon className="h-4 w-4" />}
-// //                 >
-// //                   Llamar soporte
-// //                 </Button>
+            {/* Documents Tab */}
+            {activeTab === 'documents' && (
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold mb-4">Documentos y Archivos</h3>
+                  <DocumentUploader 
+                    orderId={order.id}
+                    allowedTypes={['pdf', 'jpg', 'png', 'jpeg']}
+                    maxSize={5 * 1024 * 1024} // 5MB
+                  />
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Quick Info Card */}
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold mb-4">Información Rápida</h3>
                 
-// //                 <Button 
-// //                   variant="outline" 
-// //                   fullWidth 
-// //                   leftIcon={<EnvelopeIcon className="h-4 w-4" />}
-// //                 >
-// //                   Enviar email
-// //                 </Button>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <UserIcon className="h-5 w-5 text-gray-400" />
+                    <div>
+                      <p className="text-sm text-gray-600">Cliente</p>
+                      <p className="font-medium">
+                        {order.contactInfo.firstName} {order.contactInfo.lastName}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-3">
+                    <PhoneIcon className="h-5 w-5 text-gray-400" />
+                    <div>
+                      <p className="text-sm text-gray-600">Teléfono</p>
+                      <p className="font-medium">{order.contactInfo.phone}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-3">
+                    <MapPinIcon className="h-5 w-5 text-gray-400" />
+                    <div>
+                      <p className="text-sm text-gray-600">Dirección</p>
+                      <p className="font-medium text-sm">
+                        {order.shipping.pickupAddress.street}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        {order.shipping.pickupAddress.city}, {order.shipping.pickupAddress.state}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {order.shipping.pickupScheduled && (
+                    <div className="flex items-center space-x-3">
+                      <ClockIcon className="h-5 w-5 text-gray-400" />
+                      <div>
+                        <p className="text-sm text-gray-600">Recolección programada</p>
+                        <p className="font-medium">
+                          {format(new Date(order.shipping.pickupDate!), 'dd/MM/yyyy', { locale: es })}
+                        </p>
+                        <p className="text-sm text-gray-600">{order.shipping.pickupTimeSlot}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Status Tracker */}
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold mb-4">Seguimiento de Estado</h3>
+                <OrderStatusTracker 
+                  currentStatus={order.status}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Notes Card */}
+            {order.notes && (
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold mb-4">Notas Adicionales</h3>
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <p className="text-sm text-gray-700">{order.notes}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Priority Badge */}
+            {order.priority && order.priority !== 'normal' && (
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center space-x-3">
+                    <ExclamationTriangleIcon className="h-5 w-5 text-orange-500" />
+                    <div>
+                      <p className="text-sm text-gray-600">Prioridad</p>
+                      <Badge variant={order.priority === 'high' ? 'warning' : 'danger'}>
+                        {order.priority === 'high' ? 'Alta' : 
+                         order.priority === 'urgent' ? 'Urgente' : 'Baja'}
+                      </Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Contact Actions */}
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold mb-4">Acciones</h3>
                 
-// //                 <Button 
-// //                   variant="outline" 
-// //                   fullWidth 
-// //                   leftIcon={<DocumentTextIcon className="h-4 w-4" />}
-// //                 >
-// //                   Ver términos
-// //                 </Button>
-// //               </div>
+                <div className="space-y-3">
+                  <Button 
+                    variant="outline" 
+                    fullWidth
+                    onClick={() => window.open(`tel:${order.contactInfo.phone}`)}
+                  >
+                    <PhoneIcon className="h-4 w-4 mr-2" />
+                    Llamar Cliente
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    fullWidth
+                    onClick={() => window.open(`mailto:${order.contactInfo.email}`)}
+                  >
+                    <ChatBubbleLeftRightIcon className="h-4 w-4 mr-2" />
+                    Enviar Email
+                  </Button>
+                  
+                  {order.shipping.trackingUrl && (
+                    <Button 
+                      variant="outline" 
+                      fullWidth
+                      onClick={() => window.open(order.shipping.trackingUrl, '_blank')}
+                    >
+                      <TruckIcon className="h-4 w-4 mr-2" />
+                      Rastrear Envío
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Modals */}
+        {showCancelModal && (
+          <Modal
+            isOpen={showCancelModal}
+            onClose={() => setShowCancelModal(false)}
+            title="Cancelar Orden"
+            size="md"
+          >
+            <div className="space-y-4">
+              <p className="text-gray-700">
+                ¿Estás seguro de que deseas cancelar esta orden? Esta acción no se puede deshacer.
+              </p>
               
-// //               <p className="text-xs text-gray-500 mt-4">
-// //                 Horario de atención: Lunes a Viernes 8:00 AM - 6:00 PM
-// //               </p>
-// //             </CardContent>
-// //           </Card>
-// //         </div>
-// //       </div>
+              <div className="flex justify-end space-x-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowCancelModal(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  variant="danger"
+                  onClick={handleCancelOrder}
+                >
+                  Confirmar Cancelación
+                </Button>
+              </div>
+            </div>
+          </Modal>
+        )}
 
-// //       {/* Cancel Order Modal */}
-// //       <Modal
-// //         isOpen={showCancelModal}
-// //         onClose={() => setShowCancelModal(false)}
-// //         title="Cancelar orden"
-// //         size="sm"
-// //       >
-// //         <ModalContent>
-// //           <div className="space-y-4">
-// //             <p className="text-gray-600">
-// //               ¿Estás seguro de que quieres cancelar esta orden?
-// //             </p>
-            
-// //             <Alert variant="warning">
-// //               <XCircleIcon className="h-4 w-4" />
-// //               <div>
-// //                 <p className="text-sm">
-// //                   Esta acción no se puede deshacer. Si tu dispositivo ya fue recolectado, 
-// //                   contacta a soporte para procesar la cancelación.
-// //                 </p>
-// //               </div>
-// //             </Alert>
-// //           </div>
-// //         </ModalContent>
-        
-// //         <ModalFooter>
-// //           <Button
-// //             variant="outline"
-// //             onClick={() => setShowCancelModal(false)}
-// //           >
-// //             No, mantener orden
-// //           </Button>
-// //           <Button
-// //             variant="danger"
-// //             onClick={handleCancelOrder}
-// //           >
-// //             Sí, cancelar orden
-// //           </Button>
-// //         </ModalFooter>
-// //       </Modal>
+        {showValueAdjustmentModal && order && (
+          <ValueAdjustmentModal
+            order={order}
+            isOpen={showValueAdjustmentModal}
+            onClose={() => setShowValueAdjustmentModal(false)}
+            // onAdjustmentComplete={(updatedOrder) => {
+            //   setOrder(updatedOrder);
+            //   toast({
+            //     title: 'Valores actualizados',
+            //     description: 'Los valores de la orden han sido ajustados exitosamente',
+            //     variant: 'success'
+            //   });
+            // }}
+          />
+        )}
+      </div>
+    </div>
+  );
+};
 
-// //       {/* Image Modal */}
-// //       <Modal
-// //         isOpen={showImageModal}
-// //         onClose={() => setShowImageModal(false)}
-// //         title="Foto del dispositivo"
-// //         size="lg"
-// //       >
-// //         <ModalContent>
-// //           <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
-// //             <PhotoIcon className="h-24 w-24 text-gray-400" />
-// //           </div>
-// //           <p className="text-sm text-gray-500 text-center mt-2">
-// //             {selectedImage}
-// //           </p>
-// //         </ModalContent>
-// //       </Modal>
-// //     </div>
-// //   );
-// // };
-
-// // export default OrderDetailPage;
-
-
-
-
-
-
-
-
-
-
-
-// // src/pages/dashboard/OrderDetailPage.tsx - PARTE 1: IMPORTS Y MOCK DATA
-
-// import React, { useState, useEffect } from 'react';
-// import { useParams, useLocation, Link, useNavigate } from 'react-router-dom';
-// import {
-//   ArrowLeftIcon,
-//   CheckCircleIcon,
-//   XCircleIcon,
-//   PencilIcon,
-//   EyeIcon,
-//   TruckIcon,
-//   PhoneIcon,
-//   MapPinIcon,
-//   CurrencyDollarIcon,
-//   ScaleIcon,
-//   ClockIcon,
-//   ExclamationTriangleIcon,
-//   ArrowPathIcon,
-//   DocumentDuplicateIcon,
-//   ChatBubbleLeftRightIcon,
-//   PrinterIcon,
-//   ShareIcon,
-//   SparklesIcon,
-//   BuildingOfficeIcon,
-//   UserIcon
-// } from '@heroicons/react/24/outline';
-// import { format } from 'date-fns';
-// import { es } from 'date-fns/locale';
-
-// // Components
-// import { PageHeader } from '@/components/layout/PageHeader';
-// import { Card, CardContent } from '@/components/ui/Card';
-// import { Button } from '@/components/ui/Button';
-// import { Badge } from '@/components/ui/Badge';
-// import { Alert } from '@/components/ui/Alert';
-// import { Modal } from '@/components/ui/Modal';
-// import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-// import { Skeleton } from '@/components/ui/Skeleton';
-// import { toast } from '@/components/ui/use-toast';
-
-// // Order components
-// import OrderTimeline from '@/components/orders/OrderTimeline';
-// import OrderStatusTracker from '@/components/orders/OrderStatusTracker';
-// import ShippingTracker from '@/components/orders/ShippingTracker';
-// import DocumentUploader from '@/components/orders/DocumentUploader';
-// import ValueAdjustmentModal from '@/components/orders/ValueAdjustmentModal';
-
-// // Types and hooks
-// import { 
-//   Order, 
-//   OrderStatus, 
-//   ORDER_STATUS_CONFIG, 
-//   DEVICE_CONDITION_CONFIG,
-//   VerificationInfo,
-//   OrderUtils
-// } from '@/types/order';
-// import { useAuth } from '@/hooks/useAuth';
-
-// // MOCK DATA COMPLETO PARA TESTING
-// const mockOrderDetail: Order = {
-//   id: 'order-123',
-//   orderNumber: 'ORD-2024-001234',
-//   userId: 'user-1',
-//   status: 'in_verification',
-//   paymentStatus: 'pending',
-//   items: [
-//     {
-//       id: 'item-1',
-//       orderId: 'order-123',
-//       categoryId: 'laptops',
-//       deviceName: 'MacBook Pro 13"',
-//       brand: 'Apple',
-//       model: 'MacBook Pro 2020',
-//       description: 'Laptop en excelente estado funcional. Batería mantiene buena capacidad. Ligeras marcas de uso normal en la carcasa que no afectan el funcionamiento.',
-//       condition: 'good',
-//       estimatedWeight: 1.4,
-//       actualWeight: 1.37,
-//       estimatedValue: 850.00,
-//       actualValue: 820.00,
-//       hasCharger: true,
-//       hasBox: false,
-//       hasDocuments: true,
-//       accessories: ['Cargador original MagSafe', 'Manual de usuario', 'Paño de limpieza'],
-//       images: [
-//         'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400',
-//         'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=400',
-//         'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400'
-//       ],
-//       verificationNotes: 'Dispositivo funcional al 100%. Batería en excelente estado (87% de capacidad). Ligeras marcas de uso en carcasa superior.',
-//       verifiedAt: '2024-01-17T18:00:00Z',
-//       verifiedBy: 'tech-specialist-1',
-//       createdAt: '2024-01-15T10:00:00Z',
-//       updatedAt: '2024-01-17T18:00:00Z'
-//     }
-//   ],
-//   estimatedTotal: 850.00,
-//   finalTotal: 820.00,
-//   estimatedWeight: 1.4,
-//   actualWeight: 1.37,
-//   contactInfo: {
-//     firstName: 'Juan Carlos',
-//     lastName: 'Pérez González',
-//     email: 'juan.perez@email.com',
-//     phone: '+593 99 123 4567'
-//   },
-//   shipping: {
-//     // [SHIPPING DATA COMPLETO - continúa en siguiente parte]
-//     pickupAddress: {
-//       street: 'Av. 9 de Octubre 1234, Edificio Torre Azul',
-//       neighborhood: 'Centro Histórico',
-//       city: 'Guayaquil',
-//       state: 'Guayas',
-//       zipCode: '090313',
-//       country: 'Ecuador',
-//       instructions: 'Piso 3, oficina 301. Llamar al llegar. Disponible de 9AM a 6PM.'
-//     },
-//     deliveryAddress: {
-//       street: 'Zona Industrial Norte, Manzana 45, Solar 12',
-//       neighborhood: 'Parque Industrial',
-//       city: 'Guayaquil',
-//       state: 'Guayas',
-//       zipCode: '090514',
-//       country: 'Ecuador'
-//     },
-//     pickupScheduled: true,
-//     pickupDate: '2024-01-16T09:00:00Z',
-//     pickupTimeSlot: '9:00 AM - 12:00 PM',
-//     guideNumber: 'SRV240116001234',
-//     trackingNumber: 'TRK-SRV-001234',
-//     trackingUrl: 'https://servientrega.com/tracking/TRK-SRV-001234',
-//     status: 'delivered',
-//     estimatedDelivery: '2024-01-17T17:00:00Z',
-//     actualDelivery: '2024-01-17T16:45:00Z',
-//     shippingEvents: [
-//       {
-//         id: 'event-1',
-//         timestamp: '2024-01-16T09:15:00Z',
-//         status: 'Recolectado',
-//         location: 'Guayaquil Centro - Av. 9 de Octubre',
-//         description: 'Paquete recolectado exitosamente por el conductor asignado',
-//         isDelivered: false,
-//         metadata: {
-//           driverName: 'Carlos Mendoza',
-//           receivedBy: 'Juan Carlos Pérez'
-//         }
-//       },
-//       {
-//         id: 'event-2',
-//         timestamp: '2024-01-16T14:30:00Z',
-//         status: 'En tránsito',
-//         location: 'Centro de Distribución Norte',
-//         description: 'Paquete procesado y despachado desde centro de distribución',
-//         isDelivered: false
-//       },
-//       {
-//         id: 'event-3',
-//         timestamp: '2024-01-17T10:20:00Z',
-//         status: 'En ruta de entrega',
-//         location: 'Vehículo de reparto - Zona Industrial',
-//         description: 'Paquete en vehículo para entrega final',
-//         isDelivered: false,
-//         metadata: {
-//           driverName: 'María González'
-//         }
-//       },
-//       {
-//         id: 'event-4',
-//         timestamp: '2024-01-17T16:45:00Z',
-//         status: 'Entregado',
-//         location: 'Instalaciones Wiru - Zona Industrial Norte',
-//         description: 'Paquete entregado exitosamente en instalaciones de destino',
-//         isDelivered: true,
-//         metadata: {
-//           driverName: 'María González',
-//           receivedBy: 'Supervisor de Recepción - Wiru',
-//           signature: 'signature-received-url'
-//         }
-//       }
-//     ],
-//     driverInfo: {
-//       name: 'Carlos Mendoza',
-//       phone: '+593 99 876 5432',
-//       vehicleInfo: 'Motocicleta Yamaha FZ150 - Placa ABC-1234'
-//     },
-//     cost: 15.50,
-//     weight: 1.4,
-//     createdAt: '2024-01-15T10:00:00Z',
-//     updatedAt: '2024-01-17T16:45:00Z'
-//   },
-//   verification: {
-//     // [VERIFICATION DATA COMPLETO - continúa en siguiente parte]
-//     id: 'verification-1',
-//     orderId: 'order-123',
-//     status: 'in_progress',
-//     originalWeight: 1.4,
-//     verifiedWeight: 1.37,
-//     weightVariance: -0.03,
-//     originalValue: 850.00,
-//     verifiedValue: 820.00,
-//     valueVariance: -30.00,
-//     verificationPhotos: [
-//       'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400',
-//       'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=400',
-//       'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400',
-//       'https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=400'
-//     ],
-//     verificationNotes: 'Dispositivo recibido en excelentes condiciones funcionales. Todas las especificaciones coinciden con lo declarado. Batería mantiene 87% de capacidad original. Pantalla sin daños ni rayones. Teclado y trackpad funcionan perfectamente. Puertos USB-C y jack de audio operativos. Ligeras marcas de uso normal en la carcasa superior que no afectan la funcionalidad del equipo.',
-//     adjustmentReason: 'Peso ligeramente inferior al estimado inicialmente debido a las especificaciones exactas del modelo específico (M1 vs Intel). Valor ajustado por las marcas menores de uso detectadas en la inspección física, aunque no comprometen la funcionalidad del dispositivo.',
-//     requiresApproval: false,
-//     createdAt: '2024-01-17T17:00:00Z',
-//     updatedAt: '2024-01-17T18:30:00Z'
-//   },
-//   timeline: [
-//     // [TIMELINE DATA COMPLETO - continúa en siguiente parte]
-//     {
-//       id: 'timeline-1',
-//       orderId: 'order-123',
-//       status: 'pending',
-//       title: 'Orden Creada',
-//       description: 'Tu orden ha sido creada exitosamente y está pendiente de confirmación por nuestro equipo técnico',
-//       timestamp: '2024-01-15T10:00:00Z',
-//       actor: 'user',
-//       isVisible: true,
-//       metadata: {
-//         automaticAction: false,
-//         estimatedDuration: '2-4 horas',
-//         nextActions: ['Revisión técnica inicial', 'Verificación de disponibilidad', 'Confirmación del precio estimado']
-//       }
-//     },
-//     {
-//       id: 'timeline-2',
-//       orderId: 'order-123',
-//       status: 'confirmed',
-//       title: 'Orden Confirmada',
-//       description: 'Tu orden ha sido confirmada por nuestro equipo. Los valores estimados han sido aprobados y se inicia el proceso de recolección',
-//       timestamp: '2024-01-15T12:30:00Z',
-//       actor: 'system',
-//       isVisible: true,
-//       metadata: {
-//         automaticAction: true,
-//         nextActions: ['Programación de recolección con Servientrega', 'Generación de número de guía', 'Notificación al cliente'],
-//         previousValue: 'pending',
-//         newValue: 'confirmed'
-//       }
-//     },
-//     {
-//       id: 'timeline-3',
-//       orderId: 'order-123',
-//       status: 'pickup_scheduled',
-//       title: 'Recolección Programada',
-//       description: 'Se ha programado la recolección con Servientrega para el martes 16 de enero entre 9:00 AM - 12:00 PM. Se generó la guía de envío.',
-//       timestamp: '2024-01-15T15:45:00Z',
-//       actor: 'system',
-//       isVisible: true,
-//       metadata: {
-//         automaticAction: true,
-//         nextActions: ['Preparar equipo para recolección', 'Estar disponible en el horario programado', 'Tener documento de identidad listo'],
-//         previousValue: null,
-//         newValue: { 
-//           pickupDate: '2024-01-16', 
-//           timeSlot: '9:00 AM - 12:00 PM',
-//           guideNumber: 'SRV240116001234'
-//         }
-//       }
-//     },
-//     {
-//       id: 'timeline-4',
-//       orderId: 'order-123',
-//       status: 'in_transit',
-//       title: 'Equipo Recolectado',
-//       description: 'Tu equipo ha sido recolectado exitosamente por Carlos Mendoza y está en tránsito hacia nuestras instalaciones de verificación',
-//       timestamp: '2024-01-16T09:15:00Z',
-//       actor: 'driver',
-//       isVisible: true,
-//       metadata: {
-//         estimatedDuration: '1-2 días',
-//         nextActions: ['Transporte seguro a instalaciones', 'Notificación de llegada', 'Inicio de proceso de verificación'],
-//         driverInfo: {
-//           name: 'Carlos Mendoza',
-//           phone: '+593 99 876 5432'
-//         }
-//       }
-//     },
-//     {
-//       id: 'timeline-5',
-//       orderId: 'order-123',
-//       status: 'received',
-//       title: 'Recibido en Instalaciones',
-//       description: 'Tu equipo ha llegado a nuestras instalaciones y ha sido registrado en el sistema. Está listo para el proceso de verificación técnica',
-//       timestamp: '2024-01-17T16:45:00Z',
-//       actor: 'verification',
-//       isVisible: true,
-//       metadata: {
-//         nextActions: ['Inspección visual inicial', 'Pruebas de funcionalidad', 'Verificación de especificaciones técnicas'],
-//         receivedBy: 'Supervisor de Recepción'
-//       }
-//     },
-//     {
-//       id: 'timeline-6',
-//       orderId: 'order-123',
-//       status: 'in_verification',
-//       title: 'Verificación en Proceso',
-//       description: 'Nuestro equipo de especialistas técnicos está realizando la verificación completa del estado, funcionalidad y valor de tu MacBook Pro',
-//       timestamp: '2024-01-17T17:00:00Z',
-//       actor: 'verification',
-//       isVisible: true,
-//       metadata: {
-//         estimatedDuration: '1-2 días hábiles',
-//         nextActions: ['Inspección técnica detallada', 'Pruebas de rendimiento', 'Evaluación final de valor', 'Ajustes si son necesarios'],
-//         verifierInfo: {
-//           name: 'Especialista Técnico',
-//           department: 'Verificación de Laptops'
-//         }
-//       }
-//     }
-//   ],
-//   notes: 'Cliente prefiere recolección en horario de oficina (9AM-6PM). Dispositivo reportado en muy buen estado según fotos iniciales. Solicitud especial: manejar con cuidado por valor sentimental.',
-//   priority: 'normal',
-//   allowPartialValue: true,
-//   requirePhotos: true,
-//   autoAcceptVerification: false,
-//   createdAt: '2024-01-15T10:00:00Z',
-//   updatedAt: '2024-01-17T18:30:00Z',
-//   confirmedAt: '2024-01-15T12:30:00Z'
-// };
-
-// // PARTE 2: COMPONENTE PRINCIPAL Y MANEJO DE ESTADO
-
-// const OrderDetailPage: React.FC = () => {
-//   const { id } = useParams<{ id: string }>();
-//   const location = useLocation();
-//   const navigate = useNavigate();
-//   const { user } = useAuth();
-
-//   // STATE MANAGEMENT
-//   const [order, setOrder] = useState<Order | null>(null);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState<string | null>(null);
-//   const [showCancelModal, setShowCancelModal] = useState(false);
-//   const [showVerificationModal, setShowVerificationModal] = useState(false);
-//   const [activeTab, setActiveTab] = useState<'overview' | 'timeline' | 'shipping' | 'verification' | 'documents'>('overview');
-//   const [isRefreshing, setIsRefreshing] = useState(false);
-
-//   // Get success message from navigation state
-//   const successMessage = location.state?.message;
-
-//   // LOAD ORDER DATA ON MOUNT
-//   useEffect(() => {
-//     const loadOrder = async () => {
-//       if (!id) {
-//         setError('ID de orden no válido');
-//         setLoading(false);
-//         return;
-//       }
-
-//       try {
-//         setLoading(true);
-//         setError(null);
-        
-//         // Simulate API call with delay
-//         await new Promise(resolve => setTimeout(resolve, 1200));
-        
-//         // In real implementation: const fetchedOrder = await orderApi.getOrderById(id);
-//         if (id === 'order-123' || id === mockOrderDetail.id) {
-//           setOrder(mockOrderDetail);
-//         } else {
-//           throw new Error(`Orden con ID ${id} no encontrada`);
-//         }
-//       } catch (err) {
-//         const errorMessage = err instanceof Error ? err.message : 'Error al cargar la orden';
-//         setError(errorMessage);
-//         console.error('Error loading order:', err);
-        
-//         toast({
-//           title: 'Error al cargar orden',
-//           description: errorMessage,
-//           variant: 'destructive'
-//         });
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     loadOrder();
-//   }, [id]);
-
-//   // EVENT HANDLERS
-//   const handleCancelOrder = async () => {
-//     if (!order) return;
-
-//     try {
-//       // In real implementation: await orderApi.cancelOrder(order.id, reason);
-//       await new Promise(resolve => setTimeout(resolve, 800));
-      
-//       toast({
-//         title: 'Orden cancelada',
-//         description: 'Tu orden ha sido cancelada exitosamente. Se ha notificado al equipo correspondiente.',
-//         variant: 'success'
-//       });
-      
-//       setShowCancelModal(false);
-//       navigate('/orders');
-//     } catch (error) {
-//       toast({
-//         title: 'Error al cancelar',
-//         description: 'No se pudo cancelar la orden. Intenta nuevamente o contacta soporte.',
-//         variant: 'destructive'
-//       });
-//     }
-//   };
-
-//   const handleVerificationComplete = async (verification: VerificationInfo) => {
-//     if (!order) return;
-
-//     try {
-//       // In real implementation: await orderApi.submitVerification(order.id, verification);
-//       await new Promise(resolve => setTimeout(resolve, 1500));
-      
-//       const updatedOrder = {
-//         ...order,
-//         verification,
-//         status: verification.requiresApproval ? 'verified' : 'payment_pending' as OrderStatus,
-//         finalTotal: verification.verifiedValue,
-//         actualWeight: verification.verifiedWeight,
-//         updatedAt: new Date().toISOString()
-//       };
-      
-//       setOrder(updatedOrder);
-//       setShowVerificationModal(false);
-      
-//       toast({
-//         title: 'Verificación completada',
-//         description: verification.requiresApproval 
-//           ? 'La verificación ha sido enviada para aprobación del supervisor'
-//           : 'Los valores han sido actualizados y la orden procederá al pago',
-//         variant: 'success'
-//       });
-//     } catch (error) {
-//       // Re-throw error to let the modal handle it
-//       throw error;
-//     }
-//   };
-
-//   const handleRefreshOrder = async () => {
-//     if (!id || isRefreshing) return;
-
-//     setIsRefreshing(true);
-//     try {
-//       // In real implementation: const refreshedOrder = await orderApi.getOrderById(id);
-//       await new Promise(resolve => setTimeout(resolve, 1000));
-      
-//       // Simulate small updates to the order
-//       if (order) {
-//         const updatedOrder = {
-//           ...order,
-//           updatedAt: new Date().toISOString()
-//         };
-//         setOrder(updatedOrder);
-//       }
-      
-//       toast({
-//         title: 'Orden actualizada',
-//         description: 'La información ha sido actualizada exitosamente',
-//         variant: 'success'
-//       });
-//     } catch (error) {
-//       toast({
-//         title: 'Error al actualizar',
-//         description: 'No se pudo actualizar la información. Verifica tu conexión.',
-//         variant: 'destructive'
-//       });
-//     } finally {
-//       setIsRefreshing(false);
-//     }
-//   };
-
-//   const handleTrackingUpdate = async () => {
-//     if (!order) return;
-    
-//     try {
-//       // In real implementation: await shippingApi.updateTracking(order.id);
-//       await new Promise(resolve => setTimeout(resolve, 800));
-      
-//       // Simulate adding a new shipping event
-//       const newEvent = {
-//         id: `event-auto-${Date.now()}`,
-//         timestamp: new Date().toISOString(),
-//         status: 'Actualización de sistema',
-//         location: 'Sistema de seguimiento automático',
-//         description: 'Información sincronizada con Servientrega',
-//         isDelivered: false,
-//         metadata: {
-//           automaticUpdate: true
-//         }
-//       };
-      
-//       setOrder(prev => prev ? {
-//         ...prev,
-//         shipping: {
-//           ...prev.shipping,
-//           shippingEvents: [newEvent, ...prev.shipping.shippingEvents],
-//           updatedAt: new Date().toISOString()
-//         },
-//         updatedAt: new Date().toISOString()
-//       } : null);
-      
-//     } catch (error) {
-//       throw error; // Let the ShippingTracker component handle the error
-//     }
-//   };
-
-//   const handleDuplicateOrder = () => {
-//     if (!order) return;
-    
-//     const duplicateData = {
-//       items: order.items.map(item => ({
-//         ...item,
-//         id: undefined,
-//         orderId: undefined,
-//         actualWeight: undefined,
-//         actualValue: undefined,
-//         verificationNotes: undefined,
-//         verifiedAt: undefined,
-//         verifiedBy: undefined
-//       })),
-//       shipping: {
-//         pickupAddress: order.shipping.pickupAddress
-//       }
-//     };
-    
-//     navigate('/sell', { 
-//       state: { 
-//         duplicateFrom: order.id,
-//         orderData: duplicateData,
-//         message: `Duplicando orden ${order.orderNumber}`
-//       }
-//     });
-//   };
-
-//   const handlePrintOrder = () => {
-//     // Add print-specific styles
-//     const printStyles = `
-//       @media print {
-//         .no-print { display: none !important; }
-//         .print-only { display: block !important; }
-//         body { font-size: 12px; }
-//       }
-//     `;
-    
-//     const styleSheet = document.createElement('style');
-//     styleSheet.innerText = printStyles;
-//     document.head.appendChild(styleSheet);
-    
-//     window.print();
-    
-//     // Clean up
-//     document.head.removeChild(styleSheet);
-//   };
-
-//   const handleShareOrder = async () => {
-//     if (!order) return;
-    
-//     const shareData = {
-//       title: `Orden ${order.orderNumber} - Wiru`,
-//       text: `Mi orden de reciclaje está en estado: ${ORDER_STATUS_CONFIG[order.status].label}`,
-//       url: window.location.href
-//     };
-
-//     try {
-//       if (navigator.share && navigator.canShare?.(shareData)) {
-//         await navigator.share(shareData);
-//         toast({
-//           title: 'Orden compartida',
-//           description: 'La información de la orden ha sido compartida exitosamente',
-//           variant: 'success'
-//         });
-//       } else {
-//         // Fallback to clipboard
-//         await navigator.clipboard.writeText(window.location.href);
-//         toast({
-//           title: 'Enlace copiado',
-//           description: 'El enlace de la orden se ha copiado al portapapeles',
-//           variant: 'success'
-//         });
-//       }
-//     } catch (error) {
-//       // Final fallback
-//       try {
-//         await navigator.clipboard.writeText(window.location.href);
-//         toast({
-//           title: 'Enlace copiado',
-//           description: 'El enlace de la orden se ha copiado al portapapeles',
-//           variant: 'success'
-//         });
-//       } catch (clipboardError) {
-//         toast({
-//           title: 'Error al compartir',
-//           description: 'No se pudo compartir la orden. Intenta copiar el enlace manualmente.',
-//           variant: 'destructive'
-//         });
-//       }
-//     }
-//   };
-
-//   // HELPER FUNCTIONS
-//   const formatCurrency = (amount: number) => {
-//     return new Intl.NumberFormat('es-ES', {
-//       style: 'currency',
-//       currency: 'USD',
-//       minimumFractionDigits: 2
-//     }).format(amount);
-//   };
-
-//   const formatWeight = (weight: number) => {
-//     return `${weight.toFixed(2)} kg`;
-//   };
-
-//   const formatDate = (date: string) => {
-//     try {
-//       return format(new Date(date), "d 'de' MMMM 'de' yyyy 'a las' HH:mm", { locale: es });
-//     } catch (error) {
-//       return date;
-//     }
-//   };
-
-//   const formatShortDate = (date: string) => {
-//     try {
-//       return format(new Date(date), "d MMM yyyy", { locale: es });
-//     } catch (error) {
-//       return date;
-//     }
-//   };
+export default OrderDetailPage;

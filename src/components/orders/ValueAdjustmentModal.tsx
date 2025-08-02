@@ -18,7 +18,7 @@ import { Order, VerificationInfo, OrderItem } from '@/types/order';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Textarea } from '@/components/ui/Textarea';
+import { TextArea } from '@/components/ui/TextArea';
 import { Badge } from '@/components/ui/Badge';
 import { Alert } from '@/components/ui/Alert';
 import { Card, CardContent } from '@/components/ui/Card';
@@ -30,7 +30,7 @@ const verificationSchema = z.object({
   verifiedValue: z.number().min(0, 'El valor no puede ser negativo'),
   verificationNotes: z.string().min(10, 'Las notas deben tener al menos 10 caracteres'),
   adjustmentReason: z.string().optional(),
-  requiresApproval: z.boolean().default(false)
+  requiresApproval: z.boolean()
 });
 
 type VerificationFormData = z.infer<typeof verificationSchema>;
@@ -150,7 +150,9 @@ const ValueAdjustmentModal: React.FC<ValueAdjustmentModalProps> = ({
         adjustmentReason: data.adjustmentReason,
         requiresApproval: data.requiresApproval,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
+        notes: undefined,
+        photos: false
       };
 
       if (onVerificationComplete) {
@@ -312,7 +314,7 @@ const ValueAdjustmentModal: React.FC<ValueAdjustmentModalProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Notas de Verificación *
           </label>
-          <Textarea
+          <TextArea
             {...register('verificationNotes')}
             placeholder="Describe el estado del dispositivo, ajustes realizados, y cualquier observación relevante..."
             rows={4}
@@ -327,7 +329,7 @@ const ValueAdjustmentModal: React.FC<ValueAdjustmentModalProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Razón del Ajuste
             </label>
-            <Textarea
+            <TextArea
               {...register('adjustmentReason')}
               placeholder="Explica por qué se realizaron los ajustes en peso o valor..."
               rows={3}

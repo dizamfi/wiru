@@ -1,6 +1,8 @@
 // src/types/order.ts - VERSIÓN MEJORADA COMPLETA
 
-import { User } from './auth';
+import { User } from ".";
+
+// import { User } from './auth';
 
 // Estados de la orden
 export type OrderStatus = 
@@ -184,6 +186,8 @@ export interface ShippingEvent {
 
 // Información de verificación
 export interface VerificationInfo {
+  notes: any;
+  photos: boolean;
   id: string;
   orderId: string;
   
