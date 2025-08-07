@@ -674,10 +674,10 @@
 
 
 
-// src/components/layout/Header.tsx - Ancho completo y fijo
+// src/components/layout/Header.tsx - Header completo con navegación de información
 
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Menu, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import {
@@ -688,14 +688,18 @@ import {
   CogIcon,
   ArrowRightOnRectangleIcon,
   QuestionMarkCircleIcon,
-  ShoppingBagIcon
+  ShoppingBagIcon,
+  InformationCircleIcon,
+  PhoneIcon,
+  DocumentTextIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
 import { cn } from '@/utils/cn';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { useAuth } from '@/hooks/useAuth';
 
-// Importar el logo SVG existente (color #D0FF5B)
+// Importar el logo SVG existente
 import WiruLogo from '@/assets/logo.svg';
 
 interface HeaderProps {
@@ -708,8 +712,32 @@ export const Header: React.FC<HeaderProps> = ({
   showMenuButton = false 
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, logout, isAuthenticated } = useAuth();
   const [notifications] = useState(3); // Mock notifications
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Navegación de información pública
+  const publicNavigation = [
+    { 
+      name: 'Cómo Funciona', 
+      href: '/how-it-works', 
+      icon: DocumentTextIcon,
+      current: location.pathname === '/how-it-works' 
+    },
+    { 
+      name: 'Sobre Nosotros', 
+      href: '/about', 
+      icon: InformationCircleIcon,
+      current: location.pathname === '/about' 
+    },
+    { 
+      name: 'Contacto', 
+      href: '/contact', 
+      icon: PhoneIcon,
+      current: location.pathname === '/contact' 
+    },
+  ];
 
   const handleLogout = async () => {
     await logout();
@@ -721,207 +749,320 @@ export const Header: React.FC<HeaderProps> = ({
     'U';
 
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-sm">
-      {/* Header ocupa todo el ancho sin márgenes */}
-      <div className="w-full px-4 lg:px-6">
-        <div className="flex items-center justify-between h-16">
-          
-          {/* Left Section - Logo y botón menú */}
-          <div className="flex items-center space-x-4">
-            {/* Mobile menu button */}
-            {showMenuButton && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onMenuClick}
-                className="lg:hidden"
-              >
-                <Bars3Icon className="h-6 w-6" />
-              </Button>
-            )}
-
-            {/* Logo Wiru */}
-            <Link to={isAuthenticated ? "/dashboard" : "/"} className="flex items-center space-x-3">
-              <img 
-                src={WiruLogo} 
-                alt="Wiru" 
-                className="h-20 w-20 flex-shrink-0"
-              />
-              {/* <span className="text-xl font-bold text-primary-600 hidden sm:block">wiru</span> */}
-            </Link>
-          </div>
-
-          {/* Right Section - Actions */}
-          <div className="flex items-center space-x-3">
+    <>
+      <header className="sticky top-0 z-50 bg-white">
+        {/* Header ocupa todo el ancho sin márgenes - CON PADDING ARRIBA */}
+        <div className="w-full px-4 lg:px-6 ">
+          <div className="flex items-center justify-between h-20">
             
-            {isAuthenticated ? (
-              <>
-                {/* Botón Vender */}
-                <Link to="/sell">
-                  <Button 
-                    size="sm" 
-                    className="hidden sm:flex items-center space-x-2"
+            {/* Left Section - Logo y botón menú */}
+            <div className="flex items-center space-x-4">
+              {/* Mobile menu button para sidebar (dashboard) o navegación general */}
+              {(showMenuButton || !isAuthenticated) && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={showMenuButton ? onMenuClick : () => setMobileMenuOpen(true)}
+                  className="lg:hidden text-black hover:bg-[#D0FF5B]/10 hover:text-black"
+                >
+                  <Bars3Icon className="h-6 w-6" />
+                </Button>
+              )}
+
+              {/* Logo Wiru - MÁS GRANDE */}
+              <Link to={isAuthenticated ? '/dashboard' : '/'} className="flex-shrink-0">
+                <img 
+                  src={WiruLogo} 
+                  alt="Wiru" 
+                  className="h-28 w-auto"
+                />
+              </Link>
+            </div>
+
+            {/* Center Section - Navegación de información (solo visible en desktop) */}
+            <div className="hidden lg:flex items-center space-x-1">
+              {publicNavigation.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    className={cn(
+                      'flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200',
+                      item.current
+                        ? 'bg-gray-100 text-black'
+                        : 'text-black hover:text-[#99bb44]'
+                    )}
                   >
-                    <ShoppingBagIcon className="h-4 w-4" />
-                    <span>Vender</span>
-                  </Button>
-                </Link>
+                    <Icon className={cn(
+                      'h-4 w-4 mr-2 transition-colors duration-200',
+                      item.current ? 'text-black' : 'text-black group-hover:text-[#99bb44]'
+                    )} />
+                    {item.name}
+                  </Link>
+                );
+              })}
+            </div>
 
-                {/* Botón Vender - Mobile */}
-                <Link to="/sell" className="sm:hidden">
-                  <Button size="icon" variant="secondary">
-                    <ShoppingBagIcon className="h-5 w-5" />
-                  </Button>
-                </Link>
-
-                {/* Notifications */}
-                <div className="relative">
-                  <Button variant="ghost" size="icon">
-                    <BellIcon className="h-5 w-5" />
-                  </Button>
-                  {notifications > 0 && (
-                    <Badge 
-                      variant="danger" 
-                      className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center text-xs p-0 min-w-[16px]"
+            {/* Right Section - Navegación y usuario */}
+            <div className="flex items-center space-x-3">
+              {isAuthenticated ? (
+                <>
+                  {/* Botón VENDER - MÁS LLAMATIVO */}
+                  <Link to="/sell">
+                    <Button 
+                      className="bg-gradient-to-r from-[#99bb44] to-[#7fa836] hover:from-[#7fa836] hover:to-[#6d9230] text-white font-bold px-3 py-1 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
+                      size="lg"
                     >
-                      {notifications}
-                    </Badge>
-                  )}
-                </div>
+                      <ShoppingBagIcon className="h-4 w-4 mr-2" />
+                      ¡VENDER AHORA!
+                    </Button>
+                  </Link>
 
-                {/* User Profile Menu */}
-                <Menu as="div" className="relative">
-                  <Menu.Button className="flex items-center space-x-2 px-2 py-1.5 hover:bg-gray-50 rounded-lg transition-colors">
-                    <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
-                      <span className="text-xs font-bold text-white">
-                        {userInitials}
-                      </span>
-                    </div>
-                    <div className="hidden md:block text-left">
-                      <p className="text-sm font-medium text-gray-900 max-w-24 truncate">
-                        {user?.firstName || 'Usuario'}
-                      </p>
-                      <p className="text-xs text-gray-500">Eco Warrior</p>
-                    </div>
-                    <ChevronDownIcon className="h-4 w-4 text-gray-400 hidden md:block" />
-                  </Menu.Button>
-
-                  <Transition
-                    as={Fragment}
-                    enter="transition ease-out duration-100"
-                    enterFrom="transform opacity-0 scale-95"
-                    enterTo="transform opacity-100 scale-100"
-                    leave="transition ease-in duration-75"
-                    leaveFrom="transform opacity-100 scale-100"
-                    leaveTo="transform opacity-0 scale-95"
+                  {/* Notificaciones - ICONO NEGRO con hover #D0FF5B */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="relative text-black hover:bg-[#D0FF5B]/10 hover:text-black"
                   >
-                    <Menu.Items className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                      
-                      {/* User Info Header */}
-                      <div className="px-4 py-3 border-b border-gray-100">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
-                            <span className="text-sm font-bold text-white">
-                              {userInitials}
-                            </span>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-900">
-                              {user?.firstName} {user?.lastName}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {user?.email}
-                            </p>
+                    <BellIcon className="h-5 w-5" />
+                    {notifications > 0 && (
+                      <Badge 
+                        className="absolute -top-1 -right-1 bg-red-500 text-white text-xs min-w-[18px] h-[18px] flex items-center justify-center p-0"
+                      >
+                        {notifications}
+                      </Badge>
+                    )}
+                  </Button>
+
+                  {/* Usuario Dropdown - ICONOS NEGROS */}
+                  <Menu as="div" className="relative">
+                    <Menu.Button className="flex items-center space-x-2 text-black hover:bg-[#D0FF5B]/10 rounded-lg px-2 py-1 transition-all duration-200">
+                      {/* Avatar con iniciales */}
+                      <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                        <span className="text-xs font-semibold text-gray-700">
+                          {userInitials}
+                        </span>
+                      </div>
+                      <ChevronDownIcon className="h-4 w-4 text-black" />
+                    </Menu.Button>
+
+                    <Transition
+                      as={Fragment}
+                      enter="transition ease-out duration-100"
+                      enterFrom="transform opacity-0 scale-95"
+                      enterTo="transform opacity-100 scale-100"
+                      leave="transition ease-in duration-75"
+                      leaveFrom="transform opacity-100 scale-100"
+                      leaveTo="transform opacity-0 scale-95"
+                    >
+                      <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        {/* Header del menú */}
+                        <div className="px-4 py-3 border-b border-gray-100">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                              <span className="text-sm font-semibold text-gray-700">
+                                {userInitials}
+                              </span>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">
+                                {user?.firstName} {user?.lastName}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {user?.email}
+                              </p>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      
-                      {/* Menu Items */}
-                      <div className="py-1">
-                        <Menu.Item>
-                          {({ active }) => (
-                            <Link
-                              to="/dashboard/profile"
-                              className={cn(
-                                'flex items-center px-4 py-2 text-sm transition-colors',
-                                active ? 'bg-gray-50 text-gray-900' : 'text-gray-700'
-                              )}
-                            >
-                              <UserCircleIcon className="mr-3 h-4 w-4" />
-                              Mi Perfil
-                            </Link>
-                          )}
-                        </Menu.Item>
                         
-                        <Menu.Item>
-                          {({ active }) => (
-                            <Link
-                              to="/dashboard/settings"
-                              className={cn(
-                                'flex items-center px-4 py-2 text-sm transition-colors',
-                                active ? 'bg-gray-50 text-gray-900' : 'text-gray-700'
-                              )}
-                            >
-                              <CogIcon className="mr-3 h-4 w-4" />
-                              Configuración
-                            </Link>
-                          )}
-                        </Menu.Item>
+                        <div className="py-1">
+                          <Menu.Item>
+                            {({ active }) => (
+                              <Link
+                                to="/dashboard/profile"
+                                className={cn(
+                                  'flex items-center px-4 py-2 text-sm transition-colors duration-200',
+                                  active 
+                                    ? 'bg-[#D0FF5B]/10 text-black' 
+                                    : 'text-gray-700'
+                                )}
+                              >
+                                <UserCircleIcon className="mr-3 h-4 w-4" />
+                                Mi Perfil
+                              </Link>
+                            )}
+                          </Menu.Item>
+                          
+                          <Menu.Item>
+                            {({ active }) => (
+                              <Link
+                                to="/dashboard/settings"
+                                className={cn(
+                                  'flex items-center px-4 py-2 text-sm transition-colors duration-200',
+                                  active 
+                                    ? 'bg-[#D0FF5B]/10 text-black' 
+                                    : 'text-gray-700'
+                                )}
+                              >
+                                <CogIcon className="mr-3 h-4 w-4" />
+                                Configuración
+                              </Link>
+                            )}
+                          </Menu.Item>
 
-                        <Menu.Item>
-                          {({ active }) => (
-                            <Link
-                              to="/help"
-                              className={cn(
-                                'flex items-center px-4 py-2 text-sm transition-colors',
-                                active ? 'bg-gray-50 text-gray-900' : 'text-gray-700'
-                              )}
-                            >
-                              <QuestionMarkCircleIcon className="mr-3 h-4 w-4" />
-                              Centro de Ayuda
-                            </Link>
-                          )}
-                        </Menu.Item>
-                        
-                        <div className="border-t border-gray-100 my-1"></div>
-                        
-                        <Menu.Item>
-                          {({ active }) => (
-                            <button
-                              onClick={handleLogout}
-                              className={cn(
-                                'flex items-center w-full px-4 py-2 text-sm transition-colors',
-                                active ? 'bg-gray-50 text-gray-900' : 'text-gray-700'
-                              )}
-                            >
-                              <ArrowRightOnRectangleIcon className="mr-3 h-4 w-4" />
-                              Cerrar Sesión
-                            </button>
-                          )}
-                        </Menu.Item>
-                      </div>
-                    </Menu.Items>
-                  </Transition>
-                </Menu>
-              </>
-            ) : (
-              /* Usuario no autenticado */
-              <div className="flex items-center space-x-3">
-                <Link to="/login">
-                  <Button variant="ghost" size="sm">
-                    Iniciar Sesión
-                  </Button>
-                </Link>
-                <Link to="/register">
-                  <Button size="sm">
-                    Registrarse
-                  </Button>
-                </Link>
-              </div>
-            )}
+                          <Menu.Item>
+                            {({ active }) => (
+                              <Link
+                                to="/help"
+                                className={cn(
+                                  'flex items-center px-4 py-2 text-sm transition-colors duration-200',
+                                  active 
+                                    ? 'bg-[#D0FF5B]/10 text-black' 
+                                    : 'text-gray-700'
+                                )}
+                              >
+                                <QuestionMarkCircleIcon className="mr-3 h-4 w-4" />
+                                Centro de Ayuda
+                              </Link>
+                            )}
+                          </Menu.Item>
+                          
+                          <div className="border-t border-gray-100 my-1"></div>
+                          
+                          <Menu.Item>
+                            {({ active }) => (
+                              <button
+                                onClick={handleLogout}
+                                className={cn(
+                                  'flex items-center w-full px-4 py-2 text-sm transition-colors duration-200',
+                                  active 
+                                    ? 'bg-[#D0FF5B]/10 text-black' 
+                                    : 'text-gray-700'
+                                )}
+                              >
+                                <ArrowRightOnRectangleIcon className="mr-3 h-4 w-4" />
+                                Cerrar Sesión
+                              </button>
+                            )}
+                          </Menu.Item>
+                        </div>
+                      </Menu.Items>
+                    </Transition>
+                  </Menu>
+                </>
+              ) : (
+                /* Usuario no autenticado - BOTONES CON ICONOS NEGROS */
+                <div className="hidden lg:flex items-center space-x-3">
+                  <Link to="/login">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      className="text-black hover:bg-[#D0FF5B]/10 hover:text-black"
+                    >
+                      Iniciar Sesión
+                    </Button>
+                  </Link>
+                  <Link to="/register">
+                    <Button 
+                      size="sm"
+                      className="bg-[#D0FF5B] text-black border-0 hover:bg-[#D0FF5B]/90"
+                    >
+                      Registrarse
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* Mobile navigation menu - Solo para usuarios no autenticados */}
+      {!isAuthenticated && (
+        <Transition
+          show={mobileMenuOpen}
+          enter="transition ease-in-out duration-300 transform"
+          enterFrom="-translate-x-full"
+          enterTo="translate-x-0"
+          leave="transition ease-in-out duration-300 transform"
+          leaveFrom="translate-x-0"
+          leaveTo="-translate-x-full"
+        >
+          <div className="fixed inset-0 z-50 lg:hidden">
+            {/* Overlay */}
+            <div 
+              className="fixed inset-0 bg-gray-600 bg-opacity-75" 
+              onClick={() => setMobileMenuOpen(false)} 
+            />
+            
+            {/* Panel */}
+            <div className="fixed inset-y-0 left-0 w-full max-w-sm bg-white shadow-xl">
+              <div className="flex flex-col h-full">
+                {/* Header del menú móvil */}
+                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+                  <img src={WiruLogo} alt="Wiru" className="h-24 w-auto" />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="text-black hover:bg-gray-100"
+                  >
+                    <XMarkIcon className="h-6 w-6" />
+                  </Button>
+                </div>
+
+                {/* Navigation Links en móvil */}
+                <div className="flex-1 px-4 py-6 space-y-1">
+                  {publicNavigation.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.name}
+                        to={item.href}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={cn(
+                          'flex items-center px-3 py-3 text-base font-medium rounded-lg transition-colors duration-200',
+                          item.current
+                            ? 'bg-gray-100 text-black'
+                            : 'text-gray-700 hover:bg-[#D0FF5B]/10 hover:text-[#D0FF5B]'
+                        )}
+                      >
+                        <Icon className={cn(
+                          'h-6 w-6 mr-3 transition-colors duration-200',
+                          item.current ? 'text-black' : 'text-gray-700 hover:text-[#D0FF5B]'
+                        )} />
+                        {item.name}
+                      </Link>
+                    );
+                  })}
+                </div>
+
+                {/* Footer */}
+                <div className="border-t border-gray-200 px-4 py-4">
+                  <div className="space-y-3">
+                    <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+                      <Button 
+                        variant="ghost" 
+                        className="w-full justify-start text-black hover:bg-[#D0FF5B]/10"
+                      >
+                        Iniciar Sesión
+                      </Button>
+                    </Link>
+                    <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
+                      <Button 
+                        className="w-full bg-[#D0FF5B] text-black hover:bg-[#D0FF5B]/90"
+                      >
+                        Registrarse
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Transition>
+      )}
+    </>
   );
 };

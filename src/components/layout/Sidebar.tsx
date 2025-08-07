@@ -256,7 +256,7 @@
 
 
 
-// src/components/layout/Sidebar.tsx - Fijo al hacer scroll y color principal #D0FF5B
+// src/components/layout/Sidebar.tsx - Actualización con estilo tipo Binance
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
@@ -313,7 +313,7 @@ const navigation: NavigationItem[] = [
   },
   {
     name: 'Mis Órdenes',
-    href: '/dashboard/orders',
+    href: '/orders',
     icon: ClipboardDocumentListIcon,
     iconActive: ClipboardDocumentListIconSolid,
     badge: 2,
@@ -321,13 +321,13 @@ const navigation: NavigationItem[] = [
   },
   {
     name: 'Pagos',
-    href: '/dashboard/payments',
+    href: '/payments',
     icon: BanknotesIcon,
     iconActive: BanknotesIconSolid,
   },
   {
     name: 'Estadísticas',
-    href: '/dashboard/analytics',
+    href: '/stats',
     icon: ChartBarIcon,
     iconActive: ChartBarIconSolid,
   },
@@ -337,7 +337,7 @@ const navigation: NavigationItem[] = [
 const secondaryNavigation: NavigationItem[] = [
   {
     name: 'Configuración',
-    href: '/dashboard/settings',
+    href: '/settings',
     icon: CogIcon,
     iconActive: CogIconSolid,
   },
@@ -379,14 +379,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         className={cn(
           'group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200',
           active
-            ? 'bg-[#D0FF5B] text-gray-900 border-r-2 border-[#08673B]' // Color principal #D0FF5B
+            ? 'bg-gray-100 text-black font-semibold' // ← CAMBIO: Gris suave + letras negras
             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
         )}
       >
         <Icon
           className={cn(
             'mr-3 h-5 w-5 flex-shrink-0',
-            active ? 'text-[#08673B]' : 'text-gray-400 group-hover:text-gray-600' // Verde oscuro para iconos activos
+            active ? 'text-black' : 'text-gray-400 group-hover:text-gray-600' // ← CAMBIO: Iconos negros cuando activo
           )}
         />
         <span className="flex-1">{item.name}</span>
@@ -414,12 +414,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         />
       )}
 
-      {/* Sidebar - FIJO en desktop */}
+      {/* Sidebar - FIJO en desktop SIN SHADOW */}
       <div
         className={cn(
-          'z-30 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out flex flex-col',
-          // En desktop: FIXED position para que se quede fijo al hacer scroll
-          'lg:fixed lg:left-0 lg:top-16 lg:bottom-0 lg:translate-x-0 lg:shadow-lg',
+          'z-30 w-64 bg-white transform transition-transform duration-300 ease-in-out flex flex-col',
+          // En desktop: FIXED position para que se quede fijo al hacer scroll - SIN SHADOW
+          'lg:fixed lg:left-0 lg:top-20 lg:bottom-0 lg:translate-x-0',
           // En móvil: fixed overlay que se muestra/oculta según isOpen
           'fixed inset-y-0 left-0',
           // Clase condicional para móvil
@@ -480,20 +480,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </div>
         </div>
 
-        {/* Footer del sidebar - SOLO "Recicla más" con nuevos colores */}
+        {/* Footer del sidebar - Mantenemos el estilo actual o lo puedes cambiar */}
         <div className="p-4 border-t border-gray-200">
-          {/* Promoción/Incentivo - SOLO esto */}
-          <div className="bg-gradient-to-r from-[#D0FF5B]/20 to-[#08673B]/10 rounded-lg p-3 border border-[#D0FF5B]/30">
+          {/* Promoción/Incentivo */}
+          <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-3 border border-gray-200">
             <div className="flex items-center">
               <div className="flex-1">
-                <p className="text-xs font-medium text-[#08673B]">
+                <p className="text-xs font-medium text-gray-900">
                   ¡Recicla más!
                 </p>
-                <p className="text-xs text-gray-700">
+                <p className="text-xs text-gray-600">
                   Gana puntos extra
                 </p>
               </div>
-              <div className="text-[#D0FF5B] text-lg">
+              <div className="text-gray-600 text-lg">
                 🎯
               </div>
             </div>
@@ -503,5 +503,3 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     </>
   );
 };
-
-export default Sidebar;

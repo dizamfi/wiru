@@ -103,6 +103,90 @@
 
 // src/components/layout/Layout.tsx - Sidebar fijo y margen para contenido
 
+// import React, { useState } from 'react';
+// import { Outlet } from 'react-router-dom';
+// import { Header } from './Header';
+// import { Sidebar } from './Sidebar';
+// import { Footer } from './Footer';
+// import { useAuth } from '@/hooks/useAuth';
+
+// interface LayoutProps {
+//   variant?: 'default' | 'auth' | 'dashboard';
+//   showSidebar?: boolean;
+//   showFooter?: boolean;
+// }
+
+// export const Layout: React.FC<LayoutProps> = ({ 
+//   variant = 'default',
+//   showSidebar = true,
+//   showFooter = true
+// }) => {
+//   const [sidebarOpen, setSidebarOpen] = useState(false);
+//   const { isAuthenticated } = useAuth();
+
+//   // Para páginas de autenticación, usar layout simple
+//   if (variant === 'auth') {
+//     return (
+//       <div className="min-h-screen bg-gray-50 flex flex-col justify-center">
+//         <div className="sm:mx-auto sm:w-full sm:max-w-md px-4">
+//           <Outlet />
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   // Layout para dashboard (con sidebar)
+//   if (variant === 'dashboard' && isAuthenticated) {
+//     return (
+//       <div className="min-h-screen bg-gray-50">
+//         {/* Header fijo que ocupa todo el ancho - SIEMPRE VISIBLE */}
+//         <Header 
+//           onMenuClick={() => setSidebarOpen(true)}
+//           showMenuButton={true}
+//         />
+        
+//         {/* Sidebar fijo - SIEMPRE en la posición */}
+//         <Sidebar 
+//           isOpen={sidebarOpen} 
+//           onClose={() => setSidebarOpen(false)} 
+//         />
+        
+//         {/* Contenido principal - CON MARGEN IZQUIERDO PARA EL SIDEBAR FIJO */}
+//         <main className="lg:ml-64 pt-16"> {/* ml-64 = 256px para compensar el sidebar fijo */}
+//           <div className="py-6">
+//             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+//               <Outlet />
+//             </div>
+//           </div>
+          
+//           {showFooter && <Footer />}
+//         </main>
+//       </div>
+//     );
+//   }
+
+//   // Layout por defecto (sin sidebar) para páginas públicas
+//   return (
+//     <div className="min-h-screen bg-gray-50 flex flex-col">
+//       {/* Header fijo que ocupa todo el ancho */}
+//       <Header 
+//         onMenuClick={() => setSidebarOpen(true)}
+//         showMenuButton={false}
+//       />
+      
+//       <main className="flex-1 pt-16"> {/* pt-16 para compensar el header fijo */}
+//         <Outlet />
+//       </main>
+      
+//       {showFooter && <Footer />}
+//     </div>
+//   );
+// };
+
+
+
+// src/components/layout/Layout.tsx - Layout corregido para páginas de auth
+
 import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Header } from './Header';
@@ -124,14 +208,12 @@ export const Layout: React.FC<LayoutProps> = ({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { isAuthenticated } = useAuth();
 
-  // Para páginas de autenticación, usar layout simple
+  // Para páginas de autenticación, usar layout completamente limpio
   if (variant === 'auth') {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col justify-center">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md px-4">
-          <Outlet />
-        </div>
-      </div>
+      <>
+        <Outlet />
+      </>
     );
   }
 
@@ -152,8 +234,13 @@ export const Layout: React.FC<LayoutProps> = ({
         />
         
         {/* Contenido principal - CON MARGEN IZQUIERDO PARA EL SIDEBAR FIJO */}
-        <main className="lg:ml-64 pt-16"> {/* ml-64 = 256px para compensar el sidebar fijo */}
-          <div className="py-6">
+        <main className="lg:ml-64 pt-2
+        
+        
+        
+        
+        "> {/* ml-64 = 256px para compensar el sidebar fijo */}
+          <div >
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <Outlet />
             </div>
@@ -174,7 +261,8 @@ export const Layout: React.FC<LayoutProps> = ({
         showMenuButton={false}
       />
       
-      <main className="flex-1 pt-16"> {/* pt-16 para compensar el header fijo */}
+      <main className="flex-1"> {/* pt-16 para compensar el header fijo */}
+
         <Outlet />
       </main>
       
