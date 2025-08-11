@@ -720,21 +720,39 @@ export const Header: React.FC<HeaderProps> = ({
   // Navegación de información pública
   const publicNavigation = [
     { 
-      name: 'Cómo Funciona', 
+      name: 'Inicio', 
       href: '/how-it-works', 
-      icon: DocumentTextIcon,
+      // icon: DocumentTextIcon,
       current: location.pathname === '/how-it-works' 
     },
     { 
-      name: 'Sobre Nosotros', 
+      name: 'Cómo Funciona', 
+      href: '/how-it-works', 
+      // icon: DocumentTextIcon,
+      current: location.pathname === '/how-it-works' 
+    },
+    { 
+      name: 'Nosotros', 
       href: '/about', 
-      icon: InformationCircleIcon,
+      // icon: InformationCircleIcon,
       current: location.pathname === '/about' 
+    },
+    { 
+      name: 'Servicios', 
+      href: '/services', 
+      // icon: InformationCircleIcon,
+      current: location.pathname === '/services' 
+    },
+    { 
+      name: 'Blog', 
+      href: '/blog', 
+      // icon: PhoneIcon,
+      current: location.pathname === '/blog' 
     },
     { 
       name: 'Contacto', 
       href: '/contact', 
-      icon: PhoneIcon,
+      // icon: PhoneIcon,
       current: location.pathname === '/contact' 
     },
   ];
@@ -782,7 +800,7 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Center Section - Navegación de información (solo visible en desktop) */}
             <div className="hidden lg:flex items-center space-x-1">
               {publicNavigation.map((item) => {
-                const Icon = item.icon;
+                // const Icon = item.icon;
                 return (
                   <Link
                     key={item.name}
@@ -790,14 +808,14 @@ export const Header: React.FC<HeaderProps> = ({
                     className={cn(
                       'flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200',
                       item.current
-                        ? 'bg-gray-100 text-black'
+                        ? 'bg-gray-100'
                         : 'text-black hover:text-[#99bb44]'
                     )}
                   >
-                    <Icon className={cn(
+                    {/* <Icon className={cn(
                       'h-4 w-4 mr-2 transition-colors duration-200',
                       item.current ? 'text-black' : 'text-black group-hover:text-[#99bb44]'
-                    )} />
+                    )} /> */}
                     {item.name}
                   </Link>
                 );
@@ -1015,7 +1033,7 @@ export const Header: React.FC<HeaderProps> = ({
                 {/* Navigation Links en móvil */}
                 <div className="flex-1 px-4 py-6 space-y-1">
                   {publicNavigation.map((item) => {
-                    const Icon = item.icon;
+                    // const Icon = item.icon;
                     return (
                       <Link
                         key={item.name}
@@ -1028,10 +1046,10 @@ export const Header: React.FC<HeaderProps> = ({
                             : 'text-gray-700 hover:bg-[#D0FF5B]/10 hover:text-[#D0FF5B]'
                         )}
                       >
-                        <Icon className={cn(
+                        {/* <Icon className={cn(
                           'h-6 w-6 mr-3 transition-colors duration-200',
                           item.current ? 'text-black' : 'text-gray-700 hover:text-[#D0FF5B]'
-                        )} />
+                        )} /> */}
                         {item.name}
                       </Link>
                     );
