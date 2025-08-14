@@ -756,8 +756,7 @@
 
 
 
-
-// src/pages/dashboard/DashboardPage.tsx - DASHBOARD COMPLETO SIN DESBORDAMIENTO
+// src/pages/dashboard/DashboardPage.tsx - SIN MATERIAL-UI
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
@@ -782,19 +781,20 @@ import {
   SparklesIcon,
   ArrowTrendingUpIcon,
   ArrowDownIcon,
-  // TrendingUpIcon,
   CalendarIcon,
   ClockIcon,
-  DocumentArrowDownIcon,
   UserGroupIcon,
-  ShoppingBagIcon
+  ShoppingBagIcon,
+  UserIcon
 } from '@heroicons/react/24/outline';
+import { PageHeader } from '@/components/layout';
 
-// Datos mock empresariales
+// Datos mock empresariales actualizados
 const mockUserData = {
   ordersCompleted: 347,
+  ordersPending: 23, // Nuevos datos para órdenes pendientes
   totalEarned: 2847650,
-  walletBalance: 1458900,
+  walletBalance: 200.030,
   newClients: 128,
   trafficReceived: 1325134,
   kgRecycled: 1248.7,
@@ -809,6 +809,22 @@ const mockUserData = {
   co2Impact: 2497.4,
   treeEquivalent: 112
 };
+
+// Datos reales para el gráfico de ingresos mensuales
+const monthlyRevenueData = [
+  { month: 'Ene', revenue: 185000, orders: 28 },
+  { month: 'Feb', revenue: 220000, orders: 34 },
+  { month: 'Mar', revenue: 195000, orders: 31 },
+  { month: 'Abr', revenue: 280000, orders: 42 },
+  { month: 'May', revenue: 245000, orders: 38 },
+  { month: 'Jun', revenue: 310000, orders: 47 },
+  { month: 'Jul', revenue: 335000, orders: 52 },
+  { month: 'Ago', revenue: 285000, orders: 45 },
+  { month: 'Sep', revenue: 320000, orders: 49 },
+  { month: 'Oct', revenue: 350000, orders: 55 },
+  { month: 'Nov', revenue: 385000, orders: 62 },
+  { month: 'Dic', revenue: 420000, orders: 68 }
+];
 
 // Datos de órdenes recientes
 const recentOrders = [
@@ -846,78 +862,105 @@ const recentOrders = [
   }
 ];
 
-// Header del Dashboard
-const DashboardHeader: React.FC = () => {
+// WALLET CARD SIMPLIFICADA SIN TEXTOS INNECESARIOS
+const WalletCard: React.FC<{
+  value: string;
+}> = ({ value }) => {
+  const [showBalance, setShowBalance] = useState(true);
+  
   return (
-    <div className="flex items-center justify-between mb-8">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">DASHBOARD</h1>
-        <p className="text-gray-600">Bienvenido a tu dashboard</p>
-      </div>
-      <Button className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium">
-        <DocumentArrowDownIcon className="h-5 w-5 mr-2" />
-        DESCARGAR REPORTES
-      </Button>
-    </div>
+    <Card className="bg-white border border-gray-200 transition-colors duration-200">
+      <CardContent className="p-0">
+        {/* Header con icono y toggle */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="p-2.5 rounded-xl flex-shrink-0 bg-emerald-50 border border-emerald-100">
+            <BanknotesIcon className="h-5 w-5 text-emerald-600" />
+          </div>
+          
+          {/* Toggle mejorado */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowBalance(!showBalance)}
+            className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2.5 rounded-xl transition-all duration-200 border border-gray-200"
+          >
+            {showBalance ? (
+              <EyeSlashIcon className="h-5 w-5" />
+            ) : (
+              <EyeIcon className="h-5 w-5" />
+            )}
+          </Button>
+        </div>
+
+        {/* Valor principal */}
+        <div className="mb-6">
+          <div className="text-2xl font-bold text-gray-900 mb-1 leading-tight">
+            {showBalance ? value : '••••••••'}
+          </div>
+        </div>
+
+        {/* Hipervínculo de retirar */}
+        <Link 
+          to="/payments" 
+          className="text-emerald-600 hover:text-emerald-700 font-medium transition-colors duration-200 text-sm"
+        >
+          💸 Retirar
+        </Link>
+      </CardContent>
+    </Card>
   );
 };
 
-// Componente de métrica sin desbordamiento
+// METRIC CARD SIN TEXTO "ESTE MES"
 const MetricCard: React.FC<{
   value: string;
   label: string;
   change: string;
   color: string;
   icon: React.ComponentType<{ className?: string }>;
-  isWallet?: boolean;
-}> = ({ value, label, change, color, icon: Icon, isWallet = false }) => {
-  const [showBalance, setShowBalance] = useState(true);
-  
+}> = ({ value, label, change, color, icon: Icon }) => {
   return (
-    <Card className="bg-white border border-gray-200 hover:shadow-lg transition-all duration-300">
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center space-x-3 min-w-0 flex-1">
-            <div className={`p-2 rounded-lg flex-shrink-0 ${
-              color === 'emerald' ? 'bg-emerald-100' : 
-              color === 'blue' ? 'bg-blue-100' : 
-              color === 'purple' ? 'bg-purple-100' : 
-              color === 'orange' ? 'bg-orange-100' : 'bg-green-100'
-            }`}>
-              <Icon className={`h-5 w-5 ${
-                color === 'emerald' ? 'text-emerald-600' : 
-                color === 'blue' ? 'text-blue-600' : 
-                color === 'purple' ? 'text-purple-600' : 
-                color === 'orange' ? 'text-orange-600' : 'text-green-600'
-              }`} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs text-gray-600 mb-1 truncate">{label}</p>
-              <p className={`text-lg font-bold text-gray-900 truncate ${isWallet ? 'font-mono' : ''}`}>
-                {isWallet && !showBalance ? '••••••••' : value}
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex flex-col items-end space-y-1 flex-shrink-0">
-            {isWallet && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowBalance(!showBalance)}
-                className="text-gray-400 hover:bg-gray-100 p-1 w-6 h-6"
-              >
-                {showBalance ? <EyeSlashIcon className="h-3 w-3" /> : <EyeIcon className="h-3 w-3" />}
-              </Button>
-            )}
-            <span className={`text-xs font-medium ${
-              color === 'emerald' ? 'text-emerald-600' : 
+    <Card className="bg-white border border-gray-200 transition-colors duration-200">
+      <CardContent className="p-0">
+        {/* Header con icono */}
+        <div className="flex items-center justify-between mb-4">
+          <div className={`p-2.5 rounded-xl flex-shrink-0 ${
+            color === 'blue' ? 'bg-blue-50 border border-blue-100' : 
+            color === 'purple' ? 'bg-purple-50 border border-purple-100' : 
+            color === 'orange' ? 'bg-orange-50 border border-orange-100' : 'bg-gray-50 border border-gray-100'
+          }`}>
+            <Icon className={`h-5 w-5 ${
               color === 'blue' ? 'text-blue-600' : 
               color === 'purple' ? 'text-purple-600' : 
-              color === 'orange' ? 'text-orange-600' : 'text-green-600'
-            }`}>
-              {change}
-            </span>
+              color === 'orange' ? 'text-orange-600' : 'text-gray-600'
+            }`} />
+          </div>
+        </div>
+
+        {/* Valor principal */}
+        <div className="mb-3">
+          <div className="text-2xl font-bold text-gray-900 mb-1 leading-tight">
+            {value}
+          </div>
+          <div className="text-sm font-medium text-gray-600">
+            {label}
+          </div>
+        </div>
+
+        {/* Indicador de cambio SIN "este mes" */}
+        <div className="flex items-center justify-start">
+          <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+            change.startsWith('+') ? 'bg-green-50 text-green-700 border border-green-200' :
+            change.startsWith('-') ? 'bg-red-50 text-red-700 border border-red-200' :
+            'bg-gray-50 text-gray-700 border border-gray-200'
+          }`}>
+            {change.startsWith('+') && (
+              <ArrowTrendingUpIcon className="h-3 w-3 mr-1" />
+            )}
+            {change.startsWith('-') && (
+              <ArrowDownIcon className="h-3 w-3 mr-1" />
+            )}
+            {change}
           </div>
         </div>
       </CardContent>
@@ -925,41 +968,64 @@ const MetricCard: React.FC<{
   );
 };
 
-// Gráfico de ingresos
+// Componente del gráfico de ingresos - COLOR WIRU Y SIMPLIFICADO
 const RevenueChart: React.FC = () => {
   return (
     <Card className="bg-white border border-gray-200">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-6">
-          <div className="min-w-0 flex-1">
-            <h3 className="text-lg font-semibold text-gray-900 truncate">Ingresos Generados</h3>
-            <p className="text-2xl font-bold text-emerald-600 truncate">${mockUserData.todayEarnings.toLocaleString()}</p>
-          </div>
-          <Button variant="outline" size="sm" className="flex-shrink-0">
-            <DocumentArrowDownIcon className="h-4 w-4" />
-          </Button>
-        </div>
-        
-        <div className="h-48 bg-gray-50 rounded-lg flex items-center justify-center mb-4">
-          <div className="text-center p-4">
-            <ChartBarIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-            <p className="text-gray-500 font-medium text-sm">Gráfico de Ingresos</p>
-            <p className="text-xs text-gray-400">Últimos 12 meses</p>
+          <div className="flex items-center space-x-2">
+            <ChartBarIcon className="h-5 w-5 text-gray-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Ingresos Mensuales</h3>
           </div>
         </div>
         
-        <div className="flex justify-center space-x-4 text-xs">
-          <div className="flex items-center space-x-1">
-            <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-            <span className="text-gray-600">Órdenes</span>
+        {/* Contenedor del gráfico con fondo blanco */}
+        <div className="h-64 bg-white border border-gray-200 rounded-lg p-4">
+          <div className="flex items-end justify-between h-full space-x-2">
+            {monthlyRevenueData.map((data, index) => {
+              // Calcular altura como porcentaje del contenedor
+              const maxRevenue = 420000; // Valor máximo conocido
+              const heightPercent = (data.revenue / maxRevenue) * 90; // 90% máximo para dejar espacio
+              
+              return (
+                <div key={index} className="flex flex-col items-center h-full justify-end flex-1">
+                  {/* Barra con color verde Wiru */}
+                  <div 
+                    className="bg-emerald-500 hover:bg-emerald-600 rounded-t-sm transition-colors duration-200 w-full max-w-8 cursor-pointer relative group"
+                    style={{ 
+                      height: `${Math.max(heightPercent, 10)}%`,
+                      minHeight: '20px'
+                    }}
+                  >
+                    {/* Tooltip */}
+                    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
+                      ${(data.revenue / 1000).toFixed(0)}k
+                    </div>
+                  </div>
+                  
+                  {/* Etiqueta del mes */}
+                  <span className="text-xs text-gray-600 mt-2 font-medium">
+                    {data.month}
+                  </span>
+                </div>
+              );
+            })}
           </div>
-          <div className="flex items-center space-x-1">
-            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-            <span className="text-gray-600">Ingresos</span>
+        </div>
+        
+        <div className="flex justify-between items-center mt-4 text-sm">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 bg-emerald-500 rounded"></div>
+              <span className="text-gray-600">Ingresos</span>
+            </div>
           </div>
-          <div className="flex items-center space-x-1">
-            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-            <span className="text-gray-600">Usuarios</span>
+          <div className="text-right">
+            <p className="font-medium text-gray-900">
+              $3,532,000
+            </p>
+            <p className="text-xs text-gray-500">Total este año</p>
           </div>
         </div>
       </CardContent>
@@ -967,57 +1033,35 @@ const RevenueChart: React.FC = () => {
   );
 };
 
-// Historial de órdenes
+// Componente de órdenes recientes
 const RecentOrders: React.FC = () => {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completada':
-        return 'bg-emerald-100 text-emerald-700';
-      case 'en_curso':
-        return 'bg-orange-100 text-orange-700';
-      default:
-        return 'bg-gray-100 text-gray-700';
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completada':
-        return <CheckCircleIcon className="h-4 w-4 text-emerald-600" />;
-      case 'en_curso':
-        return <ClockIcon className="h-4 w-4 text-orange-600" />;
-      default:
-        return <ClipboardDocumentListIcon className="h-4 w-4 text-gray-600" />;
-    }
-  };
-
   return (
     <Card className="bg-white border border-gray-200">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 truncate">Historial de Órdenes</h3>
+          <div className="flex items-center space-x-2">
+            <ShoppingBagIcon className="h-5 w-5 text-gray-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Órdenes Recientes</h3>
+          </div>
           <Link to="/orders">
-            <Button variant="outline" size="sm" className="flex-shrink-0">
-              Ver Todas
-            </Button>
+            <Button variant="outline" size="sm">Ver todas</Button>
           </Link>
         </div>
         
-        <div className="space-y-3 max-h-64 overflow-y-auto">
+        <div className="space-y-4">
           {recentOrders.map((order) => (
-            <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-              <div className="flex items-center space-x-3 min-w-0 flex-1">
-                <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  {getStatusIcon(order.status)}
+            <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                  <ShoppingBagIcon className="h-4 w-4 text-emerald-600" />
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium text-gray-900 truncate text-sm">{order.id}</p>
-                  <p className="text-xs text-gray-600 truncate">{order.type} • {order.weight}</p>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{order.type}</p>
+                  <p className="text-xs text-gray-500">{order.id} • {order.weight}</p>
                 </div>
               </div>
-              <div className="text-right space-y-1 flex-shrink-0 ml-2">
-                <p className="text-xs text-gray-600">{order.date}</p>
-                <Badge className={`text-xs px-2 py-1 ${getStatusColor(order.status)}`}>
+              <div className="text-right">
+                <Badge variant={order.status === 'completada' ? 'success' : 'warning'}>
                   {order.status === 'completada' ? 'Completada' : 'En Curso'}
                 </Badge>
                 <p className="text-xs font-medium text-gray-900">${order.amount}</p>
@@ -1028,7 +1072,7 @@ const RecentOrders: React.FC = () => {
         
         <div className="mt-4 pt-4 border-t border-gray-200">
           <div className="flex justify-between text-sm text-gray-600">
-            <span>Total órdenes este mes:</span>
+            <span>Total órdenes:</span>
             <span className="font-medium text-gray-900">347</span>
           </div>
         </div>
@@ -1049,38 +1093,39 @@ const DashboardPage: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  if (isLoading) {
-    return (
-      <div className="space-y-8 animate-pulse">
-        <div className="h-16 bg-gray-200 rounded-lg"></div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-24 bg-gray-200 rounded-lg"></div>
-          ))}
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="h-80 bg-gray-200 rounded-lg"></div>
-          <div className="h-80 bg-gray-200 rounded-lg"></div>
-        </div>
-      </div>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <div className="space-y-8 animate-pulse">
+  //       <div className="h-16 bg-gray-200 rounded-lg"></div>
+  //       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+  //         {[1, 2, 3, 4].map((i) => (
+  //           <div key={i} className="h-24 bg-gray-200 rounded-lg"></div>
+  //         ))}
+  //       </div>
+  //       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  //         <div className="h-80 bg-gray-200 rounded-lg"></div>
+  //         <div className="h-80 bg-gray-200 rounded-lg"></div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
-    <div className="space-y-8 bg-gray-50 min-h-screen">
+    <div className="space-y-8  min-h-screen">
       {/* Header */}
-      <DashboardHeader />
+      <PageHeader
+              title="Dashboard"
+              description="Convierte tus dispositivos electrónicos en dinero de forma fácil y segura"
+            />
 
       {/* Métricas principales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard
+        {/* Wallet Card simplificada */}
+        <WalletCard
           value={`$${mockUserData.walletBalance.toLocaleString()}`}
-          label="Saldo Disponible"
-          change="Wallet"
-          color="emerald"
-          icon={BanknotesIcon}
-          isWallet={true}
         />
+        
+        {/* Otras métricas */}
         <MetricCard
           value="347"
           label="Órdenes Completadas"
@@ -1096,39 +1141,46 @@ const DashboardPage: React.FC = () => {
           icon={ScaleIcon}
         />
         <MetricCard
-          value="128"
-          label="Nuevos Clientes"
-          change="+5%"
+          value={mockUserData.ordersPending.toString()}
+          label="Órdenes Pendientes"
+          change="+3"
           color="orange"
-          icon={UserGroupIcon}
+          icon={ClockIcon}
         />
       </div>
 
       {/* Sección media: Gráfico + Órdenes */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-2 gap-6">
         <RevenueChart />
         <RecentOrders />
       </div>
 
       {/* Sección inferior: Gráficos adicionales */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Impacto Ambiental */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-10">
+        {/* Impacto Ambiental - MEJORADO */}
         <Card className="bg-white border border-gray-200">
-          <CardContent className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6 truncate">Impacto Ambiental</h3>
-            <div className="h-40 flex items-center justify-center">
+          <CardContent className="p-2">
+            <div className="flex items-center space-x-2 mb-6">
+              <SparklesIcon className="h-5 w-5 text-emerald-600" />
+              <h3 className="text-lg font-semibold text-gray-900">Impacto Ambiental</h3>
+            </div>
+            
+            {/* Contenido principal más grande */}
+            <div className="space-y-6">
+              {/* CO₂ Evitado */}
               <div className="text-center">
-                <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <div className="w-24 h-24 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-emerald-100">
                   <div className="text-center">
-                    <p className="text-xl font-bold text-emerald-600">{mockUserData.co2Impact.toFixed(0)}</p>
-                    <p className="text-xs text-emerald-600">kg CO₂</p>
+                    <p className="text-3xl font-bold text-emerald-600">{mockUserData.co2Impact.toFixed(0)}</p>
+                    <p className="text-xs text-emerald-600 font-medium">kg CO₂</p>
                   </div>
                 </div>
-                <p className="text-sm font-medium text-gray-900 mb-1">CO₂ Evitado</p>
-                <p className="text-xs text-gray-500">
-                  {mockUserData.treeEquivalent} árboles plantados
+                <p className="text-lg font-semibold text-gray-900 mb-2">CO₂ Evitado</p>
+                <p className="text-sm text-gray-600">
+                  Equivale a {mockUserData.treeEquivalent} árboles plantados 🌱
                 </p>
               </div>
+
             </div>
           </CardContent>
         </Card>
@@ -1136,8 +1188,11 @@ const DashboardPage: React.FC = () => {
         {/* Órdenes por Mes */}
         <Card className="bg-white border border-gray-200">
           <CardContent className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6 truncate">Órdenes por Mes</h3>
-            <div className="h-40 bg-gray-50 rounded-lg flex items-end justify-center p-4">
+            <div className="flex items-center space-x-2 mb-6">
+              <ChartBarIcon className="h-5 w-5 text-gray-600" />
+              <h3 className="text-lg font-semibold text-gray-900">Órdenes por Mes</h3>
+            </div>
+            <div className="h-20 bg-gray-50 rounded-lg flex items-end justify-center p-4">
               <div className="flex items-end space-x-2 h-full">
                 {[65, 45, 80, 55, 70, 90, 75].map((height, index) => (
                   <div key={index} className="flex flex-col items-center">
@@ -1165,49 +1220,7 @@ const DashboardPage: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Usuarios por Ciudad */}
-        <Card className="bg-white border border-gray-200">
-          <CardContent className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6 truncate">Usuarios por Ciudad</h3>
-            <div className="h-40 bg-gray-50 rounded-lg flex items-center justify-center mb-4">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <UserGroupIcon className="h-8 w-8 text-blue-600" />
-                </div>
-                <p className="text-gray-500 font-medium text-sm">Colombia</p>
-              </div>
-            </div>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600 truncate flex-1 mr-2">Bogotá</span>
-                <div className="flex items-center space-x-2 flex-shrink-0">
-                  <div className="w-12 h-2 bg-gray-200 rounded-full">
-                    <div className="w-3/4 h-2 bg-emerald-500 rounded-full"></div>
-                  </div>
-                  <span className="text-xs font-medium w-8 text-right">45%</span>
-                </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600 truncate flex-1 mr-2">Medellín</span>
-                <div className="flex items-center space-x-2 flex-shrink-0">
-                  <div className="w-12 h-2 bg-gray-200 rounded-full">
-                    <div className="w-1/2 h-2 bg-blue-500 rounded-full"></div>
-                  </div>
-                  <span className="text-xs font-medium w-8 text-right">23%</span>
-                </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600 truncate flex-1 mr-2">Cali</span>
-                <div className="flex items-center space-x-2 flex-shrink-0">
-                  <div className="w-12 h-2 bg-gray-200 rounded-full">
-                    <div className="w-1/3 h-2 bg-purple-500 rounded-full"></div>
-                  </div>
-                  <span className="text-xs font-medium w-8 text-right">18%</span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+       
       </div>
     </div>
   );
