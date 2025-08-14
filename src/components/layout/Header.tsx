@@ -808,7 +808,7 @@ export const Header: React.FC<HeaderProps> = ({
                     className={cn(
                       'flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200',
                       item.current
-                        ? 'bg-gray-100'
+                        ? 'bg-gray-100 text-black'
                         : 'text-black hover:text-[#99bb44]'
                     )}
                   >

@@ -968,21 +968,43 @@ const HomePage: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
 
-  const features = [
+  // const features = [
+  //   {
+  //     icon: CurrencyDollarIcon,
+  //     title: 'Reciclaje Fácil',
+  //     description: 'Proceso simple y rápido para convertir tu chatarra en dinero'
+  //   },
+  //   {
+  //     icon: CurrencyDollarIcon,
+  //     title: 'Pagos Seguros',
+  //     description: 'Transferencias directas a tu cuenta bancaria'
+  //   },
+  //   {
+  //     icon: ShieldCheckIcon,
+  //     title: 'Confiable',
+  //     description: 'Plataforma segura y confiable para tus transacciones'
+  //   }
+  // ];
+
+
+   const features = [
     {
-      icon: CurrencyDollarIcon,
+      illustration: '/public/prueba.webp', // Tu ilustración para reciclaje fácil
       title: 'Reciclaje Fácil',
-      description: 'Proceso simple y rápido para convertir tu chatarra en dinero'
+      description: 'Proceso simple y rápido para convertir tu chatarra en dinero',
+      alt: 'Ilustración de proceso de reciclaje fácil'
     },
     {
-      icon: CurrencyDollarIcon,
+      illustration: '/illustrations/pagos-seguros.webp', // Tu ilustración para pagos seguros
       title: 'Pagos Seguros',
-      description: 'Transferencias directas a tu cuenta bancaria'
+      description: 'Transferencias directas a tu cuenta bancaria',
+      alt: 'Ilustración de pagos seguros y transferencias bancarias'
     },
     {
-      icon: ShieldCheckIcon,
+      illustration: '/illustrations/confiable.webp', // Tu ilustración para confiabilidad
       title: 'Confiable',
-      description: 'Plataforma segura y confiable para tus transacciones'
+      description: 'Plataforma segura y confiable para tus transacciones',
+      alt: 'Ilustración de plataforma confiable y segura'
     }
   ];
 
@@ -1164,26 +1186,46 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 ">
+      <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
               ¿Por qué elegirnos?
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Ofrecemos la mejor experiencia para reciclar tu chatarra electrónica
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="hover:shadow-lg transition-shadow duration-300">
-                <CardContent className="p-8 text-center">
-                  <feature.icon className="h-12 w-12 text-[#a8c241] mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              <Card 
+                key={index} 
+                className="text-center hover:shadow-lg transition-all duration-300 transform hover:-translate-y-2 border-0 shadow-md"
+              >
+                <CardContent className="p-8">
+                  {/* Contenedor de la ilustración */}
+                  <div className="mb-6 flex justify-center">
+                    <div className="w-40 h-40 flex items-center justify-center">
+                      <img
+                        src={feature.illustration}
+                        alt={feature.alt}
+                        className="w-full h-full object-contain"
+                        loading="lazy"
+                        onError={(e) => {
+                          // Fallback en caso de que la imagen no cargue
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          // Puedes mostrar un ícono de fallback aquí si quieres
+                        }}
+                      />
+                    </div>
+                  </div>
+                  
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4">
                     {feature.title}
                   </h3>
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 leading-relaxed">
                     {feature.description}
                   </p>
                 </CardContent>
@@ -1192,6 +1234,8 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       </section>
+
+      
 
       {/* CTA Section */}
       <section className="py-20 bg-[#a8c241]">

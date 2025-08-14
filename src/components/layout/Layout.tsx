@@ -220,7 +220,7 @@ export const Layout: React.FC<LayoutProps> = ({
   // Layout para dashboard (con sidebar)
   if (variant === 'dashboard' && isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen ">
         {/* Header fijo que ocupa todo el ancho - SIEMPRE VISIBLE */}
         <Header 
           onMenuClick={() => setSidebarOpen(true)}
@@ -254,7 +254,7 @@ export const Layout: React.FC<LayoutProps> = ({
 
   // Layout por defecto (sin sidebar) para páginas públicas
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen  flex flex-col">
       {/* Header fijo que ocupa todo el ancho */}
       <Header 
         onMenuClick={() => setSidebarOpen(true)}
