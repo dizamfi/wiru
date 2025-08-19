@@ -18,3 +18,4 @@ export { CircularProgress, type CircularProgressProps } from './CircularProgress
 export type { CheckboxProps, CheckboxGroupProps } from './Checkbox';
 export { default as Checkbox, CheckboxGroup } from './Checkbox';
 export { TextArea, type TextAreaProps } from './TextArea';
+export { RiveAnimation, type RiveAnimationProps } from './RiveAnimation';

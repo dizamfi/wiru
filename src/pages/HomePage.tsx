@@ -854,11 +854,422 @@
 
 
 
+// import React, { useEffect, useState, useRef } from 'react';
+// import { Link } from 'react-router-dom';
+// import { useRive, useStateMachineInput } from '@rive-app/react-canvas';
+// import { 
+//   CurrencyDollarIcon, 
+//   ShieldCheckIcon,
+//   ArrowRightIcon,
+//   CheckIcon,
+//   PlayIcon,
+//   StarIcon,
+//   DevicePhoneMobileIcon,
+//   ComputerDesktopIcon,
+//   TvIcon,
+//   CameraIcon,
+//   SpeakerWaveIcon,
+//   ClockIcon,
+//   BanknotesIcon,
+//   TruckIcon,
+//   DocumentCheckIcon,
+//   GlobeAltIcon,
+//   UserGroupIcon,
+//   BuildingOffice2Icon,
+//   CheckCircleIcon
+// } from '@heroicons/react/24/outline';
+// import { 
+//   CheckIcon as CheckIconSolid,
+//   StarIcon as StarIconSolid 
+// } from '@heroicons/react/24/solid';
+// import { Button } from '@/components/ui/Button';
+// import { Card, CardContent } from '@/components/ui/Card';
+// import { Badge } from '@/components/ui/Badge';
+// import { useAuth } from '@/hooks/useAuth';
+
+// // Hook para intersection observer
+// const useIntersectionObserver = (options = {}) => {
+//   const [isIntersecting, setIsIntersecting] = useState(false);
+//   const ref = useRef<HTMLDivElement>(null);
+
+//   useEffect(() => {
+//     const observer = new IntersectionObserver(([entry]) => {
+//       setIsIntersecting(entry.isIntersecting);
+//     }, options);
+
+//     if (ref.current) {
+//       observer.observe(ref.current);
+//     }
+
+//     return () => observer.disconnect();
+//   }, [options]);
+
+//   return [ref, isIntersecting] as const;
+// };
+
+// // Componente para las animaciones Rive
+// const RiveAnimation: React.FC<{
+//   src: string;
+//   stateMachine?: string;
+//   autoplay?: boolean;
+//   className?: string;
+//   onMouseEnter?: () => void;
+//   onMouseLeave?: () => void;
+// }> = ({ 
+//   src, 
+//   stateMachine = "State Machine 1", 
+//   autoplay = true, 
+//   className = "",
+//   onMouseEnter,
+//   onMouseLeave 
+// }) => {
+//   const { RiveComponent, rive } = useRive({
+//     src: src,
+//     stateMachines: stateMachine,
+//     autoplay: autoplay,
+//   });
+
+//   const [ref, isIntersecting] = useIntersectionObserver({ threshold: 0.3 });
+
+//   // Controlar la animación basada en la visibilidad
+//   useEffect(() => {
+//     if (rive) {
+//       if (isIntersecting) {
+//         rive.play();
+//       } else {
+//         rive.pause();
+//       }
+//     }
+//   }, [isIntersecting, rive]);
+
+//   return (
+//     <div 
+//       ref={ref}
+//       className={className}
+//       onMouseEnter={() => {
+//         if (rive) rive.play();
+//         onMouseEnter?.();
+//       }}
+//       onMouseLeave={() => {
+//         onMouseLeave?.();
+//       }}
+//     >
+//       <RiveComponent />
+//     </div>
+//   );
+// };
+
+// // Componente de contador animado
+// const AnimatedCounter: React.FC<{ 
+//   value: number; 
+//   suffix?: string; 
+//   prefix?: string;
+//   duration?: number;
+// }> = ({ value, suffix = '', prefix = '', duration = 2000 }) => {
+//   const [count, setCount] = useState(0);
+//   const [ref, isIntersecting] = useIntersectionObserver({ threshold: 0.5 });
+
+//   useEffect(() => {
+//     if (isIntersecting) {
+//       let startTime: number | null = null;
+      
+//       const animate = (currentTime: number) => {
+//         if (startTime === null) startTime = currentTime;
+//         const progress = Math.min((currentTime - startTime) / duration, 1);
+        
+//         setCount(Math.floor(progress * value));
+        
+//         if (progress < 1) {
+//           requestAnimationFrame(animate);
+//         }
+//       };
+      
+//       requestAnimationFrame(animate);
+//     }
+//   }, [isIntersecting, value, duration]);
+
+//   return (
+//     <div ref={ref} className="text-center">
+//       <div className="text-3xl font-bold text-[#a8c241]">
+//         {prefix}{count.toLocaleString()}{suffix}
+//       </div>
+//     </div>
+//   );
+// };
+
+// const HomePage: React.FC = () => {
+//   const { isAuthenticated } = useAuth();
+//   const [hoveredFeature, setHoveredFeature] = useState<number | null>(null);
+
+//   const features = [
+//     {
+//       riveSrc: '/public/animations/reciclajeFacil.riv', // Archivo Rive para reciclaje fácil
+//       stateMachine: 'State Machine 1', // Nombre de la state machine en tu archivo Rive
+//       title: 'Reciclaje Fácil',
+//       description: 'Proceso simple y rápido para convertir tu chatarra en dinero. Solo necesitas subir fotos de tus dispositivos, generar tu orden y esperar la recolección. Nosotros nos encargamos del resto.',
+//       alt: 'Animación de proceso de reciclaje fácil',
+//       points: [
+//         'Proceso 100% digital',
+//         'Sin complicaciones',
+//         'Recolección a domicilio'
+//       ],
+//       color: '#a8c241' // Color temático para cada pilar
+//     },
+//     {
+//       riveSrc: '/public/animations/pagosSeguros.riv', // Archivo Rive para pagos seguros
+//       stateMachine: 'State Machine 1',
+//       title: 'Pagos Seguros',
+//       description: 'Transferencias directas a tu cuenta bancaria con total transparencia. Verificamos tus dispositivos y procesamos tu pago en menos de 24 horas hábiles.',
+//       alt: 'Animación de pagos seguros y transferencias bancarias',
+//       points: [
+//         'Pagos en 24 horas',
+//         'Transferencia directa',
+//         'Total transparencia'
+//       ],
+//       color: '#4CAF50' // Verde para seguridad
+//     },
+//     {
+//       riveSrc: '/animations/confiable.riv', // Archivo Rive para confiabilidad
+//       stateMachine: 'State Machine 1',
+//       title: 'Confiable',
+//       description: 'Plataforma segura y confiable para tus transacciones. Más de 10,000 usuarios confían en nosotros para reciclar sus dispositivos electrónicos de manera responsable.',
+//       alt: 'Animación de plataforma confiable y segura',
+//       points: [
+//         'Más de 10,000 usuarios',
+//         'Empresa certificada',
+//         'Proceso transparente'
+//       ],
+//       color: '#2196F3' // Azul para confianza
+//     }
+//   ];
+
+//   return (
+//     <div className="min-h-screen">
+//       {/* Hero Section */}
+//       <section className="relative bg-gradient-to-br from-gray-50 to-white overflow-hidden">
+//         <div className="absolute inset-0 bg-grid-gray-100 bg-grid opacity-5"></div>
+        
+//         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+//           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+//             {/* Contenido - Lado Izquierdo */}
+//             <div className="order-2 lg:order-1">
+//               <div className="mb-6">
+//                 <Badge className="bg-[#a8c241]/10 text-[#a8c241] border-[#a8c241]/20 px-4 py-2">
+//                   🌱 Eco-friendly & Rentable
+//                 </Badge>
+//               </div>
+              
+//               <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+//                 Convierte tu <span className="text-[#a8c241]">Chatarra Electrónica</span> en Dinero
+//               </h1>
+              
+//               <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+//                 La plataforma más fácil y segura para reciclar tus dispositivos electrónicos y obtener dinero al instante.
+//               </p>
+
+//               <div className="flex flex-col sm:flex-row gap-4 mb-8">
+//                 {isAuthenticated ? (
+//                   <Link to="/dashboard/sell">
+//                     <Button 
+//                       size="lg" 
+//                       className="bg-[#a8c241] hover:bg-[#96b23a] text-white px-8 py-4 text-lg font-semibold animate-pulseGlow"
+//                     >
+//                       Vender Ahora
+//                       <ArrowRightIcon className="ml-2 h-5 w-5" />
+//                     </Button>
+//                   </Link>
+//                 ) : (
+//                   <>
+//                     <Link to="/register">
+//                       <Button 
+//                         size="lg" 
+//                         className="bg-[#a8c241] hover:bg-[#96b23a] text-white px-8 py-4 text-lg font-semibold animate-pulseGlow"
+//                       >
+//                         Comenzar Gratis
+//                         <ArrowRightIcon className="ml-2 h-5 w-5" />
+//                       </Button>
+//                     </Link>
+//                     <Button 
+//                       variant="outline" 
+//                       size="lg" 
+//                       className="border-2 border-gray-300 text-gray-700 hover:border-[#a8c241] hover:text-[#a8c241] px-8 py-4 text-lg font-semibold"
+//                     >
+//                       <PlayIcon className="mr-2 h-5 w-5" />
+//                       Ver Demo
+//                     </Button>
+//                   </>
+//                 )}
+//               </div>
+//             </div>
+
+//             {/* Animación Hero Rive - Lado Derecho */}
+//             <div className="order-1 lg:order-2 flex items-center justify-center">
+//               <div className="w-full max-w-lg lg:max-w-full">
+//                 <RiveAnimation 
+//                   src="/public/animations/hero4.svg"
+//                   stateMachine="State Machine 1"
+//                   className="w-full h-[400px] lg:h-[500px]"
+//                 />
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+//       </section>
+
+//       {/* Features Section - CON ANIMACIONES RIVE ALTERNADAS */}
+//       <section >
+//         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+//           <div className="text-center mb-16">
+//             <h2 className="text-4xl font-bold text-gray-900 mb-4">
+//               ¿Por qué elegirnos?
+//             </h2>
+//             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+//               Ofrecemos la mejor experiencia para reciclar tu chatarra electrónica
+//             </p>
+//           </div>
+
+//           {/* Contenedor de pilares con diseño alternado */}
+//           <div className="space-y-24">
+//             {features.map((feature, index) => (
+//               <div 
+//                 key={index}
+//                 className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center"
+//               >
+//                 {/* Contenido de texto */}
+//                 <div className={`${index % 2 === 0 ? 'lg:order-1' : 'lg:order-2'} space-y-6`}>
+//                   <div>
+//                     <div className="flex items-center gap-3 mb-4">
+//                       <div 
+//                         className="w-2 h-12 rounded-full"
+//                         style={{ backgroundColor: feature.color }}
+//                       />
+//                       <h3 className="text-3xl font-bold text-gray-900">
+//                         {feature.title}
+//                       </h3>
+//                     </div>
+//                     <p className="text-lg text-gray-600 leading-relaxed mb-6">
+//                       {feature.description}
+//                     </p>
+//                   </div>
+                  
+//                   {/* Puntos destacados */}
+//                   <div className="space-y-3">
+//                     {feature.points.map((point, pointIndex) => (
+//                       <div 
+//                         key={pointIndex} 
+//                         className="flex items-center space-x-3 transform transition-transform hover:translate-x-2"
+//                       >
+//                         <div className="flex-shrink-0">
+//                           <div 
+//                             className="w-8 h-8 rounded-full flex items-center justify-center"
+//                             style={{ backgroundColor: `${feature.color}20` }}
+//                           >
+//                             <CheckIcon 
+//                               className="h-5 w-5" 
+//                               style={{ color: feature.color }}
+//                             />
+//                           </div>
+//                         </div>
+//                         <span className="text-gray-700 font-medium">{point}</span>
+//                       </div>
+//                     ))}
+//                   </div>
+
+//                   {/* CTA opcional para cada pilar */}
+//                   {index === 0 && !isAuthenticated && (
+//                     <div className="pt-4">
+//                       <Link to="/register">
+//                         <Button 
+//                           variant="outline"
+//                           className="border-2 hover:scale-105 transition-transform"
+//                           style={{ 
+//                             borderColor: feature.color,
+//                             color: feature.color,
+//                           }}
+//                           onMouseEnter={(e) => {
+//                             e.currentTarget.style.backgroundColor = feature.color;
+//                             e.currentTarget.style.color = 'white';
+//                           }}
+//                           onMouseLeave={(e) => {
+//                             e.currentTarget.style.backgroundColor = 'transparent';
+//                             e.currentTarget.style.color = feature.color;
+//                           }}
+//                         >
+//                           Empezar ahora
+//                           <ArrowRightIcon className="ml-2 h-4 w-4" />
+//                         </Button>
+//                       </Link>
+//                     </div>
+//                   )}
+//                 </div>
+
+//                 {/* Animación Rive */}
+//                 <div className={`${index % 2 === 0 ? 'lg:order-2' : 'lg:order-1'}`}>
+//                   <div className="relative group">
+//                     {/* Fondo decorativo */}
+//                     {/* <div 
+//                       className="absolute inset-0 rounded-3xl transform rotate-3 transition-all duration-300 group-hover:rotate-6"
+//                       style={{ 
+//                         background: `linear-gradient(135deg, ${feature.color}15 0%, ${feature.color}05 100%)` 
+//                       }}
+//                     /> */}
+                    
+//                     {/* Contenedor de la animación Rive */}
+//                     <div className="">
+//                       <div className="p-4 lg:p-8">
+//                         <RiveAnimation 
+//                           src={feature.riveSrc}
+//                           stateMachine={feature.stateMachine}
+//                           className="w-full h-85 lg:h-80"
+//                           // onMouseEnter={() => setHoveredFeature(index)}
+//                           // onMouseLeave={() => setHoveredFeature(null)}
+//                         />
+//                       </div>
+                      
+//                       {/* Indicador de interactividad */}
+                     
+//                     </div>
+
+                  
+//                   </div>
+//                 </div>
+//               </div>
+//             ))}
+//           </div>
+//         </div>
+//       </section>
+
+//       {/* CTA Section */}
+//       <section className="py-20 bg-[#a8c241]">
+//         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+//           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+//             ¿Listo para comenzar?
+//           </h2>
+//           <p className="text-xl text-white/90 mb-8">
+//             Únete a miles de usuarios que ya están ganando dinero reciclando
+//           </p>
+          
+//           {!isAuthenticated && (
+//             <Link to="/register">
+//               <Button 
+//                 size="lg" 
+//                 variant="secondary"
+//                 className="bg-white text-[#a8c241] hover:bg-gray-100 px-8 py-4 text-lg font-semibold"
+//               >
+//                 Crear Cuenta Gratis
+//                 <ArrowRightIcon className="ml-2 h-5 w-5" />
+//               </Button>
+//             </Link>
+//           )}
+//         </div>
+//       </section>
+//     </div>
+//   );
+// };
+
+// export default HomePage;
 
 
-
-
-import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   CurrencyDollarIcon, 
@@ -888,23 +1299,30 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { useAuth } from '@/hooks/useAuth';
+// Importación de Rive
+import { useRive } from '@rive-app/react-canvas';
+import { useEffect, useRef, useState } from 'react';
 
-// Hook para intersection observer
+// Hook para intersection observer mejorado
 const useIntersectionObserver = (options = {}) => {
   const [isIntersecting, setIsIntersecting] = useState(false);
+  const [hasAnimated, setHasAnimated] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => {
-      setIsIntersecting(entry.isIntersecting);
-    }, options);
+      if (entry.isIntersecting && !hasAnimated) {
+        setIsIntersecting(true);
+        setHasAnimated(true);
+      }
+    }, { threshold: 0.2, ...options });
 
     if (ref.current) {
       observer.observe(ref.current);
     }
 
     return () => observer.disconnect();
-  }, [options]);
+  }, [hasAnimated, options]);
 
   return [ref, isIntersecting] as const;
 };
@@ -947,18 +1365,219 @@ const AnimatedCounter: React.FC<{
   );
 };
 
+// Componente para manejar animaciones Rive con fallback y tamaños personalizables
+const RiveFeatureAnimation: React.FC<{
+  src: string;
+  fallbackIcon: React.ComponentType<any>;
+  title: string;
+  className?: string;
+  width?: number;
+  height?: number;
+}> = ({ 
+  src, 
+  fallbackIcon: FallbackIcon, 
+  title, 
+  className = '',
+  width = 160,
+  height = 160
+}) => {
+  const [hasError, setHasError] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  const { rive, RiveComponent } = useRive({
+    src,
+    autoplay: true,
+    onLoad: () => {
+      setIsLoaded(true);
+    },
+    onLoadError: (error) => {
+      console.error('Error loading Rive animation:', error);
+      setHasError(true);
+    }
+  });
+
+  if (hasError) {
+    return (
+      <div 
+        className={`flex items-center justify-center ${className}`}
+        style={{ width: `${width}px`, height: `${height}px` }}
+      >
+        <div className="text-[#a8c241] flex items-center justify-center animate-pulse-slow">
+          <FallbackIcon className="h-20 w-20 drop-shadow-lg" />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div 
+      className={`flex items-center justify-center ${className}`}
+      style={{ width: `${width}px`, height: `${height}px` }}
+    >
+      {!isLoaded && (
+        <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl animate-pulse flex items-center justify-center w-full h-full shadow-inner">
+          <FallbackIcon className="h-20 w-20 text-gray-400 animate-bounce" />
+        </div>
+      )}
+      
+      <div className={`w-full h-full ${!isLoaded ? 'absolute opacity-0' : 'opacity-100'} transition-all duration-700 ease-out`}>
+        <RiveComponent 
+          width={width}
+          height={height}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+            filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.1))'
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+
+// Componente de tarjeta profesional con efecto 3D
+const ProfessionalFeatureCard: React.FC<{
+  feature: any;
+  index: number;
+  isVisible: boolean;
+}> = ({ feature, index, isVisible }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [animationDelay, setAnimationDelay] = useState(index * 150);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    
+    const rect = cardRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    
+    const mouseX = e.clientX - centerX;
+    const mouseY = e.clientY - centerY;
+    
+    setMousePosition({ x: mouseX, y: mouseY });
+  };
+
+  const resetTransform = () => {
+    setMousePosition({ x: 0, y: 0 });
+  };
+
+  // Cálculo de rotación 3D
+  const rotateX = mousePosition.y / 10;
+  const rotateY = -mousePosition.x / 10;
+
+  return (
+    <div
+      className={`transform transition-all duration-800 ease-out ${
+        isVisible 
+          ? 'translate-y-0 opacity-100 scale-100' 
+          : 'translate-y-16 opacity-0 scale-98'
+      }`}
+      style={{ 
+        transitionDelay: isVisible ? `${animationDelay}ms` : '0ms',
+        willChange: 'transform, opacity'
+      }}
+    >
+      <div 
+        ref={cardRef}
+        className="relative group h-full perspective-1000"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => {
+          setIsHovered(false);
+          resetTransform();
+        }}
+        onMouseMove={handleMouseMove}
+      >
+        {/* Contenedor 3D */}
+        <div 
+          className="relative h-full transform-gpu transition-all duration-300 ease-out preserve-3d"
+          style={{
+            transform: isHovered 
+              ? `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(50px)`
+              : 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px)'
+          }}
+        >
+          {/* Fondo principal con glassmorphism */}
+          <div className="absolute inset-0 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/20 shadow-xl"></div>
+          
+          {/* Efecto de hover sutil */}
+          <div className={`absolute inset-0 rounded-2xl transition-all duration-500 ${
+            isHovered 
+              ? 'bg-gradient-to-br from-[#a8c241]/5 to-transparent shadow-2xl shadow-[#a8c241]/10 border-[#a8c241]/20' 
+              : 'bg-transparent'
+          }`}></div>
+
+          {/* Reflejo 3D */}
+          <div className={`absolute inset-0 rounded-2xl transition-all duration-300 ${
+            isHovered 
+              ? 'bg-gradient-to-br from-white/10 to-transparent opacity-100' 
+              : 'opacity-0'
+          }`}></div>
+
+          {/* Línea decorativa superior */}
+          <div className={`absolute top-0 left-1/2 transform -translate-x-1/2 h-1 rounded-b-full transition-all duration-500 ${
+            isHovered ? 'w-16 bg-gradient-to-r from-[#a8c241] to-[#96b23a]' : 'w-8 bg-gray-200'
+          }`}></div>
+
+          {/* Contenido principal */}
+          <div className="relative z-10 p-8 h-full flex flex-col items-center text-center">
+            
+            {/* Contenedor de la animación */}
+            <div className="mb-6 relative">
+              <div className={`transform transition-all duration-500 ${
+                isHovered ? 'scale-105 translateZ-4' : 'scale-100'
+              }`}>
+                {/* Círculo de fondo sutil */}
+                <div className={`absolute inset-0 rounded-full transition-all duration-500 ${
+                  isHovered ? 'bg-[#a8c241]/5 scale-110' : 'bg-gray-50/50 scale-100'
+                }`} style={{ margin: '-20px' }}></div>
+                
+                <RiveFeatureAnimation
+                  src={feature.riveAnimation}
+                  fallbackIcon={feature.fallbackIcon}
+                  title={feature.title}
+                  width={feature.animationSize?.width || 160}
+                  height={feature.animationSize?.height || 160}
+                  className="relative z-10"
+                />
+              </div>
+            </div>
+            
+            {/* Título elegante */}
+            <h3 className="text-2xl font-bold text-gray-900 mb-3 tracking-tight">
+              {feature.title}
+            </h3>
+
+            {/* Descripción concisa */}
+            <p className="text-gray-600 leading-relaxed text-base">
+              {feature.shortDescription || feature.description.split('.')[0] + '.'}
+            </p>
+
+            {/* Indicador sutil al hover */}
+            <div className={`mt-6 transition-all duration-300 ${
+              isHovered ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-2'
+            }`}>
+              <div className="w-12 h-0.5 bg-gradient-to-r from-[#a8c241] to-[#96b23a] rounded-full mx-auto"></div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const HeroAnimation: React.FC = () => {
   return (
     <div className="relative h-full flex items-center justify-center">
       <div className="w-full max-w-lg relative">
-        {/* Imagen principal */}
         <img 
           src="/public/hero.svg"
           alt="Dispositivos electrónicos para reciclaje"
           className="w-full h-auto rounded-2xl shadow-2xl animate-float"
         />
-        
-       
       </div>
     </div>
   );
@@ -967,44 +1586,30 @@ const HeroAnimation: React.FC = () => {
 const HomePage: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
+  const [featuresRef, featuresVisible] = useIntersectionObserver({ threshold: 0.1 });
 
-  // const features = [
-  //   {
-  //     icon: CurrencyDollarIcon,
-  //     title: 'Reciclaje Fácil',
-  //     description: 'Proceso simple y rápido para convertir tu chatarra en dinero'
-  //   },
-  //   {
-  //     icon: CurrencyDollarIcon,
-  //     title: 'Pagos Seguros',
-  //     description: 'Transferencias directas a tu cuenta bancaria'
-  //   },
-  //   {
-  //     icon: ShieldCheckIcon,
-  //     title: 'Confiable',
-  //     description: 'Plataforma segura y confiable para tus transacciones'
-  //   }
-  // ];
-
-
-   const features = [
+  // Features con descripciones concisas
+  const features = [
     {
-      illustration: '/public/prueba.webp', // Tu ilustración para reciclaje fácil
+      riveAnimation: '/public/animations/reciclajeFacil.riv',
+      fallbackIcon: CurrencyDollarIcon,
       title: 'Reciclaje Fácil',
-      description: 'Proceso simple y rápido para convertir tu chatarra en dinero',
-      alt: 'Ilustración de proceso de reciclaje fácil'
+      description: 'Proceso simple y rápido para convertir tu chatarra en dinero.',
+      animationSize: { width: 280, height: 280 } 
     },
     {
-      illustration: '/illustrations/pagos-seguros.webp', // Tu ilustración para pagos seguros
+      riveAnimation: '/public/animations/pagosSeguros.riv',
+      fallbackIcon: BanknotesIcon,
       title: 'Pagos Seguros',
-      description: 'Transferencias directas a tu cuenta bancaria',
-      alt: 'Ilustración de pagos seguros y transferencias bancarias'
+      description: 'Transferencias directas y seguras a tu cuenta bancaria.',
+      animationSize: { width: 180, height: 180 } 
     },
     {
-      illustration: '/illustrations/confiable.webp', // Tu ilustración para confiabilidad
+      riveAnimation: '/public/animations/reciclajeFacil.riv',
+      fallbackIcon: ShieldCheckIcon,
       title: 'Confiable',
-      description: 'Plataforma segura y confiable para tus transacciones',
-      alt: 'Ilustración de plataforma confiable y segura'
+      description: 'Plataforma segura respaldada por miles de usuarios.',
+      animationSize: { width: 280, height: 280 }
     }
   ];
 
@@ -1039,7 +1644,7 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Estilos CSS mejorados */}
+      {/* Estilos CSS espectaculares */}
       <style>{`
         @keyframes float {
           0%, 100% { transform: translateY(0px) rotate(0deg); }
@@ -1067,6 +1672,45 @@ const HomePage: React.FC = () => {
             box-shadow: 0 0 40px rgba(168, 194, 65, 0.4);
           }
         }
+
+        @keyframes float-particle {
+          0%, 100% {
+            transform: translateY(0px) translateX(0px) rotate(0deg);
+            opacity: 0.3;
+          }
+          25% {
+            transform: translateY(-15px) translateX(5px) rotate(90deg);
+            opacity: 0.6;
+          }
+          50% {
+            transform: translateY(-25px) translateX(-5px) rotate(180deg);
+            opacity: 1;
+          }
+          75% {
+            transform: translateY(-10px) translateX(8px) rotate(270deg);
+            opacity: 0.6;
+          }
+        }
+
+        @keyframes pulse-slow {
+          0%, 100% {
+            transform: scale(1);
+            opacity: 0.8;
+          }
+          50% {
+            transform: scale(1.05);
+            opacity: 1;
+          }
+        }
+
+        @keyframes shimmer {
+          0% {
+            background-position: -200% 0;
+          }
+          100% {
+            background-position: 200% 0;
+          }
+        }
         
         .animate-float {
           animation: float 6s ease-in-out infinite;
@@ -1079,27 +1723,49 @@ const HomePage: React.FC = () => {
         .animate-pulseGlow {
           animation: pulseGlow 3s ease-in-out infinite;
         }
+
+        .animate-float-particle {
+          animation: float-particle 4s ease-in-out infinite;
+        }
+
+        .animate-pulse-slow {
+          animation: pulse-slow 2s ease-in-out infinite;
+        }
+
+        .animate-shimmer {
+          background: linear-gradient(90deg, transparent, rgba(168, 194, 65, 0.2), transparent);
+          background-size: 200% 100%;
+          animation: shimmer 2s infinite;
+        }
+
+        /* Mejoras de rendimiento */
+        .will-change-transform {
+          will-change: transform;
+        }
+
+        .will-change-opacity {
+          will-change: opacity;
+        }
+
+        /* Glassmorphism effect */
+        .glass-effect {
+          background: rgba(255, 255, 255, 0.25);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.18);
+        }
       `}</style>
 
       {/* Hero Section - Layout Horizontal */}
-      <section className="relative min-h-screen bg-gradient-to-br from-white via-gray-50/30 to-white flex items-center overflow-hidden  ">
+      <section className="relative min-h-screen bg-gradient-to-br from-white via-gray-50/30 to-white flex items-center overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             
             {/* Contenido del Hero - Lado Izquierdo */}
             <div className="space-y-8">
-              {/* Badge de confianza */}
-              {/* <div className="animate-fadeInUp">
-                <Badge className="bg-[#a8c241]/10 text-[#a8c241] border-[#a8c241]/20 px-6 py-2 text-sm font-semibold">
-                  🌱 Más de 50,000 dispositivos reciclados
-                </Badge>
-              </div> */}
-
-              {/* Título principal */}
               <div className="space-y-5">
                 <h1 className="text-4xl md:text-5xl lg:text-7xl font-spartan font-bold text-gray-900 leading-tight">
-                  <span className="pr-88">
- Convierte tu {'  '}
+                  <span className="pr-44">
+                    Convierte tu{' '}
                   </span>
                  
                   <span className="text-[#a8c241] relative">
@@ -1109,30 +1775,11 @@ const HomePage: React.FC = () => {
                 </h1>
                 
                 <p className="font-heading text-2xl text-gray-600 max-w-2xl leading-relaxed">
-                 {/* En Wiru transformamos lo que llaman residuos electrónicos en dinero para ti y recursos para el planeta.  */}
                   La plataforma más fácil y segura para reciclar tus dispositivos 
                   electrónicos y obtener dinero al instante. <strong>Ayuda al planeta mientras generas ingresos.</strong>
-                 {/* <strong>Ayuda al planeta mientras generas ingresos.</strong> */}
                 </p>
               </div>
 
-              {/* Características rápidas */}
-              {/* <div className="font-heading space-y-3 text-2xl  max-w-2xl ">
-                {[
-                  'Evaluación inmediata de tu dispositivo',
-                  'Pago seguro en 24-48 horas',
-                  'Recogida gratuita a domicilio'
-                ].map((item, index) => (
-                  <div key={index} className="flex items-center space-x-3">
-                    <div className="flex-shrink-0">
-                      <CheckIconSolid className="h-5 w-5 text-[#a8c241]" />
-                    </div>
-                    <span className="text-gray-600 font-normal">{item}</span>
-                  </div>
-                ))}
-              </div> */}
-
-              {/* Botones de acción */}
               <div className="flex flex-col sm:flex-row gap-4">
                 {isAuthenticated ? (
                   <Link to="/dashboard/sell">
@@ -1166,13 +1813,9 @@ const HomePage: React.FC = () => {
                   </>
                 )}
               </div>
-
-              {/* Stats rápidas */}
-              
             </div>
 
-           {/* Imagen SVG - Lado Derecho */}
-            <div className="order-1 lg:order-2 flex items-center justify-normal">
+           <div className="order-1 lg:order-2 flex items-center justify-normal">
               <div className="w-full max-w-lg lg:max-w-full">
                 <img 
                   src="/public/hero4.svg" 
@@ -1185,57 +1828,45 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Features Section Profesional */}
+      <section ref={featuresRef} className="py-20 bg-gradient-to-br from-gray-50/50 via-white to-gray-50/50 relative overflow-hidden">
+        {/* Elementos de fondo sutiles */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-[#a8c241]/3 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-[#a8c241]/2 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          {/* Título de sección elegante */}
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              ¿Por qué elegirnos?
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Ofrecemos la mejor experiencia para reciclar tu chatarra electrónica
-            </p>
+            <div className={`transform transition-all duration-800 ${
+              featuresVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
+            }`}>
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                ¿Por qué elegirnos?
+              </h2>
+              <div className="w-20 h-1 bg-gradient-to-r from-[#a8c241] to-[#96b23a] mx-auto rounded-full mb-4"></div>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                La experiencia más simple y segura para reciclar electrónicos
+              </p>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Grid de tarjetas profesionales */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10">
             {features.map((feature, index) => (
-              <Card 
-                key={index} 
-                className="text-center hover:shadow-lg transition-all duration-300 transform hover:-translate-y-2 border-0 shadow-md"
-              >
-                <CardContent className="p-8">
-                  {/* Contenedor de la ilustración */}
-                  <div className="mb-6 flex justify-center">
-                    <div className="w-40 h-40 flex items-center justify-center">
-                      <img
-                        src={feature.illustration}
-                        alt={feature.alt}
-                        className="w-full h-full object-contain"
-                        loading="lazy"
-                        onError={(e) => {
-                          // Fallback en caso de que la imagen no cargue
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                          // Puedes mostrar un ícono de fallback aquí si quieres
-                        }}
-                      />
-                    </div>
-                  </div>
-                  
-                  <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                    {feature.title}
-                  </h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    {feature.description}
-                  </p>
-                </CardContent>
-              </Card>
+              <ProfessionalFeatureCard
+                key={index}
+                feature={feature}
+                index={index}
+                isVisible={featuresVisible}
+              />
             ))}
           </div>
+
+
         </div>
       </section>
-
-      
 
       {/* CTA Section */}
       <section className="py-20 bg-[#a8c241]">
