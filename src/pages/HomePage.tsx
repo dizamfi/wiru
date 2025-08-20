@@ -1270,552 +1270,938 @@
 // export default HomePage;
 
 
+
+
+// import { Link } from 'react-router-dom';
+// import { 
+//   CurrencyDollarIcon, 
+//   ShieldCheckIcon,
+//   ArrowRightIcon,
+//   CheckIcon,
+//   PlayIcon,
+//   StarIcon,
+//   DevicePhoneMobileIcon,
+//   ComputerDesktopIcon,
+//   TvIcon,
+//   CameraIcon,
+//   SpeakerWaveIcon,
+//   ClockIcon,
+//   BanknotesIcon,
+//   TruckIcon,
+//   DocumentCheckIcon,
+//   GlobeAltIcon,
+//   UserGroupIcon,
+//   BuildingOffice2Icon
+// } from '@heroicons/react/24/outline';
+// import { 
+//   CheckIcon as CheckIconSolid,
+//   StarIcon as StarIconSolid 
+// } from '@heroicons/react/24/solid';
+// import { Button } from '@/components/ui/Button';
+// import { Card, CardContent } from '@/components/ui/Card';
+// import { Badge } from '@/components/ui/Badge';
+// import { useAuth } from '@/hooks/useAuth';
+// // Importación de Rive
+// import { useRive } from '@rive-app/react-canvas';
+// import { useEffect, useRef, useState } from 'react';
+
+// // Hook para intersection observer mejorado
+// const useIntersectionObserver = (options = {}) => {
+//   const [isIntersecting, setIsIntersecting] = useState(false);
+//   const [hasAnimated, setHasAnimated] = useState(false);
+//   const ref = useRef<HTMLDivElement>(null);
+
+//   useEffect(() => {
+//     const observer = new IntersectionObserver(([entry]) => {
+//       if (entry.isIntersecting && !hasAnimated) {
+//         setIsIntersecting(true);
+//         setHasAnimated(true);
+//       }
+//     }, { threshold: 0.2, ...options });
+
+//     if (ref.current) {
+//       observer.observe(ref.current);
+//     }
+
+//     return () => observer.disconnect();
+//   }, [hasAnimated, options]);
+
+//   return [ref, isIntersecting] as const;
+// };
+
+// // Componente de contador animado
+// const AnimatedCounter: React.FC<{ 
+//   value: number; 
+//   suffix?: string; 
+//   prefix?: string;
+//   duration?: number;
+// }> = ({ value, suffix = '', prefix = '', duration = 2000 }) => {
+//   const [count, setCount] = useState(0);
+//   const [ref, isIntersecting] = useIntersectionObserver({ threshold: 0.5 });
+
+//   useEffect(() => {
+//     if (isIntersecting) {
+//       let startTime: number | null = null;
+      
+//       const animate = (currentTime: number) => {
+//         if (startTime === null) startTime = currentTime;
+//         const progress = Math.min((currentTime - startTime) / duration, 1);
+        
+//         setCount(Math.floor(progress * value));
+        
+//         if (progress < 1) {
+//           requestAnimationFrame(animate);
+//         }
+//       };
+      
+//       requestAnimationFrame(animate);
+//     }
+//   }, [isIntersecting, value, duration]);
+
+//   return (
+//     <div ref={ref} className="text-center">
+//       <div className="text-3xl font-bold text-[#a8c241]">
+//         {prefix}{count.toLocaleString()}{suffix}
+//       </div>
+//     </div>
+//   );
+// };
+
+// // Componente para manejar animaciones Rive con fallback y tamaños personalizables
+// const RiveFeatureAnimation: React.FC<{
+//   src: string;
+//   fallbackIcon: React.ComponentType<any>;
+//   title: string;
+//   className?: string;
+//   width?: number;
+//   height?: number;
+// }> = ({ 
+//   src, 
+//   fallbackIcon: FallbackIcon, 
+//   title, 
+//   className = '',
+//   width = 160,
+//   height = 160
+// }) => {
+//   const [hasError, setHasError] = useState(false);
+//   const [isLoaded, setIsLoaded] = useState(false);
+
+//   const { rive, RiveComponent } = useRive({
+//     src,
+//     autoplay: true,
+//     onLoad: () => {
+//       setIsLoaded(true);
+//     },
+//     onLoadError: (error) => {
+//       console.error('Error loading Rive animation:', error);
+//       setHasError(true);
+//     }
+//   });
+
+//   if (hasError) {
+//     return (
+//       <div 
+//         className={`flex items-center justify-center ${className}`}
+//         style={{ width: `${width}px`, height: `${height}px` }}
+//       >
+//         <div className="text-[#a8c241] flex items-center justify-center animate-pulse-slow">
+//           <FallbackIcon className="h-20 w-20 drop-shadow-lg" />
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div 
+//       className={`flex items-center justify-center ${className}`}
+//       style={{ width: `${width}px`, height: `${height}px` }}
+//     >
+//       {!isLoaded && (
+//         <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl animate-pulse flex items-center justify-center w-full h-full shadow-inner">
+//           <FallbackIcon className="h-20 w-20 text-gray-400 animate-bounce" />
+//         </div>
+//       )}
+      
+//       <div className={`w-full h-full ${!isLoaded ? 'absolute opacity-0' : 'opacity-100'} transition-all duration-700 ease-out`}>
+//         <RiveComponent 
+//           width={width}
+//           height={height}
+//           style={{
+//             width: '100%',
+//             height: '100%',
+//             objectFit: 'contain',
+//             filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.1))'
+//           }}
+//         />
+//       </div>
+//     </div>
+//   );
+// };
+
+// // Componente de tarjeta profesional con efecto 3D
+// const ProfessionalFeatureCard: React.FC<{
+//   feature: any;
+//   index: number;
+//   isVisible: boolean;
+// }> = ({ feature, index, isVisible }) => {
+//   const [isHovered, setIsHovered] = useState(false);
+//   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+//   const [animationDelay, setAnimationDelay] = useState(index * 150);
+//   const cardRef = useRef<HTMLDivElement>(null);
+
+//   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+//     if (!cardRef.current) return;
+    
+//     const rect = cardRef.current.getBoundingClientRect();
+//     const centerX = rect.left + rect.width / 2;
+//     const centerY = rect.top + rect.height / 2;
+    
+//     const mouseX = e.clientX - centerX;
+//     const mouseY = e.clientY - centerY;
+    
+//     setMousePosition({ x: mouseX, y: mouseY });
+//   };
+
+//   const resetTransform = () => {
+//     setMousePosition({ x: 0, y: 0 });
+//   };
+
+//   // Cálculo de rotación 3D
+//   const rotateX = mousePosition.y / 10;
+//   const rotateY = -mousePosition.x / 10;
+
+//   return (
+//     <div
+//       className={`transform transition-all duration-800 ease-out ${
+//         isVisible 
+//           ? 'translate-y-0 opacity-100 scale-100' 
+//           : 'translate-y-16 opacity-0 scale-98'
+//       }`}
+//       style={{ 
+//         transitionDelay: isVisible ? `${animationDelay}ms` : '0ms',
+//         willChange: 'transform, opacity'
+//       }}
+//     >
+//       <div 
+//         ref={cardRef}
+//         className="relative group h-full perspective-1000"
+//         onMouseEnter={() => setIsHovered(true)}
+//         onMouseLeave={() => {
+//           setIsHovered(false);
+//           resetTransform();
+//         }}
+//         onMouseMove={handleMouseMove}
+//       >
+//         {/* Contenedor 3D */}
+//         <div 
+//           className="relative h-full transform-gpu transition-all duration-300 ease-out preserve-3d"
+//           style={{
+//             transform: isHovered 
+//               ? `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(50px)`
+//               : 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px)'
+//           }}
+//         >
+//           {/* Fondo principal con glassmorphism */}
+//           <div className="absolute inset-0 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/20 shadow-xl"></div>
+          
+//           {/* Efecto de hover sutil */}
+//           <div className={`absolute inset-0 rounded-2xl transition-all duration-500 ${
+//             isHovered 
+//               ? 'bg-gradient-to-br from-[#a8c241]/5 to-transparent shadow-2xl shadow-[#a8c241]/10 border-[#a8c241]/20' 
+//               : 'bg-transparent'
+//           }`}></div>
+
+//           {/* Reflejo 3D */}
+//           <div className={`absolute inset-0 rounded-2xl transition-all duration-300 ${
+//             isHovered 
+//               ? 'bg-gradient-to-br from-white/10 to-transparent opacity-100' 
+//               : 'opacity-0'
+//           }`}></div>
+
+//           {/* Línea decorativa superior */}
+//           <div className={`absolute top-0 left-1/2 transform -translate-x-1/2 h-1 rounded-b-full transition-all duration-500 ${
+//             isHovered ? 'w-16 bg-gradient-to-r from-[#a8c241] to-[#96b23a]' : 'w-8 bg-gray-200'
+//           }`}></div>
+
+//           {/* Contenido principal */}
+//           <div className="relative z-10 p-8 h-full flex flex-col items-center text-center">
+            
+//             {/* Contenedor de la animación */}
+//             <div className="mb-6 relative">
+//               <div className={`transform transition-all duration-500 ${
+//                 isHovered ? 'scale-105 translateZ-4' : 'scale-100'
+//               }`}>
+//                 {/* Círculo de fondo sutil */}
+//                 <div className={`absolute inset-0 rounded-full transition-all duration-500 ${
+//                   isHovered ? 'bg-[#a8c241]/5 scale-110' : 'bg-gray-50/50 scale-100'
+//                 }`} style={{ margin: '-20px' }}></div>
+                
+//                 <RiveFeatureAnimation
+//                   src={feature.riveAnimation}
+//                   fallbackIcon={feature.fallbackIcon}
+//                   title={feature.title}
+//                   width={feature.animationSize?.width || 160}
+//                   height={feature.animationSize?.height || 160}
+//                   className="relative z-10"
+//                 />
+//               </div>
+//             </div>
+            
+//             {/* Título elegante */}
+//             <h3 className="text-2xl font-bold text-gray-900 mb-3 tracking-tight">
+//               {feature.title}
+//             </h3>
+
+//             {/* Descripción concisa */}
+//             <p className="text-gray-600 leading-relaxed text-base">
+//               {feature.shortDescription || feature.description.split('.')[0] + '.'}
+//             </p>
+
+//             {/* Indicador sutil al hover */}
+//             <div className={`mt-6 transition-all duration-300 ${
+//               isHovered ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-2'
+//             }`}>
+//               <div className="w-12 h-0.5 bg-gradient-to-r from-[#a8c241] to-[#96b23a] rounded-full mx-auto"></div>
+//             </div>
+
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// const HeroAnimation: React.FC = () => {
+//   return (
+//     <div className="relative h-full flex items-center justify-center">
+//       <div className="w-full max-w-lg relative">
+//         <img 
+//           src="/public/hero.svg"
+//           alt="Dispositivos electrónicos para reciclaje"
+//           className="w-full h-auto rounded-2xl shadow-2xl animate-float"
+//         />
+//       </div>
+//     </div>
+//   );
+// };
+
+// const HomePage: React.FC = () => {
+//   const { isAuthenticated } = useAuth();
+//   const [currentTestimonial, setCurrentTestimonial] = useState(0);
+//   const [featuresRef, featuresVisible] = useIntersectionObserver({ threshold: 0.1 });
+
+//   // Features con descripciones concisas
+//   const features = [
+//     {
+//       riveAnimation: '/public/animations/reciclajeFacil.riv',
+//       fallbackIcon: CurrencyDollarIcon,
+//       title: 'Reciclaje Fácil',
+//       description: 'Proceso simple y rápido para convertir tu chatarra en dinero.',
+//       animationSize: { width: 280, height: 280 } 
+//     },
+//     {
+//       riveAnimation: '/public/animations/pagosSeguros.riv',
+//       fallbackIcon: BanknotesIcon,
+//       title: 'Pagos Seguros',
+//       description: 'Transferencias directas y seguras a tu cuenta bancaria.',
+//       animationSize: { width: 180, height: 180 } 
+//     },
+//     {
+//       riveAnimation: '/public/animations/reciclajeFacil.riv',
+//       fallbackIcon: ShieldCheckIcon,
+//       title: 'Confiable',
+//       description: 'Plataforma segura respaldada por miles de usuarios.',
+//       animationSize: { width: 280, height: 280 }
+//     }
+//   ];
+
+//   const testimonials = [
+//     {
+//       name: "Carlos Mendoza",
+//       location: "Guayaquil, Ecuador",
+//       amount: "$250",
+//       device: "iPhone 12 Pro",
+//       rating: 5,
+//       image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+//       quote: "Increíble servicio. Vendí mi iPhone viejo en menos de 24 horas. Definitivamente la mejor opción para vender electrónicos usados."
+//     },
+//     {
+//       name: "María González",
+//       location: "Lima, Perú",
+//       amount: "$180",
+//       device: "Samsung Galaxy S22",
+//       rating: 5,
+//       image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
+//       quote: "Confiable y transparente. Me encanta que ayudan al medio ambiente mientras genero ingresos extra."
+//     }
+//   ];
+
+//   useEffect(() => {
+//     const interval = setInterval(() => {
+//       setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
+//     }, 5000);
+    
+//     return () => clearInterval(interval);
+//   }, [testimonials.length]);
+
+//   return (
+//     <div className="min-h-screen bg-white">
+//       {/* Estilos CSS espectaculares */}
+//       <style>{`
+//         @keyframes float {
+//           0%, 100% { transform: translateY(0px) rotate(0deg); }
+//           25% { transform: translateY(-15px) rotate(1deg); }
+//           50% { transform: translateY(-25px) rotate(0deg); }
+//           75% { transform: translateY(-10px) rotate(-1deg); }
+//         }
+        
+//         @keyframes fadeInUp {
+//           from {
+//             opacity: 0;
+//             transform: translateY(30px);
+//           }
+//           to {
+//             opacity: 1;
+//             transform: translateY(0);
+//           }
+//         }
+        
+//         @keyframes pulseGlow {
+//           0%, 100% {
+//             box-shadow: 0 0 20px rgba(168, 194, 65, 0.2);
+//           }
+//           50% {
+//             box-shadow: 0 0 40px rgba(168, 194, 65, 0.4);
+//           }
+//         }
+
+//         @keyframes float-particle {
+//           0%, 100% {
+//             transform: translateY(0px) translateX(0px) rotate(0deg);
+//             opacity: 0.3;
+//           }
+//           25% {
+//             transform: translateY(-15px) translateX(5px) rotate(90deg);
+//             opacity: 0.6;
+//           }
+//           50% {
+//             transform: translateY(-25px) translateX(-5px) rotate(180deg);
+//             opacity: 1;
+//           }
+//           75% {
+//             transform: translateY(-10px) translateX(8px) rotate(270deg);
+//             opacity: 0.6;
+//           }
+//         }
+
+//         @keyframes pulse-slow {
+//           0%, 100% {
+//             transform: scale(1);
+//             opacity: 0.8;
+//           }
+//           50% {
+//             transform: scale(1.05);
+//             opacity: 1;
+//           }
+//         }
+
+//         @keyframes shimmer {
+//           0% {
+//             background-position: -200% 0;
+//           }
+//           100% {
+//             background-position: 200% 0;
+//           }
+//         }
+        
+//         .animate-float {
+//           animation: float 6s ease-in-out infinite;
+//         }
+        
+//         .animate-fadeInUp {
+//           animation: fadeInUp 0.8s ease-out forwards;
+//         }
+        
+//         .animate-pulseGlow {
+//           animation: pulseGlow 3s ease-in-out infinite;
+//         }
+
+//         .animate-float-particle {
+//           animation: float-particle 4s ease-in-out infinite;
+//         }
+
+//         .animate-pulse-slow {
+//           animation: pulse-slow 2s ease-in-out infinite;
+//         }
+
+//         .animate-shimmer {
+//           background: linear-gradient(90deg, transparent, rgba(168, 194, 65, 0.2), transparent);
+//           background-size: 200% 100%;
+//           animation: shimmer 2s infinite;
+//         }
+
+//         /* Mejoras de rendimiento */
+//         .will-change-transform {
+//           will-change: transform;
+//         }
+
+//         .will-change-opacity {
+//           will-change: opacity;
+//         }
+
+//         /* Glassmorphism effect */
+//         .glass-effect {
+//           background: rgba(255, 255, 255, 0.25);
+//           backdrop-filter: blur(10px);
+//           border: 1px solid rgba(255, 255, 255, 0.18);
+//         }
+//       `}</style>
+
+//       {/* Hero Section - Layout Horizontal */}
+//       <section className="relative min-h-screen bg-gradient-to-br from-white via-gray-50/30 to-white flex items-center overflow-hidden">
+//         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+//           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            
+//             {/* Contenido del Hero - Lado Izquierdo */}
+//             <div className="space-y-8">
+//               <div className="space-y-5">
+//                 <h1 className="text-4xl md:text-5xl lg:text-7xl font-spartan font-bold text-gray-900 leading-tight">
+//                   <span className="pr-44">
+//                     Convierte tu{' '}
+//                   </span>
+                 
+//                   <span className="text-[#a8c241] relative">
+//                     E-waste
+//                   </span>{' '}
+//                   en Dinero
+//                 </h1>
+                
+//                 <p className="font-heading text-2xl text-gray-600 max-w-2xl leading-relaxed">
+//                   La plataforma más fácil y segura para reciclar tus dispositivos 
+//                   electrónicos y obtener dinero al instante. <strong>Ayuda al planeta mientras generas ingresos.</strong>
+//                 </p>
+//               </div>
+
+//               <div className="flex flex-col sm:flex-row gap-4">
+//                 {isAuthenticated ? (
+//                   <Link to="/dashboard/sell">
+//                     <Button 
+//                       size="lg" 
+//                       className="bg-[#a8c241] hover:bg-[#96b23a] text-white px-8 py-4 text-lg font-semibold animate-pulseGlow"
+//                     >
+//                       Vender Ahora
+//                       <ArrowRightIcon className="ml-2 h-5 w-5" />
+//                     </Button>
+//                   </Link>
+//                 ) : (
+//                   <>
+//                     <Link to="/register">
+//                       <Button 
+//                         size="lg" 
+//                         className="bg-[#a8c241] hover:bg-[#96b23a] text-white px-8 py-4 text-lg font-semibold animate-pulseGlow"
+//                       >
+//                         Comenzar Gratis
+//                         <ArrowRightIcon className="ml-2 h-5 w-5" />
+//                       </Button>
+//                     </Link>
+//                     <Button 
+//                       variant="outline" 
+//                       size="lg" 
+//                       className="border-2 border-gray-300 text-gray-700 hover:border-[#a8c241] hover:text-[#a8c241] px-8 py-4 text-lg font-semibold"
+//                     >
+//                       <PlayIcon className="mr-2 h-5 w-5" />
+//                       Ver Demo
+//                     </Button>
+//                   </>
+//                 )}
+//               </div>
+//             </div>
+
+          //  <div className="order-1 lg:order-2 flex items-center justify-normal">
+          //     <div className="w-full max-w-lg lg:max-w-full">
+          //       <img 
+          //         src="/public/hero4.svg" 
+          //         alt="Convierte tu chatarra electrónica en dinero"
+          //         className="w-full h-auto max-h-[600px] object-contain"
+          //       />
+          //     </div>
+          //   </div>
+//           </div>
+//         </div>
+//       </section>
+
+//       {/* Features Section Profesional */}
+//       <section ref={featuresRef} className="py-20 bg-gradient-to-br from-gray-50/50 via-white to-gray-50/50 relative overflow-hidden">
+//         {/* Elementos de fondo sutiles */}
+//         <div className="absolute inset-0 overflow-hidden">
+//           <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-[#a8c241]/3 rounded-full blur-3xl"></div>
+//           <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-[#a8c241]/2 rounded-full blur-3xl"></div>
+//         </div>
+
+//         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+//           {/* Título de sección elegante */}
+//           <div className="text-center mb-16">
+//             <div className={`transform transition-all duration-800 ${
+//               featuresVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
+//             }`}>
+//               <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+//                 ¿Por qué elegirnos?
+//               </h2>
+//               <div className="w-20 h-1 bg-gradient-to-r from-[#a8c241] to-[#96b23a] mx-auto rounded-full mb-4"></div>
+//               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+//                 La experiencia más simple y segura para reciclar electrónicos
+//               </p>
+//             </div>
+//           </div>
+
+//           {/* Grid de tarjetas profesionales */}
+//           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10">
+//             {features.map((feature, index) => (
+//               <ProfessionalFeatureCard
+//                 key={index}
+//                 feature={feature}
+//                 index={index}
+//                 isVisible={featuresVisible}
+//               />
+//             ))}
+//           </div>
+
+
+//         </div>
+//       </section>
+
+//       {/* CTA Section */}
+//       <section className="py-20 bg-[#a8c241]">
+//         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+//           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+//             ¿Listo para comenzar?
+//           </h2>
+//           <p className="text-xl text-white/90 mb-8">
+//             Únete a miles de usuarios que ya están ganando dinero reciclando
+//           </p>
+          
+//           {!isAuthenticated && (
+//             <Link to="/register">
+//               <Button 
+//                 size="lg" 
+//                 variant="secondary"
+//                 className="bg-white text-[#a8c241] hover:bg-gray-100 px-8 py-4 text-lg font-semibold"
+//               >
+//                 Crear Cuenta Gratis
+//                 <ArrowRightIcon className="ml-2 h-5 w-5" />
+//               </Button>
+//             </Link>
+//           )}
+//         </div>
+//       </section>
+//     </div>
+//   );
+// };
+
+// export default HomePage;
+
+
+
+
+
+
+
+
+// src/pages/HomePage.tsx - LANDING PAGE IMPACTANTE WIRU 2024
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  CurrencyDollarIcon, 
-  ShieldCheckIcon,
-  ArrowRightIcon,
-  CheckIcon,
+import { motion, useScroll, useTransform } from 'framer-motion';
+import {
   PlayIcon,
+  CheckCircleIcon,
+  ArrowRightIcon,
   StarIcon,
+  ShoppingBagIcon,
+  CurrencyDollarIcon,
+  // RecyclingIcon, // Removed: not exported by @heroicons/react/24/outline
+  ShieldCheckIcon,
+  TruckIcon,
+  ChartBarIcon,
   DevicePhoneMobileIcon,
   ComputerDesktopIcon,
-  TvIcon,
-  CameraIcon,
   SpeakerWaveIcon,
+  CameraIcon,
   ClockIcon,
-  BanknotesIcon,
-  TruckIcon,
-  DocumentCheckIcon,
-  GlobeAltIcon,
   UserGroupIcon,
-  BuildingOffice2Icon
+  GlobeAmericasIcon,
+  BoltIcon,
+  SparklesIcon,
+  HandRaisedIcon
 } from '@heroicons/react/24/outline';
-import { 
-  CheckIcon as CheckIconSolid,
-  StarIcon as StarIconSolid 
-} from '@heroicons/react/24/solid';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { useAuth } from '@/hooks/useAuth';
-// Importación de Rive
-import { useRive } from '@rive-app/react-canvas';
-import { useEffect, useRef, useState } from 'react';
-
-// Hook para intersection observer mejorado
-const useIntersectionObserver = (options = {}) => {
-  const [isIntersecting, setIsIntersecting] = useState(false);
-  const [hasAnimated, setHasAnimated] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting && !hasAnimated) {
-        setIsIntersecting(true);
-        setHasAnimated(true);
-      }
-    }, { threshold: 0.2, ...options });
-
-    if (ref.current) {
-      observer.observe(ref.current);
-    }
-
-    return () => observer.disconnect();
-  }, [hasAnimated, options]);
-
-  return [ref, isIntersecting] as const;
-};
-
-// Componente de contador animado
-const AnimatedCounter: React.FC<{ 
-  value: number; 
-  suffix?: string; 
-  prefix?: string;
-  duration?: number;
-}> = ({ value, suffix = '', prefix = '', duration = 2000 }) => {
-  const [count, setCount] = useState(0);
-  const [ref, isIntersecting] = useIntersectionObserver({ threshold: 0.5 });
-
-  useEffect(() => {
-    if (isIntersecting) {
-      let startTime: number | null = null;
-      
-      const animate = (currentTime: number) => {
-        if (startTime === null) startTime = currentTime;
-        const progress = Math.min((currentTime - startTime) / duration, 1);
-        
-        setCount(Math.floor(progress * value));
-        
-        if (progress < 1) {
-          requestAnimationFrame(animate);
-        }
-      };
-      
-      requestAnimationFrame(animate);
-    }
-  }, [isIntersecting, value, duration]);
-
-  return (
-    <div ref={ref} className="text-center">
-      <div className="text-3xl font-bold text-[#a8c241]">
-        {prefix}{count.toLocaleString()}{suffix}
-      </div>
-    </div>
-  );
-};
-
-// Componente para manejar animaciones Rive con fallback y tamaños personalizables
-const RiveFeatureAnimation: React.FC<{
-  src: string;
-  fallbackIcon: React.ComponentType<any>;
-  title: string;
-  className?: string;
-  width?: number;
-  height?: number;
-}> = ({ 
-  src, 
-  fallbackIcon: FallbackIcon, 
-  title, 
-  className = '',
-  width = 160,
-  height = 160
-}) => {
-  const [hasError, setHasError] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  const { rive, RiveComponent } = useRive({
-    src,
-    autoplay: true,
-    onLoad: () => {
-      setIsLoaded(true);
-    },
-    onLoadError: (error) => {
-      console.error('Error loading Rive animation:', error);
-      setHasError(true);
-    }
-  });
-
-  if (hasError) {
-    return (
-      <div 
-        className={`flex items-center justify-center ${className}`}
-        style={{ width: `${width}px`, height: `${height}px` }}
-      >
-        <div className="text-[#a8c241] flex items-center justify-center animate-pulse-slow">
-          <FallbackIcon className="h-20 w-20 drop-shadow-lg" />
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div 
-      className={`flex items-center justify-center ${className}`}
-      style={{ width: `${width}px`, height: `${height}px` }}
-    >
-      {!isLoaded && (
-        <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl animate-pulse flex items-center justify-center w-full h-full shadow-inner">
-          <FallbackIcon className="h-20 w-20 text-gray-400 animate-bounce" />
-        </div>
-      )}
-      
-      <div className={`w-full h-full ${!isLoaded ? 'absolute opacity-0' : 'opacity-100'} transition-all duration-700 ease-out`}>
-        <RiveComponent 
-          width={width}
-          height={height}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'contain',
-            filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.1))'
-          }}
-        />
-      </div>
-    </div>
-  );
-};
-
-// Componente de tarjeta profesional con efecto 3D
-const ProfessionalFeatureCard: React.FC<{
-  feature: any;
-  index: number;
-  isVisible: boolean;
-}> = ({ feature, index, isVisible }) => {
-  const [isHovered, setIsHovered] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [animationDelay, setAnimationDelay] = useState(index * 150);
-  const cardRef = useRef<HTMLDivElement>(null);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
-    
-    const rect = cardRef.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    
-    const mouseX = e.clientX - centerX;
-    const mouseY = e.clientY - centerY;
-    
-    setMousePosition({ x: mouseX, y: mouseY });
-  };
-
-  const resetTransform = () => {
-    setMousePosition({ x: 0, y: 0 });
-  };
-
-  // Cálculo de rotación 3D
-  const rotateX = mousePosition.y / 10;
-  const rotateY = -mousePosition.x / 10;
-
-  return (
-    <div
-      className={`transform transition-all duration-800 ease-out ${
-        isVisible 
-          ? 'translate-y-0 opacity-100 scale-100' 
-          : 'translate-y-16 opacity-0 scale-98'
-      }`}
-      style={{ 
-        transitionDelay: isVisible ? `${animationDelay}ms` : '0ms',
-        willChange: 'transform, opacity'
-      }}
-    >
-      <div 
-        ref={cardRef}
-        className="relative group h-full perspective-1000"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => {
-          setIsHovered(false);
-          resetTransform();
-        }}
-        onMouseMove={handleMouseMove}
-      >
-        {/* Contenedor 3D */}
-        <div 
-          className="relative h-full transform-gpu transition-all duration-300 ease-out preserve-3d"
-          style={{
-            transform: isHovered 
-              ? `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(50px)`
-              : 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px)'
-          }}
-        >
-          {/* Fondo principal con glassmorphism */}
-          <div className="absolute inset-0 bg-white/70 backdrop-blur-sm rounded-2xl border border-white/20 shadow-xl"></div>
-          
-          {/* Efecto de hover sutil */}
-          <div className={`absolute inset-0 rounded-2xl transition-all duration-500 ${
-            isHovered 
-              ? 'bg-gradient-to-br from-[#a8c241]/5 to-transparent shadow-2xl shadow-[#a8c241]/10 border-[#a8c241]/20' 
-              : 'bg-transparent'
-          }`}></div>
-
-          {/* Reflejo 3D */}
-          <div className={`absolute inset-0 rounded-2xl transition-all duration-300 ${
-            isHovered 
-              ? 'bg-gradient-to-br from-white/10 to-transparent opacity-100' 
-              : 'opacity-0'
-          }`}></div>
-
-          {/* Línea decorativa superior */}
-          <div className={`absolute top-0 left-1/2 transform -translate-x-1/2 h-1 rounded-b-full transition-all duration-500 ${
-            isHovered ? 'w-16 bg-gradient-to-r from-[#a8c241] to-[#96b23a]' : 'w-8 bg-gray-200'
-          }`}></div>
-
-          {/* Contenido principal */}
-          <div className="relative z-10 p-8 h-full flex flex-col items-center text-center">
-            
-            {/* Contenedor de la animación */}
-            <div className="mb-6 relative">
-              <div className={`transform transition-all duration-500 ${
-                isHovered ? 'scale-105 translateZ-4' : 'scale-100'
-              }`}>
-                {/* Círculo de fondo sutil */}
-                <div className={`absolute inset-0 rounded-full transition-all duration-500 ${
-                  isHovered ? 'bg-[#a8c241]/5 scale-110' : 'bg-gray-50/50 scale-100'
-                }`} style={{ margin: '-20px' }}></div>
-                
-                <RiveFeatureAnimation
-                  src={feature.riveAnimation}
-                  fallbackIcon={feature.fallbackIcon}
-                  title={feature.title}
-                  width={feature.animationSize?.width || 160}
-                  height={feature.animationSize?.height || 160}
-                  className="relative z-10"
-                />
-              </div>
-            </div>
-            
-            {/* Título elegante */}
-            <h3 className="text-2xl font-bold text-gray-900 mb-3 tracking-tight">
-              {feature.title}
-            </h3>
-
-            {/* Descripción concisa */}
-            <p className="text-gray-600 leading-relaxed text-base">
-              {feature.shortDescription || feature.description.split('.')[0] + '.'}
-            </p>
-
-            {/* Indicador sutil al hover */}
-            <div className={`mt-6 transition-all duration-300 ${
-              isHovered ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-2'
-            }`}>
-              <div className="w-12 h-0.5 bg-gradient-to-r from-[#a8c241] to-[#96b23a] rounded-full mx-auto"></div>
-            </div>
-
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const HeroAnimation: React.FC = () => {
-  return (
-    <div className="relative h-full flex items-center justify-center">
-      <div className="w-full max-w-lg relative">
-        <img 
-          src="/public/hero.svg"
-          alt="Dispositivos electrónicos para reciclaje"
-          className="w-full h-auto rounded-2xl shadow-2xl animate-float"
-        />
-      </div>
-    </div>
-  );
-};
 
 const HomePage: React.FC = () => {
-  const { isAuthenticated } = useAuth();
-  const [currentTestimonial, setCurrentTestimonial] = useState(0);
-  const [featuresRef, featuresVisible] = useIntersectionObserver({ threshold: 0.1 });
+  const [currentStat, setCurrentStat] = useState(0);
+  const { scrollY } = useScroll();
+  const y1 = useTransform(scrollY, [0, 300], [0, -50]);
+  const y2 = useTransform(scrollY, [0, 300], [0, -25]);
 
-  // Features con descripciones concisas
+  // Estadísticas animadas
+  const liveStats = [
+    { label: "Usuarios activos", value: "12,847", icon: "👥", color: "text-blue-600" },
+    { label: "Kg reciclados hoy", value: "2,341", icon: "♻️", color: "text-green-600" },
+    { label: "Dinero generado", value: "$58,923", icon: "💰", color: "text-emerald-600" },
+    { label: "CO2 ahorrado", value: "8.2T", icon: "🌱", color: "text-lime-600" }
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentStat((prev) => (prev + 1) % liveStats.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const deviceCategories = [
+    { name: "Smartphones", icon: DevicePhoneMobileIcon, price: "$50-250", color: "from-blue-500 to-purple-500" },
+    { name: "Laptops", icon: ComputerDesktopIcon, price: "$100-800", color: "from-green-500 to-teal-500" },
+    { name: "Audio", icon: SpeakerWaveIcon, price: "$25-150", color: "from-orange-500 to-red-500" },
+    { name: "Cámaras", icon: CameraIcon, price: "$40-300", color: "from-pink-500 to-indigo-500" }
+  ];
+
   const features = [
     {
       riveAnimation: '/public/animations/reciclajeFacil.riv',
-      fallbackIcon: CurrencyDollarIcon,
-      title: 'Reciclaje Fácil',
-      description: 'Proceso simple y rápido para convertir tu chatarra en dinero.',
-      animationSize: { width: 280, height: 280 } 
+      icon: ShieldCheckIcon,
+      title: "100% Seguro",
+      description: "Verificación profesional y pago garantizado",
+      color: "from-emerald-500 to-green-600"
     },
     {
-      riveAnimation: '/public/animations/pagosSeguros.riv',
-      fallbackIcon: BanknotesIcon,
-      title: 'Pagos Seguros',
-      description: 'Transferencias directas y seguras a tu cuenta bancaria.',
-      animationSize: { width: 180, height: 180 } 
+      icon: TruckIcon,
+      title: "Recolección Gratis",
+      description: "Recogemos en tu puerta sin costo adicional",
+      color: "from-blue-500 to-indigo-600"
     },
     {
-      riveAnimation: '/public/animations/reciclajeFacil.riv',
-      fallbackIcon: ShieldCheckIcon,
-      title: 'Confiable',
-      description: 'Plataforma segura respaldada por miles de usuarios.',
-      animationSize: { width: 280, height: 280 }
+      icon: BoltIcon,
+      title: "Proceso Rápido",
+      description: "Desde cotización hasta pago en 48 horas",
+      color: "from-purple-500 to-pink-600"
+    },
+    {
+      icon: CurrencyDollarIcon,
+      title: "Mejor Precio",
+      description: "Garantizamos los mejores precios del mercado",
+      color: "from-amber-500 to-orange-600"
     }
   ];
 
   const testimonials = [
     {
-      name: "Carlos Mendoza",
-      location: "Guayaquil, Ecuador",
-      amount: "$250",
+      name: "Sara Pineda",
+      location: "Guayaquil",
+      amount: "$320",
       device: "iPhone 12 Pro",
+      quote: "Increíble servicio. Vendí mi iPhone en 2 días y el precio fue justo.",
       rating: 5,
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-      quote: "Increíble servicio. Vendí mi iPhone viejo en menos de 24 horas. Definitivamente la mejor opción para vender electrónicos usados."
+      avatar: "https://images.unsplash.com/photo-1494790108755-2616b2e14d24?w=150",
     },
     {
-      name: "María González",
-      location: "Lima, Perú",
-      amount: "$180",
-      device: "Samsung Galaxy S22",
+      name: "Carlos Zambrano", 
+      location: "Guayaquil",
+      amount: "$850",
+      device: "MacBook Pro",
+      quote: "El proceso fue súper fácil. Recomiendo Wiru al 100%.",
       rating: 5,
-      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-      quote: "Confiable y transparente. Me encanta que ayudan al medio ambiente mientras genero ingresos extra."
+      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150",
+    },
+    {
+      name: "Ana Martínez",
+      location: "Guayaquil", 
+      amount: "$180",
+      device: "iPad Air",
+      quote: "Servicio excelente, rápido y confiable. Volveré a usar Wiru.",
+      rating: 5,
+      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150",
     }
   ];
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
-    }, 5000);
-    
-    return () => clearInterval(interval);
-  }, [testimonials.length]);
+  const steps = [
+    {
+      number: 1,
+      title: "Cotiza tu dispositivo",
+      description: "Describe tu dispositivo y obtén una cotización inmediata",
+      icon: ShoppingBagIcon,
+      time: "2 min"
+    },
+    {
+      number: 2, 
+      title: "Agenda recolección",
+      description: "Selecciona fecha y hora para que pasemos por tu dispositivo",
+      icon: ClockIcon,
+      time: "1 min"
+    },
+    {
+      number: 3,
+      title: "Verificación profesional", 
+      description: "Nuestros expertos verifican el estado real del dispositivo",
+      icon: CheckCircleIcon,
+      time: "24 hrs"
+    },
+    {
+      number: 4,
+      title: "Recibe tu pago",
+      description: "Te transferimos el dinero directamente a tu cuenta",
+      icon: CurrencyDollarIcon,
+      time: "24 hrs"
+    }
+  ];
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Estilos CSS espectaculares */}
-      <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          25% { transform: translateY(-15px) rotate(1deg); }
-          50% { transform: translateY(-25px) rotate(0deg); }
-          75% { transform: translateY(-10px) rotate(-1deg); }
-        }
-        
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        @keyframes pulseGlow {
-          0%, 100% {
-            box-shadow: 0 0 20px rgba(168, 194, 65, 0.2);
-          }
-          50% {
-            box-shadow: 0 0 40px rgba(168, 194, 65, 0.4);
-          }
-        }
+    <div className="min-h-screen bg-white overflow-hidden">
+      
+      {/* HERO SECTION - REDISEÑADO COMPLETAMENTE */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        {/* Background con gradiente dinámico */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#f8fffe] via-white to-[#f0f9f0]">
+          {/* Elementos geométricos animados */}
+          <motion.div 
+            style={{ y: y1 }}
+            className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-[#a8c241]/10 to-[#D0FF5B]/20 rounded-full blur-3xl"
+          />
+          <motion.div 
+            style={{ y: y2 }}
+            className="absolute bottom-20 right-20 w-96 h-96 bg-gradient-to-r from-[#8ea635]/10 to-[#a8c241]/20 rounded-full blur-3xl"
+          />
+          
+          {/* Partículas flotantes */}
+          <div className="absolute inset-0">
+            {[...Array(20)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute w-2 h-2 bg-[#a8c241]/30 rounded-full"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                }}
+                animate={{
+                  y: [-20, 20, -20],
+                  opacity: [0.3, 0.8, 0.3],
+                }}
+                transition={{
+                  duration: 3 + Math.random() * 2,
+                  repeat: Infinity,
+                  delay: Math.random() * 2,
+                }}
+              />
+            ))}
+          </div>
+        </div>
 
-        @keyframes float-particle {
-          0%, 100% {
-            transform: translateY(0px) translateX(0px) rotate(0deg);
-            opacity: 0.3;
-          }
-          25% {
-            transform: translateY(-15px) translateX(5px) rotate(90deg);
-            opacity: 0.6;
-          }
-          50% {
-            transform: translateY(-25px) translateX(-5px) rotate(180deg);
-            opacity: 1;
-          }
-          75% {
-            transform: translateY(-10px) translateX(8px) rotate(270deg);
-            opacity: 0.6;
-          }
-        }
-
-        @keyframes pulse-slow {
-          0%, 100% {
-            transform: scale(1);
-            opacity: 0.8;
-          }
-          50% {
-            transform: scale(1.05);
-            opacity: 1;
-          }
-        }
-
-        @keyframes shimmer {
-          0% {
-            background-position: -200% 0;
-          }
-          100% {
-            background-position: 200% 0;
-          }
-        }
-        
-        .animate-float {
-          animation: float 6s ease-in-out infinite;
-        }
-        
-        .animate-fadeInUp {
-          animation: fadeInUp 0.8s ease-out forwards;
-        }
-        
-        .animate-pulseGlow {
-          animation: pulseGlow 3s ease-in-out infinite;
-        }
-
-        .animate-float-particle {
-          animation: float-particle 4s ease-in-out infinite;
-        }
-
-        .animate-pulse-slow {
-          animation: pulse-slow 2s ease-in-out infinite;
-        }
-
-        .animate-shimmer {
-          background: linear-gradient(90deg, transparent, rgba(168, 194, 65, 0.2), transparent);
-          background-size: 200% 100%;
-          animation: shimmer 2s infinite;
-        }
-
-        /* Mejoras de rendimiento */
-        .will-change-transform {
-          will-change: transform;
-        }
-
-        .will-change-opacity {
-          will-change: opacity;
-        }
-
-        /* Glassmorphism effect */
-        .glass-effect {
-          background: rgba(255, 255, 255, 0.25);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.18);
-        }
-      `}</style>
-
-      {/* Hero Section - Layout Horizontal */}
-      <section className="relative min-h-screen bg-gradient-to-br from-white via-gray-50/30 to-white flex items-center overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
             
-            {/* Contenido del Hero - Lado Izquierdo */}
-            <div className="space-y-8">
-              <div className="space-y-5">
-                <h1 className="text-4xl md:text-5xl lg:text-7xl font-spartan font-bold text-gray-900 leading-tight">
-                  <span className="pr-44">
-                    Convierte tu{' '}
-                  </span>
-                 
-                  <span className="text-[#a8c241] relative">
-                    E-waste
-                  </span>{' '}
-                  en Dinero
-                </h1>
+            {/* Contenido Principal */}
+            <motion.div 
+              className="space-y-8"
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+            
+
+              {/* Título principal IMPACTANTE */}
+              <motion.h1 
+                className="text-5xl sm:text-6xl lg:text-7xl font-black leading-tight"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <span className="text-gray-900">Tu </span>
+                <span className="bg-gradient-to-r from-[#a8c241] via-[#8ea635] to-[#719428] bg-clip-text text-transparent">
+                  E-Waste
+                </span>
+                <br />
+                <span className="text-gray-900">es </span>
+                <span className="bg-gradient-to-r from-[#D0FF5B] via-[#a8c241] to-[#8ea635] bg-clip-text text-transparent">
+                  Dinero 
+                </span>
+              </motion.h1>
+
+              {/* Subtítulo elegante */}
+              <motion.p 
+                className="text-xl sm:text-2xl text-gray-600 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-medium"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                Convierte tus dispositivos electrónicos en 
+                <span className="text-[#719428] font-bold"> dinero real</span>. 
+                Proceso 100% seguro, recolección gratuita y pago en 48 horas.
+              </motion.p>
+
+              {/* CTAs principales */}
+              <motion.div 
+                className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+              >
+                <Link to="/sell">
+                  <Button 
+                    size="lg"
+                    className="group relative overflow-hidden bg-gradient-to-r from-[#D0FF5B] via-[#a8c241] to-[#8ea635] hover:from-[#c2f043] hover:to-[#7fa836] text-gray-900 font-bold px-8 py-4 rounded-2xl shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="relative flex items-center">
+                      <ShoppingBagIcon className="h-6 w-6 mr-3" />
+                      ¡Vender Ahora!
+                      <ArrowRightIcon className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                    </div>
+                  </Button>
+                </Link>
                 
-                <p className="font-heading text-2xl text-gray-600 max-w-2xl leading-relaxed">
-                  La plataforma más fácil y segura para reciclar tus dispositivos 
-                  electrónicos y obtener dinero al instante. <strong>Ayuda al planeta mientras generas ingresos.</strong>
-                </p>
-              </div>
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  className="group border-2 border-[#a8c241] text-[#719428] hover:bg-[#a8c241] hover:text-white font-bold px-8 py-4 rounded-2xl transition-all duration-300"
+                >
+                  <PlayIcon className="h-5 w-5 mr-2 group-hover:scale-110 transition-transform duration-300" />
+                  Como funciona
+                </Button>
+              </motion.div>
 
-              <div className="flex flex-col sm:flex-row gap-4">
-                {isAuthenticated ? (
-                  <Link to="/dashboard/sell">
-                    <Button 
-                      size="lg" 
-                      className="bg-[#a8c241] hover:bg-[#96b23a] text-white px-8 py-4 text-lg font-semibold animate-pulseGlow"
-                    >
-                      Vender Ahora
-                      <ArrowRightIcon className="ml-2 h-5 w-5" />
-                    </Button>
-                  </Link>
-                ) : (
-                  <>
-                    <Link to="/register">
-                      <Button 
-                        size="lg" 
-                        className="bg-[#a8c241] hover:bg-[#96b23a] text-white px-8 py-4 text-lg font-semibold animate-pulseGlow"
-                      >
-                        Comenzar Gratis
-                        <ArrowRightIcon className="ml-2 h-5 w-5" />
-                      </Button>
-                    </Link>
-                    <Button 
-                      variant="outline" 
-                      size="lg" 
-                      className="border-2 border-gray-300 text-gray-700 hover:border-[#a8c241] hover:text-[#a8c241] px-8 py-4 text-lg font-semibold"
-                    >
-                      <PlayIcon className="mr-2 h-5 w-5" />
-                      Ver Demo
-                    </Button>
-                  </>
-                )}
-              </div>
-            </div>
+              {/* Estadística en tiempo real */}
+              <motion.div 
+                className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 shadow-xl"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 }}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="text-2xl">{liveStats[currentStat].icon}</div>
+                    <div>
+                      <div className="text-2xl font-black text-gray-900">
+                        {liveStats[currentStat].value}
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        {liveStats[currentStat].label}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex space-x-1">
+                    {liveStats.map((_, index) => (
+                      <div
+                        key={index}
+                        className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                          index === currentStat ? 'bg-[#a8c241] scale-125' : 'bg-gray-300'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
 
-           <div className="order-1 lg:order-2 flex items-center justify-normal">
+            <div className="order-1 lg:order-2 flex items-center justify-normal">
               <div className="w-full max-w-lg lg:max-w-full">
                 <img 
                   src="/public/hero4.svg" 
@@ -1824,74 +2210,314 @@ const HomePage: React.FC = () => {
                 />
               </div>
             </div>
+
+            
+          </div>
+        </div>
+
+       
+      </section>
+
+      {/* SECCIÓN CATEGORÍAS DE DISPOSITIVOS */}
+      
+
+      {/* SECCIÓN CARACTERÍSTICAS */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div 
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-4xl sm:text-5xl font-black text-gray-900 mb-6">
+              ¿Por qué elegir 
+              <span className="bg-gradient-to-r from-[#a8c241] to-[#719428] bg-clip-text text-transparent"> Wiru</span>?
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Somos la plataforma líder en reciclaje de electrónicos en Ecuador. 
+              Ofrecemos el mejor servicio, precios justos y total transparencia.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {features.map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <motion.div
+                  key={feature.title}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.2 }}
+                  className="group"
+                >
+                  <Card className="text-center h-full border-0 shadow-lg hover:shadow-2xl transition-all duration-500 group-hover:-translate-y-2">
+                    <CardContent className="p-8">
+                      <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-br ${feature.color} mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                        <Icon className="h-8 w-8 text-white" />
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-900 mb-4">
+                        {feature.title}
+                      </h3>
+                      <p className="text-gray-600 leading-relaxed">
+                        {feature.description}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Features Section Profesional */}
-      <section ref={featuresRef} className="py-20 bg-gradient-to-br from-gray-50/50 via-white to-gray-50/50 relative overflow-hidden">
-        {/* Elementos de fondo sutiles */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-[#a8c241]/3 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-[#a8c241]/2 rounded-full blur-3xl"></div>
-        </div>
+      {/* SECCIÓN CÓMO FUNCIONA */}
+      <section className="py-20 bg-gradient-to-br from-[#f8fffe] to-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div 
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-4xl sm:text-5xl font-black text-gray-900 mb-6">
+              Proceso 
+              <span className="bg-gradient-to-r from-[#a8c241] to-[#719428] bg-clip-text text-transparent"> súper fácil</span>
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              En solo 4 pasos conviertes tu tecnología en dinero. 
+              Todo el proceso está diseñado para ser rápido, seguro y transparente.
+            </p>
+          </motion.div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          {/* Título de sección elegante */}
-          <div className="text-center mb-16">
-            <div className={`transform transition-all duration-800 ${
-              featuresVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
-            }`}>
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                ¿Por qué elegirnos?
-              </h2>
-              <div className="w-20 h-1 bg-gradient-to-r from-[#a8c241] to-[#96b23a] mx-auto rounded-full mb-4"></div>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                La experiencia más simple y segura para reciclar electrónicos
-              </p>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {steps.map((step, index) => {
+              const Icon = step.icon;
+              return (
+                <motion.div
+                  key={step.number}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="relative group"
+                >
+                  {/* Línea conectora */}
+                  {index < steps.length - 1 && (
+                    <div className="hidden lg:block absolute top-16 left-full w-full h-0.5 bg-gradient-to-r from-[#a8c241] to-[#8ea635] opacity-30 z-0"></div>
+                  )}
+                  
+                  <Card className="relative z-10 text-center h-full border-0 shadow-lg hover:shadow-2xl transition-all duration-500 group-hover:-translate-y-2">
+                    <CardContent className="p-8">
+                      {/* Número del paso */}
+                      <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-[#a8c241] to-[#8ea635] rounded-full text-white font-bold text-lg mb-6 group-hover:scale-110 transition-transform duration-300">
+                        {step.number}
+                      </div>
+                      
+                      {/* Icono */}
+                      <div className="inline-flex p-3 rounded-xl bg-gray-100 mb-4 group-hover:bg-[#a8c241]/10 transition-colors duration-300">
+                        <Icon className="h-6 w-6 text-[#719428]" />
+                      </div>
+                      
+                      <h3 className="text-lg font-bold text-gray-900 mb-3">
+                        {step.title}
+                      </h3>
+                      <p className="text-gray-600 mb-4 leading-relaxed">
+                        {step.description}
+                      </p>
+                      
+                      {/* Tiempo estimado */}
+                      <div className="inline-flex items-center px-3 py-1 bg-[#D0FF5B]/20 rounded-full">
+                        <ClockIcon className="h-4 w-4 text-[#719428] mr-1" />
+                        <span className="text-sm font-medium text-[#719428]">
+                          {step.time}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })}
           </div>
 
-          {/* Grid de tarjetas profesionales */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10">
-            {features.map((feature, index) => (
-              <ProfessionalFeatureCard
-                key={index}
-                feature={feature}
-                index={index}
-                isVisible={featuresVisible}
-              />
-            ))}
-          </div>
-
-
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 bg-[#a8c241]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            ¿Listo para comenzar?
-          </h2>
-          <p className="text-xl text-white/90 mb-8">
-            Únete a miles de usuarios que ya están ganando dinero reciclando
-          </p>
-          
-          {!isAuthenticated && (
-            <Link to="/register">
+          {/* CTA del proceso */}
+          <motion.div 
+            className="text-center mt-12"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <Link to="/sell">
               <Button 
-                size="lg" 
-                variant="secondary"
-                className="bg-white text-[#a8c241] hover:bg-gray-100 px-8 py-4 text-lg font-semibold"
+                size="lg"
+                className="bg-gradient-to-r from-[#a8c241] to-[#8ea635] hover:from-[#8ea635] hover:to-[#719428] text-white font-bold px-8 py-4 rounded-2xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
               >
-                Crear Cuenta Gratis
-                <ArrowRightIcon className="ml-2 h-5 w-5" />
+                <HandRaisedIcon className="h-6 w-6 mr-3" />
+                ¡Empezar ahora es gratis!
               </Button>
             </Link>
-          )}
+          </motion.div>
         </div>
       </section>
+
+      {/* SECCIÓN TESTIMONIALES */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div 
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-4xl sm:text-5xl font-black text-gray-900 mb-6">
+              Lo que dicen nuestros 
+              <span className="bg-gradient-to-r from-[#a8c241] to-[#719428] bg-clip-text text-transparent"> usuarios</span>
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Miles de Ecuatorianos ya confían en Wiru para reciclar su tecnología. 
+              Lee sus experiencias reales.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {testimonials.map((testimonial, index) => (
+              <motion.div
+                key={testimonial.name}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="group"
+              >
+                <Card className="h-full border-0 shadow-lg hover:shadow-2xl transition-all duration-500 group-hover:-translate-y-2">
+                  <CardContent className="p-8">
+                    {/* Rating */}
+                    <div className="flex items-center mb-4">
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <StarIcon key={i} className="h-5 w-5 text-yellow-400 fill-current" />
+                      ))}
+                    </div>
+                    
+                    {/* Quote */}
+                    <p className="text-gray-600 mb-6 leading-relaxed italic">
+                      "{testimonial.quote}"
+                    </p>
+                    
+                    {/* User info */}
+                    <div className="flex items-center mb-4">
+                      <img 
+                        src={testimonial.avatar} 
+                        alt={testimonial.name}
+                        className="w-12 h-12 rounded-full object-cover mr-4"
+                      />
+                      <div>
+                        <div className="font-bold text-gray-900">
+                          {testimonial.name}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {testimonial.location}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Sale info */}
+                    <div className="bg-gradient-to-r from-[#D0FF5B]/20 to-[#a8c241]/20 rounded-xl p-4">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <div className="text-sm text-gray-600">Vendió</div>
+                          <div className="font-medium text-gray-900">
+                            {testimonial.device}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm text-gray-600">Ganó</div>
+                          <div className="text-xl font-black text-[#719428]">
+                            {testimonial.amount}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SECCIÓN CTA FINAL */}
+      <section className="py-20 bg-gradient-to-br from-[#a8c241] via-[#8ea635] to-[#719428] relative overflow-hidden">
+        {/* Background pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-10 left-10 w-32 h-32 bg-white rounded-full blur-xl"></div>
+          <div className="absolute bottom-20 right-20 w-48 h-48 bg-[#D0FF5B] rounded-full blur-2xl"></div>
+          <div className="absolute top-1/2 left-1/3 w-24 h-24 bg-white rounded-full blur-lg"></div>
+        </div>
+
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-6 leading-tight">
+              ¿Listo para convertir tu
+              <br />
+              <span className="text-[#D0FF5B]">E-waste en dinero</span>?
+            </h2>
+            <p className="text-xl text-green-100 mb-8 max-w-2xl mx-auto leading-relaxed">
+              Únete a miles de ecuatorianos que ya están generando ingresos
+              con sus dispositivos electrónicos de forma segura y sostenible.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+              <Link to="/register">
+                <Button 
+                  size="lg"
+                  className="bg-white text-[#719428] hover:bg-gray-100 font-bold px-8 py-4 rounded-2xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+                >
+                  <SparklesIcon className="h-6 w-6 mr-3" />
+                  Crear Cuenta Gratis
+                </Button>
+              </Link>
+              
+              <Link to="/sell">
+                <Button 
+                  variant="outline"
+                  size="lg"
+                  className="border-2 border-white text-white hover:bg-white hover:text-[#719428] font-bold px-8 py-4 rounded-2xl transition-all duration-300"
+                >
+                  <ShoppingBagIcon className="h-6 w-6 mr-3" />
+                  Vender Dispositivo
+                </Button>
+              </Link>
+            </div>
+
+            {/* Trust indicators */}
+            <div className="flex flex-wrap justify-center items-center gap-8 text-green-100">
+              <div className="flex items-center">
+                <CheckCircleIcon className="h-5 w-5 mr-2" />
+                <span className="text-sm font-medium">100% Seguro</span>
+              </div>
+              <div className="flex items-center">
+                <ShieldCheckIcon className="h-5 w-5 mr-2" />
+                <span className="text-sm font-medium">Pago Garantizado</span>
+              </div>
+              <div className="flex items-center">
+                <TruckIcon className="h-5 w-5 mr-2" />
+                <span className="text-sm font-medium">Recolección Gratis</span>
+              </div>
+              <div className="flex items-center">
+                <UserGroupIcon className="h-5 w-5 mr-2" />
+                <span className="text-sm font-medium">+12K Usuarios</span>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      
     </div>
   );
 };
