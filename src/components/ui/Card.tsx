@@ -103,3 +103,39 @@ const CardFooter = React.forwardRef<
 CardFooter.displayName = 'CardFooter';
 
 export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent };
+
+
+
+
+// // src/components/ui/Card.tsx
+// import React from 'react';
+// import { cn } from '@/utils/cn';
+
+// interface CardProps {
+//   children: React.ReactNode;
+//   className?: string;
+// }
+
+// export const Card: React.FC<CardProps> = ({ children, className }) => {
+//   return (
+//     <div className={cn(
+//       'bg-white border border-gray-200 rounded-lg shadow-sm',
+//       className
+//     )}>
+//       {children}
+//     </div>
+//   );
+// };
+
+// interface CardContentProps {
+//   children: React.ReactNode;
+//   className?: string;
+// }
+
+// export const CardContent: React.FC<CardContentProps> = ({ children, className }) => {
+//   return (
+//     <div className={cn('p-6', className)}>
+//       {children}
+//     </div>
+//   );
+// };

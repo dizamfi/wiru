@@ -77,14 +77,14 @@ const ReferralsPage: React.FC = () => {
             <Button
               variant="outline"
               onClick={() => setShowLeaderboardModal(true)}
-              leftIcon={<TrophyIcon className="h-4 w-4" />}
             >
+              <TrophyIcon className="h-4 w-4 mr-2" />
               Ranking
             </Button>
             <Button
               onClick={() => setShowInviteModal(true)}
-              leftIcon={<UserPlusIcon className="h-4 w-4" />}
             >
+              <UserPlusIcon className="h-4 w-4 mr-2" />
               Invitar Amigos
             </Button>
           </div>
@@ -170,8 +170,8 @@ const ReferralsPage: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={copyReferralCode}
-                  leftIcon={<ClipboardDocumentIcon className="h-4 w-4" />}
                 >
+                  <ClipboardDocumentIcon className="h-4 w-4 mr-2" />
                   Copiar
                 </Button>
               </div>
@@ -202,8 +202,8 @@ const ReferralsPage: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={copyReferralLink}
-                  leftIcon={<ClipboardDocumentIcon className="h-4 w-4" />}
                 >
+                  <ClipboardDocumentIcon className="h-4 w-4 mr-2" />
                   Copiar
                 </Button>
               </div>
