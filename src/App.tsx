@@ -361,331 +361,519 @@
 
 
 
+// import React from 'react';
+// import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+// import { LayoutWrapper } from './components/layout';
+// import { ProtectedRoute } from './components/auth/ProtectedRoute';
+// import { SEOHead } from './components/SEO/SEOHead';
+// import { ScrollToTop } from './utils/ScrollToTop';
+
+// // Auth pages
+// import { LoginPage } from './pages/auth/LoginPage';
+// import { RegisterPage } from './pages/auth/RegisterPage';
+// import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
+// // import ResetPasswordPage from './pages/auth/ResetPasswordPage';
+// import { VerifyEmailPage } from './pages/auth/VerifyEmailPage';
+
+// // Dashboard pages
+// import DashboardPage from './pages/dashboard/DashboardPage';
+// import SellPage from './pages/dashboard/SellPage';
+// import OrdersPage from './pages/dashboard/OrdersPage';
+// import OrderDetailPage from './pages/dashboard/OrderDetailPage';
+// import StatsPage from './pages/dashboard/StatsPage';
+// import PaymentsPage from './pages/dashboard/PaymentsPage';
+// import ReferralsPage from './pages/dashboard/ReferralsPage';
+// import ProfilePage from './pages/dashboard/ProfilePage';
+
+// // Public pages
+// import HomePage from './pages/HomePage';
+// import AboutPage from './pages/AboutPage';
+// import ContactPage from './pages/ContactPage';
+// import HowItWorksPage from './pages/HowItWorksPage';
+
+// // Error pages
+// import NotFoundPage from './pages/errors/NotFoundPage';
+
+// // Legal pages (temporary)
+// const TermsPage = () => (
+//   <div className="max-w-4xl mx-auto px-4 py-12">
+//     <h1 className="text-3xl font-bold mb-6">Términos y Condiciones</h1>
+//     <p className="text-gray-600">Página en desarrollo...</p>
+//   </div>
+// );
+
+// const PrivacyPage = () => (
+//   <div className="max-w-4xl mx-auto px-4 py-12">
+//     <h1 className="text-3xl font-bold mb-6">Política de Privacidad</h1>
+//     <p className="text-gray-600">Página en desarrollo...</p>
+//   </div>
+// );
+
+// const HelpPage = () => (
+//   <div className="max-w-4xl mx-auto px-4 py-12">
+//     <h1 className="text-3xl font-bold mb-6">Centro de Ayuda</h1>
+//     <p className="text-gray-600">Página en desarrollo...</p>
+//   </div>
+// );
+
+// // Temporary placeholder pages
+// const RewardsPage = () => (
+//   <div className="space-y-6">
+//     <div className="bg-white border-b border-gray-200 px-6 py-6">
+//       <h1 className="text-2xl font-bold text-gray-900">Recompensas</h1>
+//       <p className="text-gray-600">Sistema de puntos y recompensas</p>
+//     </div>
+//     <div className="px-6">
+//       <div className="bg-white rounded-lg shadow p-12 text-center">
+//         <h3 className="text-lg font-medium text-gray-900 mb-2">
+//           Página en desarrollo
+//         </h3>
+//         <p className="text-gray-600">
+//           Sistema de recompensas próximamente
+//         </p>
+//       </div>
+//     </div>
+//   </div>
+// );
+
+// const SettingsPage = () => (
+//   <div className="space-y-6">
+//     <div className="bg-white border-b border-gray-200 px-6 py-6">
+//       <h1 className="text-2xl font-bold text-gray-900">Configuración</h1>
+//       <p className="text-gray-600">Ajustes de cuenta y preferencias</p>
+//     </div>
+//     <div className="px-6">
+//       <div className="bg-white rounded-lg shadow p-12 text-center">
+//         <h3 className="text-lg font-medium text-gray-900 mb-2">
+//           Página en desarrollo
+//         </h3>
+//         <p className="text-gray-600">
+//           Configuraciones próximamente
+//         </p>
+//       </div>
+//     </div>
+//   </div>
+// );
+
+// function App() {
+//   return (
+//     <Router>
+//       <ScrollToTop />
+//       <Routes>
+//         <Route path="/" element={<LayoutWrapper />}>
+//           {/* Public Routes */}
+//           <Route 
+//             index 
+//             element={
+//               <>
+//                 <SEOHead 
+//                   title="Inicio - Chatarra Electrónica"
+//                   description="Convierte tu chatarra electrónica en dinero de forma segura y sostenible"
+//                 />
+//                 <HomePage />
+//               </>
+//             } 
+//           />
+//           <Route 
+//             path="about" 
+//             element={
+//               <>
+//                 <SEOHead title="Sobre Nosotros" />
+//                 <AboutPage />
+//               </>
+//             } 
+//           />
+//           <Route 
+//             path="contact" 
+//             element={
+//               <>
+//                 <SEOHead title="Contacto" />
+//                 <ContactPage />
+//               </>
+//             } 
+//           />
+//           <Route 
+//             path="how-it-works" 
+//             element={
+//               <>
+//                 <SEOHead title="Cómo Funciona" />
+//                 <HowItWorksPage />
+//               </>
+//             } 
+//           />
+          
+//           {/* Auth Routes (redirect if already authenticated) */}
+//           <Route 
+//             path="login" 
+//             element={
+//               <ProtectedRoute requireAuth={false}>
+//                 <SEOHead title="Iniciar Sesión" noIndex />
+//                 <LoginPage />
+//               </ProtectedRoute>
+//             } 
+//           />
+//           <Route 
+//             path="register" 
+//             element={
+//               <ProtectedRoute requireAuth={false}>
+//                 <SEOHead title="Crear Cuenta" noIndex />
+//                 <RegisterPage />
+//               </ProtectedRoute>
+//             } 
+//           />
+//           <Route 
+//             path="forgot-password" 
+//             element={
+//               <ProtectedRoute requireAuth={false}>
+//                 <SEOHead title="Recuperar Contraseña" noIndex />
+//                 <ForgotPasswordPage />
+//               </ProtectedRoute>
+//             } 
+//           />
+//           {/* <Route 
+//             path="reset-password" 
+//             element={
+//               <ProtectedRoute requireAuth={false}>
+//                 <SEOHead title="Nueva Contraseña" noIndex />
+//                 <ResetPasswordPage />
+//               </ProtectedRoute>
+//             } 
+//           /> */}
+//           <Route 
+//             path="verify-email" 
+//             element={
+//               <>
+//                 <SEOHead title="Verificar Email" noIndex />
+//                 <VerifyEmailPage />
+//               </>
+//             } 
+//           />
+          
+//           {/* Protected Routes (require authentication) */}
+//           <Route 
+//             path="dashboard" 
+//             element={
+//               <ProtectedRoute requireAuth={true}>
+//                 <SEOHead title="Dashboard" noIndex />
+//                 <DashboardPage />
+//               </ProtectedRoute>
+//             } 
+//           />
+//           <Route 
+//             path="sell" 
+//             element={
+//               <ProtectedRoute requireAuth={true} requireEmailVerification={true}>
+//                 <SEOHead title="Vender" noIndex />
+//                 <SellPage />
+//               </ProtectedRoute>
+//             } 
+//           />
+//           <Route 
+//             path="orders" 
+//             element={
+//               <ProtectedRoute requireAuth={true}>
+//                 <SEOHead title="Mis Órdenes" noIndex />
+//                 <OrdersPage />
+//               </ProtectedRoute>
+//             } 
+//           />
+//           <Route 
+//             path="orders/:id" 
+//             element={
+//               <ProtectedRoute requireAuth={true}>
+//                 <SEOHead title="Detalle de Orden" noIndex />
+//                 <OrderDetailPage />
+//               </ProtectedRoute>
+//             } 
+//           />
+//           <Route 
+//             path="stats" 
+//             element={
+//               <ProtectedRoute requireAuth={true}>
+//                 <SEOHead title="Estadísticas" noIndex />
+//                 <StatsPage />
+//               </ProtectedRoute>
+//             } 
+//           />
+//           <Route 
+//             path="payments" 
+//             element={
+//               <ProtectedRoute requireAuth={true}>
+//                 <SEOHead title="Pagos" noIndex />
+//                 <PaymentsPage />
+//               </ProtectedRoute>
+//             } 
+//           />
+//           <Route 
+//             path="referrals" 
+//             element={
+//               <ProtectedRoute requireAuth={true}>
+//                 <SEOHead title="Referidos" noIndex />
+//                 <ReferralsPage />
+//               </ProtectedRoute>
+//             } 
+//           />
+//           <Route 
+//             path="rewards" 
+//             element={
+//               <ProtectedRoute requireAuth={true}>
+//                 <SEOHead title="Recompensas" noIndex />
+//                 <RewardsPage />
+//               </ProtectedRoute>
+//             } 
+//           />
+//           <Route 
+//             path="profile" 
+//             element={
+//               <ProtectedRoute requireAuth={true}>
+//                 <SEOHead title="Mi Perfil" noIndex />
+//                 <ProfilePage />
+//               </ProtectedRoute>
+//             } 
+//           />
+//           <Route 
+//             path="settings" 
+//             element={
+//               <ProtectedRoute requireAuth={true}>
+//                 <SEOHead title="Configuración" noIndex />
+//                 <SettingsPage />
+//               </ProtectedRoute>
+//             } 
+//           />
+          
+//           {/* Legal and Help Routes */}
+//           <Route 
+//             path="terms" 
+//             element={
+//               <>
+//                 <SEOHead title="Términos y Condiciones" />
+//                 <TermsPage />
+//               </>
+//             } 
+//           />
+//           <Route 
+//             path="privacy" 
+//             element={
+//               <>
+//                 <SEOHead title="Política de Privacidad" />
+//                 <PrivacyPage />
+//               </>
+//             } 
+//           />
+//           <Route 
+//             path="help" 
+//             element={
+//               <>
+//                 <SEOHead title="Centro de Ayuda" />
+//                 <HelpPage />
+//               </>
+//             } 
+//           />
+          
+//           {/* Redirects */}
+//           <Route path="home" element={<Navigate to="/" replace />} />
+          
+//           {/* 404 - Must be last */}
+//           <Route 
+//             path="*" 
+//             element={
+//               <>
+//                 <SEOHead title="Página No Encontrada" noIndex />
+//                 <NotFoundPage />
+//               </>
+//             } 
+//           />
+//         </Route>
+//       </Routes>
+//     </Router>
+//   );
+// }
+
+// export default App;
+
+
+
+
+
+// // src/App.tsx
+// import React from 'react';
+// import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+// import { AuthProvider } from '@/contexts/AuthContext';
+// import { LoginPage } from '@/pages/auth/LoginPage';
+// import { RegisterPage } from '@/pages/auth/RegisterPage';
+// import { PrivateRoute } from '@/components/auth/PrivateRoute';
+// import { DashboardPage } from './pages/dashboard';
+
+// function App() {
+//   return (
+//     <AuthProvider>
+//       <Router>
+//         <Routes>
+//           <Route path="/login" element={<LoginPage />} />
+//           <Route path="/register" element={<RegisterPage />} />
+//           <Route 
+//             path="/dashboard" 
+//             element={
+//               <PrivateRoute>
+//                 <DashboardPage />
+//               </PrivateRoute>
+//             } 
+//           />
+//           <Route path="/" element={<Navigate to="/login" replace />} />
+//         </Routes>
+//       </Router>
+//     </AuthProvider>
+//   );
+// }
+
+// export default App;
+
+
+
+
+// src/App.tsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { LayoutWrapper } from './components/layout';
-import { ProtectedRoute } from './components/auth/ProtectedRoute';
-import { SEOHead } from './components/SEO/SEOHead';
-import { ScrollToTop } from './utils/ScrollToTop';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { LoginPage } from '@/pages/auth/LoginPage';
+import { RegisterPage } from '@/pages/auth/RegisterPage';
+import { PrivateRoute, PublicRoute } from '@/components/auth/PrivateRoute';
+import { VerifyEmailPage } from '@/pages/auth/VerifyEmailPage';
+import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
+import { DashboardPage } from './pages/dashboard';
+// import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
 
-// Auth pages
-import { LoginPage } from './pages/auth/LoginPage';
-import { RegisterPage } from './pages/auth/RegisterPage';
-import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
-// import ResetPasswordPage from './pages/auth/ResetPasswordPage';
-import { VerifyEmailPage } from './pages/auth/VerifyEmailPage';
+// Error Boundary Component
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
 
-// Dashboard pages
-import DashboardPage from './pages/dashboard/DashboardPage';
-import SellPage from './pages/dashboard/SellPage';
-import OrdersPage from './pages/dashboard/OrdersPage';
-import OrderDetailPage from './pages/dashboard/OrderDetailPage';
-import StatsPage from './pages/dashboard/StatsPage';
-import PaymentsPage from './pages/dashboard/PaymentsPage';
-import ReferralsPage from './pages/dashboard/ReferralsPage';
-import ProfilePage from './pages/dashboard/ProfilePage';
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true };
+  }
 
-// Public pages
-import HomePage from './pages/HomePage';
-import AboutPage from './pages/AboutPage';
-import ContactPage from './pages/ContactPage';
-import HowItWorksPage from './pages/HowItWorksPage';
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('Error boundary caught an error:', error, errorInfo);
+  }
 
-// Error pages
-import NotFoundPage from './pages/errors/NotFoundPage';
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Algo salió mal</h1>
+            <p className="text-gray-600 mb-4">Ha ocurrido un error inesperado.</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-primary-600 text-white px-4 py-2 rounded hover:bg-primary-700"
+            >
+              Recargar página
+            </button>
+          </div>
+        </div>
+      );
+    }
 
-// Legal pages (temporary)
-const TermsPage = () => (
-  <div className="max-w-4xl mx-auto px-4 py-12">
-    <h1 className="text-3xl font-bold mb-6">Términos y Condiciones</h1>
-    <p className="text-gray-600">Página en desarrollo...</p>
-  </div>
-);
-
-const PrivacyPage = () => (
-  <div className="max-w-4xl mx-auto px-4 py-12">
-    <h1 className="text-3xl font-bold mb-6">Política de Privacidad</h1>
-    <p className="text-gray-600">Página en desarrollo...</p>
-  </div>
-);
-
-const HelpPage = () => (
-  <div className="max-w-4xl mx-auto px-4 py-12">
-    <h1 className="text-3xl font-bold mb-6">Centro de Ayuda</h1>
-    <p className="text-gray-600">Página en desarrollo...</p>
-  </div>
-);
-
-// Temporary placeholder pages
-const RewardsPage = () => (
-  <div className="space-y-6">
-    <div className="bg-white border-b border-gray-200 px-6 py-6">
-      <h1 className="text-2xl font-bold text-gray-900">Recompensas</h1>
-      <p className="text-gray-600">Sistema de puntos y recompensas</p>
-    </div>
-    <div className="px-6">
-      <div className="bg-white rounded-lg shadow p-12 text-center">
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
-          Página en desarrollo
-        </h3>
-        <p className="text-gray-600">
-          Sistema de recompensas próximamente
-        </p>
-      </div>
-    </div>
-  </div>
-);
-
-const SettingsPage = () => (
-  <div className="space-y-6">
-    <div className="bg-white border-b border-gray-200 px-6 py-6">
-      <h1 className="text-2xl font-bold text-gray-900">Configuración</h1>
-      <p className="text-gray-600">Ajustes de cuenta y preferencias</p>
-    </div>
-    <div className="px-6">
-      <div className="bg-white rounded-lg shadow p-12 text-center">
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
-          Página en desarrollo
-        </h3>
-        <p className="text-gray-600">
-          Configuraciones próximamente
-        </p>
-      </div>
-    </div>
-  </div>
-);
+    return this.props.children;
+  }
+}
 
 function App() {
   return (
-    <Router>
-      <ScrollToTop />
-      <Routes>
-        <Route path="/" element={<LayoutWrapper />}>
-          {/* Public Routes */}
-          <Route 
-            index 
-            element={
-              <>
-                <SEOHead 
-                  title="Inicio - Chatarra Electrónica"
-                  description="Convierte tu chatarra electrónica en dinero de forma segura y sostenible"
-                />
-                <HomePage />
-              </>
-            } 
-          />
-          <Route 
-            path="about" 
-            element={
-              <>
-                <SEOHead title="Sobre Nosotros" />
-                <AboutPage />
-              </>
-            } 
-          />
-          <Route 
-            path="contact" 
-            element={
-              <>
-                <SEOHead title="Contacto" />
-                <ContactPage />
-              </>
-            } 
-          />
-          <Route 
-            path="how-it-works" 
-            element={
-              <>
-                <SEOHead title="Cómo Funciona" />
-                <HowItWorksPage />
-              </>
-            } 
-          />
-          
-          {/* Auth Routes (redirect if already authenticated) */}
-          <Route 
-            path="login" 
-            element={
-              <ProtectedRoute requireAuth={false}>
-                <SEOHead title="Iniciar Sesión" noIndex />
-                <LoginPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="register" 
-            element={
-              <ProtectedRoute requireAuth={false}>
-                <SEOHead title="Crear Cuenta" noIndex />
-                <RegisterPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="forgot-password" 
-            element={
-              <ProtectedRoute requireAuth={false}>
-                <SEOHead title="Recuperar Contraseña" noIndex />
-                <ForgotPasswordPage />
-              </ProtectedRoute>
-            } 
-          />
-          {/* <Route 
-            path="reset-password" 
-            element={
-              <ProtectedRoute requireAuth={false}>
-                <SEOHead title="Nueva Contraseña" noIndex />
-                <ResetPasswordPage />
-              </ProtectedRoute>
-            } 
-          /> */}
-          <Route 
-            path="verify-email" 
-            element={
-              <>
-                <SEOHead title="Verificar Email" noIndex />
-                <VerifyEmailPage />
-              </>
-            } 
-          />
-          
-          {/* Protected Routes (require authentication) */}
-          <Route 
-            path="dashboard" 
-            element={
-              <ProtectedRoute requireAuth={true}>
-                <SEOHead title="Dashboard" noIndex />
-                <DashboardPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="sell" 
-            element={
-              <ProtectedRoute requireAuth={true} requireEmailVerification={true}>
-                <SEOHead title="Vender" noIndex />
-                <SellPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="orders" 
-            element={
-              <ProtectedRoute requireAuth={true}>
-                <SEOHead title="Mis Órdenes" noIndex />
-                <OrdersPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="orders/:id" 
-            element={
-              <ProtectedRoute requireAuth={true}>
-                <SEOHead title="Detalle de Orden" noIndex />
-                <OrderDetailPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="stats" 
-            element={
-              <ProtectedRoute requireAuth={true}>
-                <SEOHead title="Estadísticas" noIndex />
-                <StatsPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="payments" 
-            element={
-              <ProtectedRoute requireAuth={true}>
-                <SEOHead title="Pagos" noIndex />
-                <PaymentsPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="referrals" 
-            element={
-              <ProtectedRoute requireAuth={true}>
-                <SEOHead title="Referidos" noIndex />
-                <ReferralsPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="rewards" 
-            element={
-              <ProtectedRoute requireAuth={true}>
-                <SEOHead title="Recompensas" noIndex />
-                <RewardsPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="profile" 
-            element={
-              <ProtectedRoute requireAuth={true}>
-                <SEOHead title="Mi Perfil" noIndex />
-                <ProfilePage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="settings" 
-            element={
-              <ProtectedRoute requireAuth={true}>
-                <SEOHead title="Configuración" noIndex />
-                <SettingsPage />
-              </ProtectedRoute>
-            } 
-          />
-          
-          {/* Legal and Help Routes */}
-          <Route 
-            path="terms" 
-            element={
-              <>
-                <SEOHead title="Términos y Condiciones" />
-                <TermsPage />
-              </>
-            } 
-          />
-          <Route 
-            path="privacy" 
-            element={
-              <>
-                <SEOHead title="Política de Privacidad" />
-                <PrivacyPage />
-              </>
-            } 
-          />
-          <Route 
-            path="help" 
-            element={
-              <>
-                <SEOHead title="Centro de Ayuda" />
-                <HelpPage />
-              </>
-            } 
-          />
-          
-          {/* Redirects */}
-          <Route path="home" element={<Navigate to="/" replace />} />
-          
-          {/* 404 - Must be last */}
-          <Route 
-            path="*" 
-            element={
-              <>
-                <SEOHead title="Página No Encontrada" noIndex />
-                <NotFoundPage />
-              </>
-            } 
-          />
-        </Route>
-      </Routes>
-    </Router>
+    <ErrorBoundary>
+      <AuthProvider>
+        <Router>
+          <div className="App">
+            <Routes>
+              {/* Rutas públicas - redirigen a dashboard si ya está autenticado */}
+              <Route 
+                path="/login" 
+                element={
+                  <PublicRoute>
+                    <LoginPage />
+                  </PublicRoute>
+                } 
+              />
+              <Route 
+                path="/register" 
+                element={
+                  <PublicRoute>
+                    <RegisterPage />
+                  </PublicRoute>
+                } 
+              />
+              <Route 
+                path="/verify-email" 
+                element={
+                  <PublicRoute>
+                    <VerifyEmailPage />
+                  </PublicRoute>
+                } 
+              />
+              <Route 
+                path="/forgot-password" 
+                element={
+                  <PublicRoute>
+                    <ForgotPasswordPage />
+                  </PublicRoute>
+                } 
+              />
+              {/* <Route 
+                path="/reset-password" 
+                element={
+                  <PublicRoute>
+                    <ResetPasswordPage />
+                  </PublicRoute>
+                } 
+              /> */}
+
+              {/* Rutas protegidas - requieren autenticación */}
+              <Route 
+                path="/dashboard" 
+                element={
+                  <PrivateRoute>
+                    <DashboardPage />
+                  </PrivateRoute>
+                } 
+              />
+              <Route 
+                path="/profile" 
+                element={
+                  <PrivateRoute>
+                    <div className="min-h-screen bg-gray-50 p-8">
+                      <h1 className="text-2xl font-bold">Perfil de Usuario</h1>
+                      <p>Página en desarrollo...</p>
+                    </div>
+                  </PrivateRoute>
+                } 
+              />
+
+              {/* Ruta por defecto */}
+              <Route path="/" element={<Navigate to="/login" replace />} />
+              
+              {/* Ruta 404 */}
+              <Route 
+                path="*" 
+                element={
+                  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                    <div className="text-center">
+                      <h1 className="text-4xl font-bold text-gray-900 mb-4">404</h1>
+                      <p className="text-gray-600 mb-4">Página no encontrada</p>
+                      <Navigate to="/" replace />
+                    </div>
+                  </div>
+                } 
+              />
+            </Routes>
+          </div>
+        </Router>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

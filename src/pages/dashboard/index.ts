@@ -1,4 +1,4 @@
-export { default as DashboardPage } from './DashboardPage';
+export {  DashboardPage } from './DashboardPage';
 export { default as OrdersPage } from './OrdersPage';
 export { default as StatsPage } from './StatsPage';
 export { default as SellPage } from './SellPage';

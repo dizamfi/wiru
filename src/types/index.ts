@@ -12,6 +12,7 @@ export interface User {
   referralCode?: string;
   createdAt: string;
   updatedAt: string;
+  type?: 'PERSON' | 'COMPANY'; 
 }
 
 export interface AuthResponse {
