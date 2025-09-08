@@ -1,7 +1,7 @@
 // Tipos base para la aplicación
 export interface User {
   status: string;
-  role(role: any): boolean;
+  role: string | ((role: any) => boolean);
   id: string;
   email: string;
   firstName: string;

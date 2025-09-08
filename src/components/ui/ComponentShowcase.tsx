@@ -71,7 +71,6 @@ export const ComponentShowcase: React.FC = () => {
             <Input 
               label="Campo con error" 
               error="Este campo es requerido"
-              variant="error"
             />
           </div>
         </CardContent>

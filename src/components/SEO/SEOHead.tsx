@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { env } from '@/utils/env';
-import { type ClassValue } from 'clsx';
 
 interface SEOHeadProps {
   title?: string;

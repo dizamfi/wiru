@@ -731,149 +731,303 @@
 
 
 
-// src/App.tsx
+// // src/App.tsx
+// import React from 'react';
+// import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+// import { AuthProvider } from '@/contexts/AuthContext';
+// import { LoginPage } from '@/pages/auth/LoginPage';
+// import { RegisterPage } from '@/pages/auth/RegisterPage';
+// import { PrivateRoute, PublicRoute } from '@/components/auth/PrivateRoute';
+// import { VerifyEmailPage } from '@/pages/auth/VerifyEmailPage';
+// import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
+// import { DashboardPage } from './pages/dashboard';
+// import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
+
+// // Error Boundary Component
+// class ErrorBoundary extends React.Component<
+//   { children: React.ReactNode },
+//   { hasError: boolean }
+// > {
+//   constructor(props: { children: React.ReactNode }) {
+//     super(props);
+//     this.state = { hasError: false };
+//   }
+
+//   static getDerivedStateFromError(error: Error) {
+//     return { hasError: true };
+//   }
+
+//   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+//     console.error('Error boundary caught an error:', error, errorInfo);
+//   }
+
+//   render() {
+//     if (this.state.hasError) {
+//       return (
+//         <div className="min-h-screen flex items-center justify-center bg-gray-50">
+//           <div className="text-center">
+//             <h1 className="text-2xl font-bold text-gray-900 mb-4">Algo salió mal</h1>
+//             <p className="text-gray-600 mb-4">Ha ocurrido un error inesperado.</p>
+//             <button
+//               onClick={() => window.location.reload()}
+//               className="bg-primary-600 text-white px-4 py-2 rounded hover:bg-primary-700"
+//             >
+//               Recargar página
+//             </button>
+//           </div>
+//         </div>
+//       );
+//     }
+
+//     return this.props.children;
+//   }
+// }
+
+// function App() {
+//   return (
+//     <ErrorBoundary>
+//       <AuthProvider>
+//         <Router>
+//           <div className="App">
+//             <Routes>
+//               {/* Rutas públicas - redirigen a dashboard si ya está autenticado */}
+//               <Route 
+//                 path="/login" 
+//                 element={
+//                   <PublicRoute>
+//                     <LoginPage />
+//                   </PublicRoute>
+//                 } 
+//               />
+//               <Route 
+//                 path="/register" 
+//                 element={
+//                   <PublicRoute>
+//                     <RegisterPage />
+//                   </PublicRoute>
+//                 } 
+//               />
+//               <Route 
+//                 path="/verify-email" 
+//                 element={
+//                   <PublicRoute>
+//                     <VerifyEmailPage />
+//                   </PublicRoute>
+//                 } 
+//               />
+//               <Route 
+//                 path="/forgot-password" 
+//                 element={
+//                   <PublicRoute>
+//                     <ForgotPasswordPage />
+//                   </PublicRoute>
+//                 } 
+//               />
+//               {/* <Route 
+//                 path="/reset-password" 
+//                 element={
+//                   <PublicRoute>
+//                     <ResetPasswordPage />
+//                   </PublicRoute>
+//                 } 
+//               /> */}
+
+//               {/* Rutas protegidas - requieren autenticación */}
+//               <Route 
+//                 path="/dashboard" 
+//                 element={
+//                   <PrivateRoute>
+//                     <DashboardPage />
+//                   </PrivateRoute>
+//                 } 
+//               />
+//               <Route 
+//                 path="/profile" 
+//                 element={
+//                   <PrivateRoute>
+//                     <div className="min-h-screen bg-gray-50 p-8">
+//                       <h1 className="text-2xl font-bold">Perfil de Usuario</h1>
+//                       <p>Página en desarrollo...</p>
+//                     </div>
+//                   </PrivateRoute>
+//                 } 
+//               />
+
+//               {/* Ruta por defecto */}
+//               <Route path="/" element={<Navigate to="/login" replace />} />
+              
+//               {/* Ruta 404 */}
+//               <Route 
+//                 path="*" 
+//                 element={
+//                   <div className="min-h-screen flex items-center justify-center bg-gray-50">
+//                     <div className="text-center">
+//                       <h1 className="text-4xl font-bold text-gray-900 mb-4">404</h1>
+//                       <p className="text-gray-600 mb-4">Página no encontrada</p>
+//                       <Navigate to="/" replace />
+//                     </div>
+//                   </div>
+//                 } 
+//               />
+//             </Routes>
+//           </div>
+//         </Router>
+//       </AuthProvider>
+//     </ErrorBoundary>
+//   );
+// }
+
+// export default App;
+
+
+
+
+
+
+
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { OAuthProviders } from '@/providers/OAuthProviders';
+import { FacebookProvider } from '@/providers/FacebookProvider';
+
+// Páginas
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
-import { PrivateRoute, PublicRoute } from '@/components/auth/PrivateRoute';
 import { VerifyEmailPage } from '@/pages/auth/VerifyEmailPage';
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
 import { DashboardPage } from './pages/dashboard';
-// import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
 
-// Error Boundary Component
-class ErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  { hasError: boolean }
-> {
-  constructor(props: { children: React.ReactNode }) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(error: Error) {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Error boundary caught an error:', error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Algo salió mal</h1>
-            <p className="text-gray-600 mb-4">Ha ocurrido un error inesperado.</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="bg-primary-600 text-white px-4 py-2 rounded hover:bg-primary-700"
-            >
-              Recargar página
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    return this.props.children;
-  }
-}
+// Componentes de protección
+import { RequireAuth, RequireGuest } from '@/contexts/AuthContext';
+import ProfilePage from './pages/dashboard/ProfilePage';
 
 function App() {
   return (
-    <ErrorBoundary>
-      <AuthProvider>
-        <Router>
-          <div className="App">
-            <Routes>
-              {/* Rutas públicas - redirigen a dashboard si ya está autenticado */}
-              <Route 
-                path="/login" 
-                element={
-                  <PublicRoute>
-                    <LoginPage />
-                  </PublicRoute>
-                } 
-              />
-              <Route 
-                path="/register" 
-                element={
-                  <PublicRoute>
-                    <RegisterPage />
-                  </PublicRoute>
-                } 
-              />
-              <Route 
-                path="/verify-email" 
-                element={
-                  <PublicRoute>
-                    <VerifyEmailPage />
-                  </PublicRoute>
-                } 
-              />
-              <Route 
-                path="/forgot-password" 
-                element={
-                  <PublicRoute>
-                    <ForgotPasswordPage />
-                  </PublicRoute>
-                } 
-              />
-              {/* <Route 
-                path="/reset-password" 
-                element={
-                  <PublicRoute>
-                    <ResetPasswordPage />
-                  </PublicRoute>
-                } 
-              /> */}
-
-              {/* Rutas protegidas - requieren autenticación */}
-              <Route 
-                path="/dashboard" 
-                element={
-                  <PrivateRoute>
-                    <DashboardPage />
-                  </PrivateRoute>
-                } 
-              />
-              <Route 
-                path="/profile" 
-                element={
-                  <PrivateRoute>
-                    <div className="min-h-screen bg-gray-50 p-8">
-                      <h1 className="text-2xl font-bold">Perfil de Usuario</h1>
-                      <p>Página en desarrollo...</p>
-                    </div>
-                  </PrivateRoute>
-                } 
+    <OAuthProviders>
+      <FacebookProvider>
+        <AuthProvider>
+          <Router>
+            <div className="App">
+              {/* Configuración de toasts */}
+              <Toaster 
+                position="top-right"
+                toastOptions={{
+                  duration: 4000,
+                  style: {
+                    background: '#363636',
+                    color: '#fff',
+                  },
+                  success: {
+                    duration: 3000,
+                    iconTheme: {
+                      primary: '#4ade80',
+                      secondary: '#fff',
+                    },
+                  },
+                  error: {
+                    duration: 5000,
+                    iconTheme: {
+                      primary: '#ef4444',
+                      secondary: '#fff',
+                    },
+                  },
+                }}
               />
 
-              {/* Ruta por defecto */}
-              <Route path="/" element={<Navigate to="/login" replace />} />
-              
-              {/* Ruta 404 */}
-              <Route 
-                path="*" 
-                element={
-                  <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                    <div className="text-center">
-                      <h1 className="text-4xl font-bold text-gray-900 mb-4">404</h1>
-                      <p className="text-gray-600 mb-4">Página no encontrada</p>
-                      <Navigate to="/" replace />
-                    </div>
-                  </div>
-                } 
-              />
-            </Routes>
-          </div>
-        </Router>
-      </AuthProvider>
-    </ErrorBoundary>
+              <Routes>
+                {/* Rutas públicas (solo para no autenticados) */}
+                <Route 
+                  path="/login" 
+                  element={
+                    <RequireGuest fallback={<DashboardPage />}>
+                      <LoginPage />
+                    </RequireGuest>
+                  } 
+                />
+                <Route 
+                  path="/register" 
+                  element={
+                    <RequireGuest fallback={<DashboardPage />}>
+                      <RegisterPage />
+                    </RequireGuest>
+                  } 
+                />
+                <Route 
+                  path="/forgot-password" 
+                  element={
+                    <RequireGuest fallback={<DashboardPage />}>
+                      <ForgotPasswordPage />
+                    </RequireGuest>
+                  } 
+                />
+                {/* <Route 
+                  path="/reset-password" 
+                  element={
+                    <RequireGuest fallback={<DashboardPage />}>
+                      <ResetPasswordPage />
+                    </RequireGuest>
+                  } 
+                /> */}
+
+                {/* Rutas de verificación (accesibles si está autenticado o no) */}
+                <Route path="/verify-email" element={<VerifyEmailPage />} />
+
+                {/* Rutas protegidas */}
+                <Route 
+                  path="/" 
+                  element={
+                    <RequireAuth fallback={<LoginPage />}>
+                      <DashboardPage />
+                    </RequireAuth>
+                  } 
+                />
+                <Route 
+                  path="/dashboard" 
+                  element={
+                    <RequireAuth 
+                      fallback={<LoginPage />}
+                      requireEmailVerified={true}
+                    >
+                      <DashboardPage />
+                    </RequireAuth>
+                  } 
+                />
+                <Route 
+                  path="/profile" 
+                  element={
+                    <RequireAuth 
+                      fallback={<LoginPage />}
+                      requireEmailVerified={true}
+                    >
+                      <ProfilePage />
+                    </RequireAuth>
+                  } 
+                />
+
+                {/* Rutas de admin */}
+                <Route 
+                  path="/admin/*" 
+                  element={
+                    <RequireAuth 
+                      fallback={<LoginPage />}
+                      requireEmailVerified={true}
+                      requiredRole="ADMIN"
+                    >
+                      <div>Panel de Admin</div>
+                    </RequireAuth>
+                  } 
+                />
+
+                {/* Ruta 404 */}
+                <Route path="*" element={<div>Página no encontrada</div>} />
+              </Routes>
+            </div>
+          </Router>
+        </AuthProvider>
+      </FacebookProvider>
+    </OAuthProviders>
   );
 }
 

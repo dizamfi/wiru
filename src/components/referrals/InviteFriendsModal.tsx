@@ -7,8 +7,7 @@ import {
   Button,
   Input,
   Card,
-  CardContent,
-  Badge
+  CardContent
 } from '@/components/ui';
 import {
   UserPlusIcon,
@@ -18,8 +17,6 @@ import {
   PlusIcon,
   XMarkIcon,
   ClipboardDocumentIcon,
-  QrCodeIcon,
-  ShareIcon
 } from '@heroicons/react/24/outline';
 import { useReferrals } from '@/hooks/useReferrals';
 import { InvitationSource } from '@/types/referral';
@@ -40,7 +37,7 @@ export const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
   const { sendInvitations, shareOnPlatform, copyReferralLink, copyReferralCode } = useReferrals();
   const [emails, setEmails] = useState<string[]>(['']);
   const [customMessage, setCustomMessage] = useState('');
-  const [selectedSource, setSelectedSource] = useState<InvitationSource>('email');
+  const [selectedSource] = useState<InvitationSource>('email');
   const [loading, setLoading] = useState(false);
 
   const addEmailField = () => {
@@ -237,8 +234,8 @@ export const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={addEmailField}
-                leftIcon={<PlusIcon className="h-4 w-4" />}
               >
+                <PlusIcon className="h-4 w-4 mr-2" />
                 Agregar otro email
               </Button>
             </div>

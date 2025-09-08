@@ -123,13 +123,13 @@ export const VerifyEmailPage: React.FC = () => {
 
             <div className="space-y-3">
               <Link to="/dashboard">
-                <Button fullWidth>
+                <Button>
                   Ir al Dashboard
                 </Button>
               </Link>
               
               <Link to="/login">
-                <Button variant="outline" fullWidth>
+                <Button variant="outline">
                   Iniciar Sesión
                 </Button>
               </Link>
@@ -168,11 +168,9 @@ export const VerifyEmailPage: React.FC = () => {
               {email && (
                 <Button
                   variant="outline"
-                  fullWidth
                   onClick={handleResendVerification}
                   loading={isLoading}
                   disabled={countdown > 0}
-                  leftIcon={<ArrowPathIcon className="h-4 w-4" />}
                 >
                   {countdown > 0 
                     ? `Reenviar en ${countdown}s` 
@@ -182,13 +180,13 @@ export const VerifyEmailPage: React.FC = () => {
               )}
               
               <Link to="/register">
-                <Button variant="ghost" fullWidth>
+                <Button variant="ghost">
                   Crear Nueva Cuenta
                 </Button>
               </Link>
               
               <Link to="/login">
-                <Button variant="ghost" fullWidth>
+                <Button variant="ghost">
                   Volver al Login
                 </Button>
               </Link>
@@ -249,11 +247,9 @@ export const VerifyEmailPage: React.FC = () => {
             {email && (
               <Button
                 variant="outline"
-                fullWidth
                 onClick={handleResendVerification}
                 loading={isLoading}
                 disabled={countdown > 0}
-                leftIcon={<ArrowPathIcon className="h-4 w-4" />}
               >
                 {countdown > 0 
                   ? `Reenviar en ${countdown}s` 
@@ -263,14 +259,14 @@ export const VerifyEmailPage: React.FC = () => {
             )}
             
             <Link to="/login">
-              <Button variant="ghost" fullWidth>
+              <Button variant="ghost">
                 Volver al Login
               </Button>
             </Link>
 
             {!email && (
               <Link to="/register">
-                <Button variant="ghost" fullWidth>
+                <Button variant="ghost">
                   Crear Cuenta
                 </Button>
               </Link>

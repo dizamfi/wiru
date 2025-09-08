@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  DevicePhoneMobileIcon,
-  ComputerDesktopIcon,
   CurrencyDollarIcon,
   ArrowRightIcon,
   CheckIcon,
-  StarIcon,
   PlayIcon,
   PauseIcon
 } from '@heroicons/react/24/outline';

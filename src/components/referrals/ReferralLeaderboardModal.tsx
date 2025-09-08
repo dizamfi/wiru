@@ -141,7 +141,7 @@ export const ReferralLeaderboardModal: React.FC<ReferralLeaderboardModalProps> =
                 <p className="text-gray-500">No hay datos para este período</p>
               </div>
             ) : (
-              leaderboard?.entries?.map((entry, index) => (
+              leaderboard?.entries?.map((entry) => (
                 <div
                   key={entry.userId}
                   className={`p-4 rounded-lg border-2 transition-all ${
@@ -253,10 +253,8 @@ export const ReferralLeaderboardModal: React.FC<ReferralLeaderboardModalProps> =
 
           {/* Action Button */}
           <div className="text-center">
-            <Button
-              onClick={onClose}
-              leftIcon={<UserGroupIcon className="h-4 w-4" />}
-            >
+            <Button onClick={onClose}>
+              <UserGroupIcon className="h-4 w-4 inline-block mr-2" />
               ¡Invitar más amigos!
             </Button>
           </div>

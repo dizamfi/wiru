@@ -165,10 +165,8 @@
 
 // src/hooks/useAuthForm.ts
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '@/services/authService';
-import { useAuth } from '@/contexts/AuthContext';
 
 
 export interface RegisterFormData {
@@ -226,14 +224,13 @@ export const useLoginForm = () => {
 
     try {
       console.log('🚀 Intentando login...');
-      const response = await authService.login(data);
       
-      // Guardar tokens y usuario
-      authService.saveTokens(
-        response.data.accessToken,
-        response.data.refreshToken,
-        response.data.user
-      );
+      // // Guardar tokens y usuario
+      // authService.saveTokens(
+      //   response.data.accessToken,
+      //   response.data.refreshToken,
+      //   response.data.user
+      // );
 
       console.log('✅ Login exitoso, redirigiendo...');
       
@@ -372,9 +369,9 @@ export const useForgotPasswordForm = () => {
     console.log('🔐 Solicitando restablecimiento de contraseña para:', data.email);
 
     try {
-      const response = await authService.forgotPassword(data.email);
-      
-      console.log('✅ Solicitud enviada exitosamente:', response);
+      // const response = await authService.forgotPassword(data.email);
+
+      // console.log('✅ Solicitud enviada exitosamente:', response);
       
       setSuccess(
         `Se ha enviado un enlace de restablecimiento a ${data.email}. Revisa tu bandeja de entrada y carpeta de spam.`

@@ -109,21 +109,29 @@ import React, { forwardRef } from 'react';
 import { cn } from '@/utils/cn';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'default' | 'secondary' | 'outline' | 'ghost' | 'danger';
+  variant?: 'default' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success';
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
   children: React.ReactNode;
+  leftIcon?: React.ReactNode;
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = 'default', size = 'md', loading = false, className, children, disabled, ...props }, ref) => {
+  ({ leftIcon, variant = 'default', size = 'md', loading = false, className, children, disabled, ...props }, ref) => {
     const variantClasses = {
       default: 'bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500',
       secondary: 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500',
       outline: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:ring-primary-500',
       ghost: 'text-gray-700 hover:bg-gray-100 focus:ring-primary-500',
-      danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500'
+      danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
+      success: 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500'
+
     };
+
+     <button ref={ref} {...props}>
+      {leftIcon && <span className="mr-2">{leftIcon}</span>}
+      {loading ? "Loading..." : children}
+    </button>
 
     const sizeClasses = {
       sm: 'px-3 py-1.5 text-sm',

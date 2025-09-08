@@ -231,7 +231,7 @@ export const useAnalytics = (autoFetch = true) => {
   }, []);
 
   // Get period comparison
-  const getPeriodComparison = useCallback((currentPeriod: string) => {
+  const getPeriodComparison = useCallback(() => {
     const dashboard = store.dashboard;
     if (!dashboard) return null;
 

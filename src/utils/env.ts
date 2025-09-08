@@ -11,8 +11,15 @@ interface ImportMetaEnv {
   readonly VITE_ENABLE_OAUTH: string;
 }
 
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
+// Augment the global ImportMeta interface
+declare global {
+  interface ImportMeta {
+    readonly env: ImportMetaEnv & {
+      readonly DEV: boolean;
+      readonly PROD: boolean;
+      // add other vite env properties if needed
+    };
+  }
 }
 
 export const env = {

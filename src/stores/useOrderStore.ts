@@ -12,7 +12,7 @@
 //   ShippingInfo,
 //   OrderTimelineEvent
 // } from '@/types/order';
-// import { orderApi } from '@/services/orderApi';
+// import { orderApi } from '../services/api';
 
 // interface OrderState {
 //   // Orders data

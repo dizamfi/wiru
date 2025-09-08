@@ -16,7 +16,7 @@ const VerifyEmailPage = lazy(() => import('@/pages/auth/VerifyEmailPage').then(m
 
 // // Dashboard pages
 
-const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'));
+const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage').then(module => ({ default: module.DashboardPage })));
 const SellPage = lazy(() => import('@/pages/dashboard/SellPage'));
 const OrdersPage = lazy(() => import('@/pages/dashboard/OrdersPage'));
 // const OrderDetailPage = lazy(() => import('@/pages/dashboard/OrderDetailPage'));

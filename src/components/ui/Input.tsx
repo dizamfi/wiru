@@ -138,10 +138,13 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   helperText?: string;
+  leftIcon?: React.ReactNode; 
+  rightIcon?: React.ReactNode;
+  showPasswordToggle?: boolean;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, helperText, className, ...props }, ref) => {
+  ({ label, error, helperText, className, leftIcon, rightIcon, showPasswordToggle, ...props }, ref) => {
     return (
       <div className="space-y-1">
         {label && (

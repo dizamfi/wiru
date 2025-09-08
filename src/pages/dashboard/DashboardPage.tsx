@@ -1230,8 +1230,8 @@
 
 // src/pages/DashboardPage.tsx
 import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
+import { useAuth } from '@/hooks/useAuth';
 
 export const DashboardPage: React.FC = () => {
   const { user, logout } = useAuth();
@@ -1310,9 +1310,9 @@ export const DashboardPage: React.FC = () => {
                     <div className="flex justify-between">
                       <span className="text-gray-600">Estado:</span>
                       <span className={`font-medium ${
-                        user?.isVerified ? 'text-green-600' : 'text-orange-600'
+                        user?.isEmailVerified ? 'text-green-600' : 'text-orange-600'
                       }`}>
-                        {user?.isVerified ? 'Verificado' : 'Pendiente verificación'}
+                        {user?.isEmailVerified ? 'Verificado' : 'Pendiente verificación'}
                       </span>
                     </div>
                   </div>
@@ -1322,7 +1322,7 @@ export const DashboardPage: React.FC = () => {
           </div>
 
           {/* Email Verification Notice */}
-          {!user?.isVerified && (
+          {!user?.isEmailVerified && (
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-8">
               <div className="flex">
                 <div className="flex-shrink-0">
