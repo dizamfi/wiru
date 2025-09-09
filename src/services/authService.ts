@@ -585,137 +585,571 @@
 
 
 
+// import { apiService } from './api';
+
+// // Tipos básicos
+// interface User {
+//   id: string;
+//   email: string;
+//   firstName: string;
+//   lastName: string;
+//   phone?: string;
+//   avatar?: string;
+//   role: string;
+//   type: string;
+//   status: string;
+//   isEmailVerified: boolean;
+//   companyName?: string;
+//   referralCode?: string;
+//   createdAt: string;
+//   wallet?: {
+//     balance: number;
+//     availableBalance: number;
+//     pendingBalance: number;
+//     currency: string;
+//     status: string;
+//   };
+// }
+
+// interface LoginCredentials {
+//   email: string;
+//   password: string;
+// }
+
+// interface RegisterData {
+//   firstName: string;
+//   lastName: string;
+//   email: string;
+//   password: string;
+//   confirmPassword: string;
+//   phone?: string;
+//   userType: 'person' | 'company';
+//   acceptTerms: boolean;
+//   acceptPrivacy: boolean;
+//   [key: string]: any; // Para campos adicionales
+// }
+
+// interface AuthResponse {
+//   success: boolean;
+//   message: string;
+//   data: {
+//     user: User;
+//     accessToken: string;
+//     refreshToken: string;
+//     isNewUser?: boolean;
+//   };
+// }
+
+// interface OAuthResponse {
+//   success: boolean;
+//   message: string;
+//   data: {
+//     user: User;
+//     accessToken: string;
+//     refreshToken: string;
+//     isNewUser: boolean;
+//   };
+// }
+
+// export class AuthService {
+//   /**
+//    * Iniciar sesión
+//    */
+//   async login(credentials: LoginCredentials): Promise<AuthResponse> {
+//     try {
+//       console.log('🚀 Intentando login con:', { email: credentials.email });
+      
+//       const response = await apiService.post('/auth/login', credentials);
+      
+//       console.log('✅ Login exitoso:', {
+//         status: response.status,
+//         data: response.data
+//       });
+      
+//       if (response.status === 200) {
+//         return {
+//           success: true,
+//           message: response.data.message || 'Inicio de sesión exitoso',
+//           data: response.data.data
+//         };
+//       }
+      
+//       throw new Error(response.data.message || 'Error en el login');
+//     } catch (error: any) {
+//       console.error('❌ Error en login:', {
+//         status: error.response?.status,
+//         data: error.response?.data,
+//         message: error.message
+//       });
+      
+//       const errorMessage = error.response?.data?.message || 
+//                           error.response?.data?.errors || 
+//                           'Error de conexión con el servidor';
+      
+//       throw new Error(typeof errorMessage === 'string' ? errorMessage : 'Error en el login');
+//     }
+//   }
+
+//   /**
+//    * Registrar nuevo usuario
+//    */
+//   async register(data: RegisterData): Promise<AuthResponse> {
+//     try {
+//       // Transformar datos del frontend al formato del backend
+//       const backendData = this.transformRegisterData(data);
+      
+//       console.log('🚀 Enviando datos al backend:', backendData);
+      
+//       const response = await apiService.post('/auth/register', backendData);
+      
+//       console.log('✅ Registro exitoso:', {
+//         status: response.status,
+//         data: response.data
+//       });
+      
+//       if (response.status === 201 || response.status === 200) {
+//         return {
+//           success: true,
+//           message: response.data.message || '¡Cuenta creada exitosamente! Revisa tu email para verificar tu cuenta.',
+//           data: response.data.data || response.data
+//         };
+//       }
+      
+//       throw new Error(response.data.message || 'Error al registrar usuario');
+//     } catch (error: any) {
+//       console.error('❌ Error en registro:', {
+//         status: error.response?.status,
+//         data: error.response?.data,
+//         message: error.message
+//       });
+      
+//       // Manejar errores de validación específicos
+//       if (error.response?.data?.errors) {
+//         const errors = error.response.data.errors;
+//         const firstError = Object.values(errors)[0];
+//         const errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
+//         throw new Error(String(errorMessage));
+//       }
+      
+//       // Manejar mensaje de error del backend
+//       if (error.response?.data?.message) {
+//         throw new Error(error.response.data.message);
+//       }
+      
+//       // Error genérico
+//       throw new Error(error.message || 'Error al registrar usuario');
+//     }
+//   }
+
+//   /**
+//    * Transformar datos del frontend al formato del backend
+//    * ✨ NUEVA VERSIÓN: Solo incluye campos que el usuario realmente llenó
+//    */
+//   private transformRegisterData(frontendData: any) {
+//     console.log('🔄 Transformando datos del frontend:', frontendData);
+    
+//     const {
+//       userType,           // Frontend usa userType
+//       confirmPassword,    // No enviar al backend
+//       acceptTerms,        // No enviar al backend  
+//       acceptPrivacy,      // No enviar al backend
+//       identificationNumber,
+//       identificationType,
+//       dateOfBirth,
+//       legalName,
+//       taxId,
+//       industry,
+//       companySize,
+//       legalRepFirstName,
+//       legalRepLastName,
+//       legalRepPosition,
+//       legalRepPhone,
+//       legalRepEmail,
+//       legalRepId,
+//       businessStreet,
+//       businessCity,
+//       businessState,
+//       businessZipCode,
+//       businessCountry,
+//       ...basicData
+//     } = frontendData;
+
+//     // Función helper para verificar si un valor está presente y no está vacío
+//     const hasValue = (value: any): boolean => {
+//       if (value === null || value === undefined) return false;
+//       if (typeof value === 'string') return value.trim() !== '';
+//       if (typeof value === 'number') return !isNaN(value) && value !== 0;
+//       if (typeof value === 'boolean') return true;
+//       return false;
+//     };
+
+//     // Datos base que siempre se envían (campos requeridos)
+//     const transformedData: any = {
+//       email: basicData.email,
+//       password: basicData.password,
+//       firstName: basicData.firstName,
+//       lastName: basicData.lastName,
+//       type: userType === 'person' ? 'PERSON' : 'COMPANY',
+//     };
+
+//     // Agregar campos opcionales solo si tienen valor
+//     if (hasValue(basicData.phone)) {
+//       transformedData.phone = basicData.phone;
+//     }
+
+//     if (hasValue(basicData.referralCode)) {
+//       transformedData.referralCode = basicData.referralCode;
+//     }
+
+//     // Campos específicos para empresas
+//     if (userType === 'company') {
+//       // Priorizar companyName o usar legalName como fallback
+//       if (hasValue(basicData.companyName)) {
+//         transformedData.companyName = basicData.companyName;
+//       } else if (hasValue(legalName)) {
+//         transformedData.companyName = legalName;
+//       }
+
+//       // Priorizar taxId o usar companyDocument como fallback
+//       if (hasValue(taxId)) {
+//         transformedData.companyDocument = taxId;
+//       } else if (hasValue(basicData.companyDocument)) {
+//         transformedData.companyDocument = basicData.companyDocument;
+//       }
+//     }
+
+//     // Campos adicionales opcionales (solo si están presentes)
+//     const optionalFields = {
+//       identificationNumber,
+//       identificationType,
+//       dateOfBirth,
+//       industry,
+//       companySize,
+//       legalRepFirstName,
+//       legalRepLastName,
+//       legalRepPosition,
+//       legalRepPhone,
+//       legalRepEmail,
+//       legalRepId,
+//       businessStreet,
+//       businessCity,
+//       businessState,
+//       businessZipCode,
+//       businessCountry,
+//     };
+
+//     // Solo agregar campos opcionales si tienen valor
+//     Object.entries(optionalFields).forEach(([key, value]) => {
+//       if (hasValue(value)) {
+//         transformedData[key] = value;
+//       }
+//     });
+
+//     console.log('✅ Datos transformados para backend (solo campos con valor):', transformedData);
+//     console.log('📊 Campos enviados:', Object.keys(transformedData).length);
+//     console.log('📋 Campos omitidos (vacíos):', 
+//       Object.keys(optionalFields).filter(key => !hasValue(optionalFields[key as keyof typeof optionalFields]))
+//     );
+
+//     return transformedData;
+//   }
+
+//   /**
+//    * Cerrar sesión
+//    */
+//   async logout(): Promise<void> {
+//     try {
+//       const refreshToken = this.getRefreshToken();
+//       if (refreshToken) {
+//         await apiService.post('/auth/logout', { refreshToken });
+//       }
+//     } catch (error) {
+//       console.error('Error durante logout:', error);
+//     } finally {
+//       this.clearTokens();
+//     }
+//   }
+
+//   /**
+//    * Verificar email con token
+//    */
+//   async verifyEmail(token: string): Promise<any> {
+//     try {
+//       const response = await apiService.post('/auth/verify-email', { token });
+      
+//       return {
+//         success: true,
+//         message: response.data.message || 'Email verificado exitosamente',
+//         data: response.data.data
+//       };
+//     } catch (error: any) {
+//       console.error('❌ Error en verificación de email:', error.response?.data || error.message);
+      
+//       const errorMessage = error.response?.data?.message || 
+//                           'Error al verificar email';
+      
+//       throw new Error(errorMessage);
+//     }
+//   }
+
+//   /**
+//    * Reenviar email de verificación
+//    */
+//   async resendVerification(email: string): Promise<any> {
+//     try {
+//       const response = await apiService.post('/auth/resend-verification', { email });
+      
+//       return {
+//         success: true,
+//         message: response.data.message || 'Email de verificación enviado',
+//         data: response.data.data
+//       };
+//     } catch (error: any) {
+//       console.error('❌ Error al reenviar verificación:', error.response?.data || error.message);
+      
+//       const errorMessage = error.response?.data?.message || 
+//                           'Error al reenviar email de verificación';
+      
+//       throw new Error(errorMessage);
+//     }
+//   }
+
+//   /**
+//    * Solicitar reset de contraseña
+//    */
+//   async forgotPassword(email: string): Promise<any> {
+//     try {
+//       const response = await apiService.post('/auth/forgot-password', { email });
+      
+//       return {
+//         success: true,
+//         message: response.data.message || 'Email de reset enviado',
+//         data: response.data.data
+//       };
+//     } catch (error: any) {
+//       console.error('❌ Error en forgot password:', error.response?.data || error.message);
+      
+//       const errorMessage = error.response?.data?.message || 
+//                           'Error al solicitar reset de contraseña';
+      
+//       throw new Error(errorMessage);
+//     }
+//   }
+
+//   /**
+//    * Login con Google OAuth
+//    */
+//   async loginWithGoogle(tokenData: any): Promise<OAuthResponse> {
+//     try {
+//       const response = await apiService.post('/auth/google', tokenData);
+      
+//       console.log('✅ Google login exitoso:', response.data);
+      
+//       return {
+//         success: true,
+//         message: response.data.message || 'Login con Google exitoso',
+//         data: response.data.data
+//       };
+//     } catch (error: any) {
+//       console.error('❌ Error en Google login:', error.response?.data || error.message);
+      
+//       const errorMessage = error.response?.data?.message || 
+//                           'Error al iniciar sesión con Google';
+      
+//       throw new Error(errorMessage);
+//     }
+//   }
+
+//   /**
+//    * Login con Facebook OAuth
+//    */
+//   async loginWithFacebook(accessToken: string): Promise<OAuthResponse> {
+//     try {
+//       const response = await apiService.post('/auth/facebook', { accessToken });
+      
+//       console.log('✅ Facebook login exitoso:', response.data);
+      
+//       return {
+//         success: true,
+//         message: response.data.message || 'Login con Facebook exitoso',
+//         data: response.data.data
+//       };
+//     } catch (error: any) {
+//       console.error('❌ Error en Facebook login:', error.response?.data || error.message);
+      
+//       const errorMessage = error.response?.data?.message || 
+//                           'Error al iniciar sesión con Facebook';
+      
+//       throw new Error(errorMessage);
+//     }
+//   }
+
+//   /**
+//    * Obtener usuario actual del localStorage
+//    */
+//   getCurrentUser(): User | null {
+//     try {
+//       const userStr = localStorage.getItem('user');
+//       return userStr ? JSON.parse(userStr) : null;
+//     } catch (error) {
+//       console.error('Error al obtener usuario actual:', error);
+//       return null;
+//     }
+//   }
+
+//   /**
+//    * Obtener access token
+//    */
+//   getAccessToken(): string | null {
+//     return localStorage.getItem('accessToken');
+//   }
+
+//   /**
+//    * Obtener refresh token
+//    */
+//   getRefreshToken(): string | null {
+//     return localStorage.getItem('refreshToken');
+//   }
+
+//   /**
+//    * Verificar si el usuario está autenticado
+//    */
+//   isAuthenticated(): boolean {
+//     const token = this.getAccessToken();
+//     const user = this.getCurrentUser();
+    
+//     return !!(token && user);
+//   }
+
+//   /**
+//    * Verificar si el usuario tiene un rol específico
+//    */
+//   hasRole(role: string): boolean {
+//     const user = this.getCurrentUser();
+//     return user?.role === role;
+//   }
+
+//   /**
+//    * Verificar si el usuario es admin
+//    */
+//   isAdmin(): boolean {
+//     return this.hasRole('ADMIN');
+//   }
+
+//   /**
+//    * Verificar si el email está verificado
+//    */
+//   isEmailVerified(): boolean {
+//     const user = this.getCurrentUser();
+//     return user?.isEmailVerified === true;
+//   }
+
+//   /**
+//    * Almacenar datos de autenticación
+//    */
+//   setAuthData(user: User, accessToken: string, refreshToken: string): void {
+//     localStorage.setItem('user', JSON.stringify(user));
+//     localStorage.setItem('accessToken', accessToken);
+//     localStorage.setItem('refreshToken', refreshToken);
+//     console.log('💾 Datos de autenticación almacenados');
+//   }
+
+//   /**
+//    * Limpiar tokens y datos del usuario
+//    */
+//   clearTokens(): void {
+//     localStorage.removeItem('accessToken');
+//     localStorage.removeItem('refreshToken');
+//     localStorage.removeItem('user');
+//     console.log('🧹 Tokens y datos de usuario limpiados');
+//   }
+// }
+
+// export const authService = new AuthService();
+
+
+
+
+
+
+
+
+
+// src/services/authService.ts - ENVÍO CORRECTO DE DATOS
+import axios from 'axios';
 import { apiService } from './api';
 
-// Tipos básicos
-interface User {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  phone?: string;
-  avatar?: string;
-  role: string;
-  type: string;
-  status: string;
-  isEmailVerified: boolean;
-  companyName?: string;
-  referralCode?: string;
-  createdAt: string;
-  wallet?: {
-    balance: number;
-    availableBalance: number;
-    pendingBalance: number;
-    currency: string;
-    status: string;
-  };
-}
-
-interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
 interface RegisterData {
-  firstName: string;
-  lastName: string;
+  firstName: string;    // ✅ Obligatorio para ambos tipos
+  lastName: string;     // ✅ Obligatorio para ambos tipos
   email: string;
   password: string;
-  confirmPassword: string;
+  confirmPassword?: string;
   phone?: string;
   userType: 'person' | 'company';
   acceptTerms: boolean;
   acceptPrivacy: boolean;
-  [key: string]: any; // Para campos adicionales
-}
-
-interface AuthResponse {
-  success: boolean;
-  message: string;
-  data: {
-    user: User;
-    accessToken: string;
-    refreshToken: string;
-    isNewUser?: boolean;
-  };
-}
-
-interface OAuthResponse {
-  success: boolean;
-  message: string;
-  data: {
-    user: User;
-    accessToken: string;
-    refreshToken: string;
-    isNewUser: boolean;
-  };
+  
+  // Campos de persona natural
+  identificationNumber?: string;
+  identificationType?: string;
+  dateOfBirth?: string;
+  
+  // Campos de empresa
+  companyName?: string;
+  legalName?: string;
+  taxId?: string;
+  industry?: string;
+  companySize?: string;
+  
+  // Representante legal
+  legalRepFirstName?: string;
+  legalRepLastName?: string;
+  legalRepPosition?: string;
+  legalRepPhone?: string;
+  legalRepEmail?: string;
+  legalRepId?: string;
+  
+  // Dirección comercial
+  businessStreet?: string;
+  businessCity?: string;
+  businessState?: string;
+  businessZipCode?: string;
+  businessCountry?: string;
+  
+  referralCode?: string;
+  [key: string]: any;
 }
 
 export class AuthService {
-  /**
-   * Iniciar sesión
-   */
-  async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    try {
-      console.log('🚀 Intentando login con:', { email: credentials.email });
-      
-      const response = await apiService.post('/auth/login', credentials);
-      
-      console.log('✅ Login exitoso:', {
-        status: response.status,
-        data: response.data
-      });
-      
-      if (response.status === 200) {
-        return {
-          success: true,
-          message: response.data.message || 'Inicio de sesión exitoso',
-          data: response.data.data
-        };
-      }
-      
-      throw new Error(response.data.message || 'Error en el login');
-    } catch (error: any) {
-      console.error('❌ Error en login:', {
-        status: error.response?.status,
-        data: error.response?.data,
-        message: error.message
-      });
-      
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.errors || 
-                          'Error de conexión con el servidor';
-      
-      throw new Error(typeof errorMessage === 'string' ? errorMessage : 'Error en el login');
-    }
-  }
+  private static readonly BASE_URL = '/auth';
 
   /**
-   * Registrar nuevo usuario
+   * ✅ REGISTRO CORREGIDO - Envía firstName y lastName para ambos tipos
    */
-  async register(data: RegisterData): Promise<AuthResponse> {
+  static async register(frontendData: RegisterData) {
+    console.log('🔄 AuthService.register called with:', frontendData);
+    
     try {
-      // Transformar datos del frontend al formato del backend
-      const backendData = this.transformRegisterData(data);
+      // ✅ TRANSFORMAR DATOS - SIEMPRE INCLUIR firstName y lastName
+      const transformedData = this.transformRegisterData(frontendData);
       
-      console.log('🚀 Enviando datos al backend:', backendData);
+      console.log('📤 Sending to backend:', transformedData);
       
-      const response = await apiService.post('/auth/register', backendData);
+      const response = await apiService.post(`${this.BASE_URL}/register`, transformedData);
       
-      console.log('✅ Registro exitoso:', {
-        status: response.status,
-        data: response.data
-      });
+      console.log('✅ Registration successful:', response.data);
       
-      if (response.status === 201 || response.status === 200) {
+      if (response.data.success) {
         return {
           success: true,
-          message: response.data.message || '¡Cuenta creada exitosamente! Revisa tu email para verificar tu cuenta.',
+          message: response.data.message || 'Registro exitoso. Revisa tu email para verificar tu cuenta.',
           data: response.data.data || response.data
         };
       }
       
       throw new Error(response.data.message || 'Error al registrar usuario');
+      
     } catch (error: any) {
       console.error('❌ Error en registro:', {
         status: error.response?.status,
@@ -742,14 +1176,13 @@ export class AuthService {
   }
 
   /**
-   * Transformar datos del frontend al formato del backend
-   * ✨ NUEVA VERSIÓN: Solo incluye campos que el usuario realmente llenó
+   * ✅ TRANSFORMAR DATOS DEL FRONTEND AL FORMATO DEL BACKEND
    */
-  private transformRegisterData(frontendData: any) {
+  private static transformRegisterData(frontendData: RegisterData) {
     console.log('🔄 Transformando datos del frontend:', frontendData);
     
     const {
-      userType,           // Frontend usa userType
+      userType,
       confirmPassword,    // No enviar al backend
       acceptTerms,        // No enviar al backend  
       acceptPrivacy,      // No enviar al backend
@@ -774,295 +1207,164 @@ export class AuthService {
       ...basicData
     } = frontendData;
 
-    // Función helper para verificar si un valor está presente y no está vacío
-    const hasValue = (value: any): boolean => {
-      if (value === null || value === undefined) return false;
-      if (typeof value === 'string') return value.trim() !== '';
-      if (typeof value === 'number') return !isNaN(value) && value !== 0;
-      if (typeof value === 'boolean') return true;
-      return false;
-    };
-
-    // Datos base que siempre se envían (campos requeridos)
+    // ✅ DATOS BASE SIEMPRE INCLUIDOS (firstName y lastName ahora obligatorios para ambos)
     const transformedData: any = {
       email: basicData.email,
       password: basicData.password,
-      firstName: basicData.firstName,
-      lastName: basicData.lastName,
-      type: userType === 'person' ? 'PERSON' : 'COMPANY',
+      firstName: basicData.firstName,  // ✅ Siempre incluir
+      lastName: basicData.lastName,    // ✅ Siempre incluir
+      phone: basicData.phone,
+      userType: userType,
     };
 
-    // Agregar campos opcionales solo si tienen valor
-    if (hasValue(basicData.phone)) {
-      transformedData.phone = basicData.phone;
+    // ✅ DATOS ESPECÍFICOS PARA PERSONAS NATURALES
+    if (userType === 'person') {
+      // Datos de identificación personal (opcionales)
+      if (identificationNumber) {
+        transformedData.identificationNumber = identificationNumber;
+        transformedData.identificationType = identificationType;
+        transformedData.dateOfBirth = dateOfBirth;
+      }
     }
 
-    if (hasValue(basicData.referralCode)) {
+    // ✅ DATOS ESPECÍFICOS PARA EMPRESAS
+    if (userType === 'company') {
+      transformedData.companyName = basicData.companyName;
+      transformedData.legalName = legalName;
+      transformedData.taxId = taxId;
+      transformedData.industry = industry;
+      transformedData.companySize = companySize;
+      
+      // Representante legal (si está presente)
+      if (legalRepFirstName) {
+        transformedData.legalRepFirstName = legalRepFirstName;
+        transformedData.legalRepLastName = legalRepLastName;
+        transformedData.legalRepPosition = legalRepPosition;
+        transformedData.legalRepPhone = legalRepPhone;
+        transformedData.legalRepEmail = legalRepEmail;
+        transformedData.legalRepId = legalRepId;
+      }
+      
+      // Dirección comercial (si está presente)
+      if (businessStreet) {
+        transformedData.businessStreet = businessStreet;
+        transformedData.businessCity = businessCity;
+        transformedData.businessState = businessState;
+        transformedData.businessZipCode = businessZipCode;
+        transformedData.businessCountry = businessCountry || 'Ecuador';
+      }
+    }
+
+    // ✅ CÓDIGO DE REFERIDO (OPCIONAL)
+    if (basicData.referralCode) {
       transformedData.referralCode = basicData.referralCode;
     }
 
-    // Campos específicos para empresas
-    if (userType === 'company') {
-      // Priorizar companyName o usar legalName como fallback
-      if (hasValue(basicData.companyName)) {
-        transformedData.companyName = basicData.companyName;
-      } else if (hasValue(legalName)) {
-        transformedData.companyName = legalName;
-      }
-
-      // Priorizar taxId o usar companyDocument como fallback
-      if (hasValue(taxId)) {
-        transformedData.companyDocument = taxId;
-      } else if (hasValue(basicData.companyDocument)) {
-        transformedData.companyDocument = basicData.companyDocument;
-      }
-    }
-
-    // Campos adicionales opcionales (solo si están presentes)
-    const optionalFields = {
-      identificationNumber,
-      identificationType,
-      dateOfBirth,
-      industry,
-      companySize,
-      legalRepFirstName,
-      legalRepLastName,
-      legalRepPosition,
-      legalRepPhone,
-      legalRepEmail,
-      legalRepId,
-      businessStreet,
-      businessCity,
-      businessState,
-      businessZipCode,
-      businessCountry,
-    };
-
-    // Solo agregar campos opcionales si tienen valor
-    Object.entries(optionalFields).forEach(([key, value]) => {
-      if (hasValue(value)) {
-        transformedData[key] = value;
-      }
-    });
-
-    console.log('✅ Datos transformados para backend (solo campos con valor):', transformedData);
-    console.log('📊 Campos enviados:', Object.keys(transformedData).length);
-    console.log('📋 Campos omitidos (vacíos):', 
-      Object.keys(optionalFields).filter(key => !hasValue(optionalFields[key as keyof typeof optionalFields]))
-    );
-
+    console.log('✅ Datos transformados:', transformedData);
     return transformedData;
   }
 
   /**
-   * Cerrar sesión
+   * Login de usuario
    */
-  async logout(): Promise<void> {
+  static async login(credentials: { email: string; password: string }) {
     try {
-      const refreshToken = this.getRefreshToken();
+      console.log('🚀 AuthService.login called with:', { email: credentials.email });
+      
+      const response = await apiService.post(`${this.BASE_URL}/login`, credentials);
+      
+      console.log('✅ Login successful:', response.data);
+      
+      if (response.data.success && response.data.data) {
+        return {
+          success: true,
+          message: response.data.message,
+          data: response.data.data
+        };
+      }
+      
+      throw new Error(response.data.message || 'Error al iniciar sesión');
+    } catch (error: any) {
+      console.error('❌ Error en login:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
+      
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      
+      throw new Error(error.message || 'Error al iniciar sesión');
+    }
+  }
+
+  /**
+   * Logout de usuario
+   */
+  static async logout() {
+    try {
+      const refreshToken = localStorage.getItem('refreshToken');
+      
       if (refreshToken) {
-        await apiService.post('/auth/logout', { refreshToken });
+        await apiService.post(`${this.BASE_URL}/logout`, {
+          refreshToken
+        });
       }
     } catch (error) {
-      console.error('Error durante logout:', error);
+      console.error('Error en logout:', error);
     } finally {
-      this.clearTokens();
+      // Limpiar tokens sin importar el resultado
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
     }
   }
 
   /**
-   * Verificar email con token
+   * Verificar email
    */
-  async verifyEmail(token: string): Promise<any> {
+  static async verifyEmail(token: string) {
     try {
-      const response = await apiService.post('/auth/verify-email', { token });
+      const response = await apiService.post(`${this.BASE_URL}/verify-email`, {
+        token
+      });
+      
+      if (response.data.success) {
+        return {
+          success: true,
+          message: response.data.message
+        };
+      }
+      
+      throw new Error(response.data.message || 'Error al verificar email');
+    } catch (error: any) {
+      console.error('Error verificando email:', error);
+      
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      
+      throw new Error(error.message || 'Error al verificar email');
+    }
+  }
+
+  /**
+   * Reenviar verificación de email
+   */
+  static async resendVerification(email: string) {
+    try {
+      const response = await apiService.post(`${this.BASE_URL}/resend-verification`, {
+        email
+      });
       
       return {
-        success: true,
-        message: response.data.message || 'Email verificado exitosamente',
-        data: response.data.data
+        success: response.data.success,
+        message: response.data.message
       };
     } catch (error: any) {
-      console.error('❌ Error en verificación de email:', error.response?.data || error.message);
-      
-      const errorMessage = error.response?.data?.message || 
-                          'Error al verificar email';
-      
-      throw new Error(errorMessage);
+      console.error('Error reenviando verificación:', error);
+      throw new Error(error.response?.data?.message || 'Error al reenviar verificación');
     }
-  }
-
-  /**
-   * Reenviar email de verificación
-   */
-  async resendVerification(email: string): Promise<any> {
-    try {
-      const response = await apiService.post('/auth/resend-verification', { email });
-      
-      return {
-        success: true,
-        message: response.data.message || 'Email de verificación enviado',
-        data: response.data.data
-      };
-    } catch (error: any) {
-      console.error('❌ Error al reenviar verificación:', error.response?.data || error.message);
-      
-      const errorMessage = error.response?.data?.message || 
-                          'Error al reenviar email de verificación';
-      
-      throw new Error(errorMessage);
-    }
-  }
-
-  /**
-   * Solicitar reset de contraseña
-   */
-  async forgotPassword(email: string): Promise<any> {
-    try {
-      const response = await apiService.post('/auth/forgot-password', { email });
-      
-      return {
-        success: true,
-        message: response.data.message || 'Email de reset enviado',
-        data: response.data.data
-      };
-    } catch (error: any) {
-      console.error('❌ Error en forgot password:', error.response?.data || error.message);
-      
-      const errorMessage = error.response?.data?.message || 
-                          'Error al solicitar reset de contraseña';
-      
-      throw new Error(errorMessage);
-    }
-  }
-
-  /**
-   * Login con Google OAuth
-   */
-  async loginWithGoogle(tokenData: any): Promise<OAuthResponse> {
-    try {
-      const response = await apiService.post('/auth/google', tokenData);
-      
-      console.log('✅ Google login exitoso:', response.data);
-      
-      return {
-        success: true,
-        message: response.data.message || 'Login con Google exitoso',
-        data: response.data.data
-      };
-    } catch (error: any) {
-      console.error('❌ Error en Google login:', error.response?.data || error.message);
-      
-      const errorMessage = error.response?.data?.message || 
-                          'Error al iniciar sesión con Google';
-      
-      throw new Error(errorMessage);
-    }
-  }
-
-  /**
-   * Login con Facebook OAuth
-   */
-  async loginWithFacebook(accessToken: string): Promise<OAuthResponse> {
-    try {
-      const response = await apiService.post('/auth/facebook', { accessToken });
-      
-      console.log('✅ Facebook login exitoso:', response.data);
-      
-      return {
-        success: true,
-        message: response.data.message || 'Login con Facebook exitoso',
-        data: response.data.data
-      };
-    } catch (error: any) {
-      console.error('❌ Error en Facebook login:', error.response?.data || error.message);
-      
-      const errorMessage = error.response?.data?.message || 
-                          'Error al iniciar sesión con Facebook';
-      
-      throw new Error(errorMessage);
-    }
-  }
-
-  /**
-   * Obtener usuario actual del localStorage
-   */
-  getCurrentUser(): User | null {
-    try {
-      const userStr = localStorage.getItem('user');
-      return userStr ? JSON.parse(userStr) : null;
-    } catch (error) {
-      console.error('Error al obtener usuario actual:', error);
-      return null;
-    }
-  }
-
-  /**
-   * Obtener access token
-   */
-  getAccessToken(): string | null {
-    return localStorage.getItem('accessToken');
-  }
-
-  /**
-   * Obtener refresh token
-   */
-  getRefreshToken(): string | null {
-    return localStorage.getItem('refreshToken');
-  }
-
-  /**
-   * Verificar si el usuario está autenticado
-   */
-  isAuthenticated(): boolean {
-    const token = this.getAccessToken();
-    const user = this.getCurrentUser();
-    
-    return !!(token && user);
-  }
-
-  /**
-   * Verificar si el usuario tiene un rol específico
-   */
-  hasRole(role: string): boolean {
-    const user = this.getCurrentUser();
-    return user?.role === role;
-  }
-
-  /**
-   * Verificar si el usuario es admin
-   */
-  isAdmin(): boolean {
-    return this.hasRole('ADMIN');
-  }
-
-  /**
-   * Verificar si el email está verificado
-   */
-  isEmailVerified(): boolean {
-    const user = this.getCurrentUser();
-    return user?.isEmailVerified === true;
-  }
-
-  /**
-   * Almacenar datos de autenticación
-   */
-  setAuthData(user: User, accessToken: string, refreshToken: string): void {
-    localStorage.setItem('user', JSON.stringify(user));
-    localStorage.setItem('accessToken', accessToken);
-    localStorage.setItem('refreshToken', refreshToken);
-    console.log('💾 Datos de autenticación almacenados');
-  }
-
-  /**
-   * Limpiar tokens y datos del usuario
-   */
-  clearTokens(): void {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('user');
-    console.log('🧹 Tokens y datos de usuario limpiados');
   }
 }
-
-export const authService = new AuthService();

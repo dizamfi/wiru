@@ -105,10 +105,8 @@
 
 
 
-
-// src/contexts/AuthContext.tsx (Frontend) - Versión Completa
-import React, { createContext, useContext, ReactNode } from 'react';
-import { useAuth } from '@/hooks/useAuth';
+// src/contexts/AuthContext.tsx - CORREGIDO SIN useNavigate
+import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 
 // Tipos
 interface User {
@@ -134,266 +132,175 @@ interface User {
   };
 }
 
-interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-interface RegisterData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  phone?: string;
-  userType: 'person' | 'company';
-  acceptTerms: boolean;
-  acceptPrivacy: boolean;
-  [key: string]: any;
-}
-
 interface AuthContextType {
   // Estado
   isAuthenticated: boolean;
   user: User | null;
   isLoading: boolean;
-  error: string | null;
   
-  // Acciones básicas
-  login: (credentials: LoginCredentials) => Promise<boolean>;
-  register: (data: RegisterData) => Promise<boolean>;
-  logout: () => Promise<void>;
-  
-  // OAuth
-  loginWithGoogle: (credential: string) => Promise<{ success: boolean; message: string; data?: any }>;
-  loginWithFacebook: (accessToken: string) => Promise<{ success: boolean; message: string; data?: any }>;
-  getOAuthAccounts: () => Promise<{ google: boolean; facebook: boolean }>;
-  unlinkOAuthAccount: (provider: 'google' | 'facebook') => Promise<void>;
-  
-  // Verificación y recuperación
-  verifyEmail: (token: string) => Promise<boolean>;
-  resendVerification: (email: string) => Promise<boolean>;
-  forgotPassword: (email: string) => Promise<boolean>;
-  resetPassword: (token: string, newPassword: string) => Promise<boolean>;
-  changePassword: (currentPassword: string, newPassword: string) => Promise<{ success: boolean; message: string }>;
-  
-  // Utilidades
-  clearError: () => void;
-  updateUser: (updates: Partial<User>) => void;
+  // Acciones - SIN navigate interno
+  setUser: (user: User | null) => void;
+  setAuthenticated: (authenticated: boolean) => void;
+  clearAuth: () => void;
+  initializeAuth: () => void;
   
   // Helpers
   hasRole: (role: string) => boolean;
   isAdmin: () => boolean;
   isEmailVerified: () => boolean;
+  getDisplayName: () => string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
 
 interface AuthProviderProps {
   children: ReactNode;
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const auth = useAuth();
+  const [user, setUser] = useState<User | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const contextValue: AuthContextType = {
+  // ✅ INICIALIZAR AUTENTICACIÓN
+  const initializeAuth = () => {
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      const refreshToken = localStorage.getItem('refreshToken');
+      const userData = localStorage.getItem('user');
+
+      if (accessToken && refreshToken && userData) {
+        try {
+          const user = JSON.parse(userData);
+          setUser(user);
+          setIsAuthenticated(true);
+          console.log('✅ User authenticated from localStorage');
+        } catch (error) {
+          console.error('❌ Error parsing user data:', error);
+          clearAuth();
+        }
+      } else {
+        console.log('ℹ️ No authentication data found');
+        clearAuth();
+      }
+    } catch (error) {
+      console.error('❌ Error initializing auth:', error);
+      clearAuth();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ✅ LIMPIAR AUTENTICACIÓN
+  const clearAuth = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
+    setUser(null);
+    setIsAuthenticated(false);
+  };
+
+  // ✅ HELPERS
+  const hasRole = (role: string): boolean => {
+    return user?.role === role;
+  };
+
+  const isAdmin = (): boolean => {
+    return user?.role === 'ADMIN';
+  };
+
+  const isEmailVerified = (): boolean => {
+    return user?.isEmailVerified === true;
+  };
+
+  const getDisplayName = (): string => {
+    if (!user) return '';
+    
+    if (user.type === 'COMPANY' && user.companyName) {
+      return user.companyName;
+    }
+    
+    return `${user.firstName} ${user.lastName}`.trim();
+  };
+
+  // ✅ INICIALIZAR AL MONTAR
+  useEffect(() => {
+    initializeAuth();
+  }, []);
+
+  const value: AuthContextType = {
     // Estado
-    isAuthenticated: auth.isAuthenticated,
-    user: auth.user,
-    isLoading: auth.isLoading,
-    error: auth.error,
+    isAuthenticated,
+    user,
+    isLoading,
     
-    // Acciones básicas
-    login: auth.login,
-    register: auth.register,
-    logout: auth.logout,
-    
-    // OAuth
-    loginWithGoogle: auth.loginWithGoogle,
-    loginWithFacebook: auth.loginWithFacebook,
-    getOAuthAccounts: auth.getOAuthAccounts,
-    unlinkOAuthAccount: auth.unlinkOAuthAccount,
-    
-    // Verificación y recuperación
-    verifyEmail: auth.verifyEmail,
-    resendVerification: auth.resendVerification,
-    forgotPassword: auth.forgotPassword,
-    resetPassword: auth.resetPassword,
-    changePassword: auth.changePassword,
-    
-    // Utilidades
-    clearError: auth.clearError,
-    updateUser: auth.updateUser,
+    // Acciones
+    setUser,
+    setAuthenticated: setIsAuthenticated,
+    clearAuth,
+    initializeAuth,
     
     // Helpers
-    hasRole: auth.hasRole,
-    isAdmin: auth.isAdmin,
-    isEmailVerified: auth.isEmailVerified,
+    hasRole,
+    isAdmin,
+    isEmailVerified,
+    getDisplayName,
   };
 
   return (
-    <AuthContext.Provider value={contextValue}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Hook para usar el contexto de autenticación
-export const useAuthContext = (): AuthContextType => {
-  const context = useContext(AuthContext);
-  
-  if (context === undefined) {
-    throw new Error('useAuthContext must be used within an AuthProvider');
-  }
-  
-  return context;
-};
-
-// Component para proteger rutas que requieren autenticación
-interface RequireAuthProps {
-  children: ReactNode;
-  fallback?: ReactNode;
-  requireEmailVerified?: boolean;
-  requiredRole?: string;
-}
-
-export const RequireAuth: React.FC<RequireAuthProps> = ({
-  children,
-  fallback,
-  requireEmailVerified = false,
-  requiredRole,
-}) => {
-  const { isAuthenticated, user, isLoading, hasRole, isEmailVerified } = useAuthContext();
+// ✅ COMPONENTES DE PROTECCIÓN SIMPLE
+export const RequireGuest: React.FC<{ 
+  children: React.ReactNode; 
+  fallback?: React.ReactNode 
+}> = ({ children, fallback }) => {
+  const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#a8c241]"></div>
       </div>
     );
   }
 
-  if (!isAuthenticated) {
-    return fallback ? <>{fallback}</> : <div>Redirigiendo al login...</div>;
-  }
-
-  if (requireEmailVerified && !isEmailVerified()) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
-          <div className="text-yellow-500 text-6xl mb-4">⚠️</div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Email no verificado
-          </h3>
-          <p className="text-gray-600 mb-4">
-            Necesitas verificar tu email antes de continuar. Revisa tu bandeja de entrada.
-          </p>
-          <button
-            onClick={() => window.location.href = '/verify-email'}
-            className="w-full bg-primary-600 text-white py-2 px-4 rounded-md hover:bg-primary-700 transition-colors"
-          >
-            Ir a verificación
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (requiredRole && !hasRole(requiredRole)) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
-          <div className="text-red-500 text-6xl mb-4">🚫</div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Acceso denegado
-          </h3>
-          <p className="text-gray-600 mb-4">
-            No tienes permisos suficientes para acceder a esta página.
-          </p>
-          <button
-            onClick={() => window.history.back()}
-            className="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 transition-colors"
-          >
-            Volver
-          </button>
-        </div>
-      </div>
-    );
+  if (isAuthenticated && fallback) {
+    return <>{fallback}</>;
   }
 
   return <>{children}</>;
 };
 
-// Component para mostrar contenido solo si NO está autenticado
-interface RequireGuestProps {
-  children: ReactNode;
-  fallback?: ReactNode;
-}
-
-export const RequireGuest: React.FC<RequireGuestProps> = ({
-  children,
-  fallback,
-}) => {
-  const { isAuthenticated, isLoading } = useAuthContext();
+export const RequireAuth: React.FC<{ 
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+}> = ({ children, fallback }) => {
+  const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#a8c241]"></div>
       </div>
     );
   }
 
-  if (isAuthenticated) {
-    return fallback ? <>{fallback}</> : <div>Redirigiendo al dashboard...</div>;
+  if (!isAuthenticated && fallback) {
+    return <>{fallback}</>;
   }
 
   return <>{children}</>;
-};
-
-// Higher-Order Component para proteger rutas
-export const withAuth = <P extends object>(
-  Component: React.ComponentType<P>,
-  options?: {
-    requireEmailVerified?: boolean;
-    requiredRole?: string;
-  }
-) => {
-  const AuthenticatedComponent: React.FC<P> = (props) => {
-    return (
-      <RequireAuth
-        requireEmailVerified={options?.requireEmailVerified}
-        requiredRole={options?.requiredRole}
-      >
-        <Component {...props} />
-      </RequireAuth>
-    );
-  };
-
-  AuthenticatedComponent.displayName = `withAuth(${Component.displayName || Component.name})`;
-  
-  return AuthenticatedComponent;
-};
-
-// Hook personalizado para verificaciones específicas
-export const useAuthChecks = () => {
-  const { user, isAuthenticated, hasRole, isEmailVerified } = useAuthContext();
-
-  return {
-    isAuthenticated,
-    isEmailVerified: isEmailVerified(),
-    isAdmin: hasRole('ADMIN'),
-    isModerator: hasRole('MODERATOR') || hasRole('ADMIN'),
-    isUser: hasRole('USER'),
-    isPerson: user?.type === 'PERSON',
-    isCompany: user?.type === 'COMPANY',
-    isActive: user?.status === 'ACTIVE',
-    isPending: user?.status === 'PENDING_VERIFICATION',
-    isSuspended: user?.status === 'SUSPENDED',
-    canAccess: (requiredRole?: string) => {
-      if (!isAuthenticated) return false;
-      if (!requiredRole) return true;
-      return hasRole(requiredRole);
-    },
-  };
 };

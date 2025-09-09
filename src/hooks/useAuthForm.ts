@@ -166,7 +166,7 @@
 // src/hooks/useAuthForm.ts
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authService } from '@/services/authService';
+import { AuthService } from '@/services/authService';
 
 
 export interface RegisterFormData {
@@ -304,7 +304,7 @@ export const useRegisterForm = () => {
     try {
       console.log('📤 Enviando datos de registro...');
       
-      const response = await authService.register(data);
+      const response = await AuthService.register(data);
       
       console.log('✅ Respuesta del servidor:', response);
       

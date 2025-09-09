@@ -428,10 +428,10 @@
 
 
 
-
-// src/stores/authStore.ts - Versión Corregida
+// src/stores/authStore.ts - ACTUALIZADO PARA NUEVO AuthService
 import { create } from 'zustand';
-import { authService } from '@/services/authService';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { AuthService } from '@/services/authService';
 import { toast } from 'react-hot-toast';
 
 // Tipos
@@ -490,7 +490,7 @@ interface AuthState {
   register: (data: RegisterData) => Promise<boolean>;
   logout: () => Promise<void>;
   
-  // OAuth
+  // OAuth (preparado para futuro)
   loginWithGoogle: (credential: string) => Promise<boolean>;
   loginWithFacebook: (accessToken: string) => Promise<boolean>;
   
@@ -499,377 +499,174 @@ interface AuthState {
   resendVerification: (email: string) => Promise<boolean>;
   forgotPassword: (email: string) => Promise<boolean>;
   resetPassword: (token: string, newPassword: string) => Promise<boolean>;
-  changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
   
   // Utilidades
   initializeAuth: () => void;
   clearError: () => void;
-  refreshTokens: () => Promise<boolean>;
+  updateUser: (userData: Partial<User>) => void;
   
   // Helpers
   hasRole: (role: string) => boolean;
   isAdmin: () => boolean;
   isEmailVerified: () => boolean;
+  getDisplayName: () => string;
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
-  // Estado inicial
-  isAuthenticated: false,
-  user: null,
-  accessToken: null,
-  refreshToken: null,
-  isLoading: true,
-  error: null,
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set, get) => ({
+      // ✅ ESTADO INICIAL
+      isAuthenticated: false,
+      user: null,
+      accessToken: null,
+      refreshToken: null,
+      isLoading: true,
+      error: null,
 
-  // Inicializar autenticación
-  initializeAuth: () => {
-    try {
-      const token = authService.getAccessToken();
-      const user = authService.getCurrentUser(); // ✅ Método correcto
-      const refreshToken = authService.getRefreshToken();
+      // ✅ INICIALIZAR AUTENTICACIÓN
+      initializeAuth: () => {
+        try {
+          const token = localStorage.getItem('accessToken');
+          const refreshToken = localStorage.getItem('refreshToken');
+          const userData = localStorage.getItem('user');
 
-      if (token && user) {
-        set({
-          isAuthenticated: true,
-          user,
-          accessToken: token,
-          refreshToken,
-          isLoading: false,
-          error: null,
-        });
-      } else {
-        set({
-          isAuthenticated: false,
-          user: null,
-          accessToken: null,
-          refreshToken: null,
-          isLoading: false,
-          error: null,
-        });
-      }
-    } catch (error) {
-      console.error('Error initializing auth:', error);
-      set({
-        isAuthenticated: false,
-        user: null,
-        accessToken: null,
-        refreshToken: null,
-        isLoading: false,
-        error: null,
-      });
-    }
-  },
+          if (token && refreshToken && userData) {
+            const user = JSON.parse(userData);
+            
+            set({
+              isAuthenticated: true,
+              user,
+              accessToken: token,
+              refreshToken,
+              isLoading: false,
+              error: null,
+            });
 
-  // Login
-  login: async (credentials: LoginCredentials): Promise<boolean> => {
-    set({ isLoading: true, error: null });
+            console.log('✅ Auth initialized from localStorage');
+          } else {
+            set({
+              isAuthenticated: false,
+              user: null,
+              accessToken: null,
+              refreshToken: null,
+              isLoading: false,
+              error: null,
+            });
 
-    try {
-      const response = await authService.login(credentials);
+            console.log('ℹ️ No auth data found');
+          }
+        } catch (error) {
+          console.error('❌ Error initializing auth:', error);
+          
+          // Limpiar datos corruptos
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('user');
+          
+          set({
+            isAuthenticated: false,
+            user: null,
+            accessToken: null,
+            refreshToken: null,
+            isLoading: false,
+            error: null,
+          });
+        }
+      },
 
-      if (response.success) {
-        const { user, accessToken, refreshToken } = response.data;
+      // ✅ LOGIN
+      login: async (credentials: LoginCredentials): Promise<boolean> => {
+        set({ isLoading: true, error: null });
 
-        // Almacenar datos de autenticación
-        authService.setAuthData(user, accessToken, refreshToken);
+        try {
+          const response = await AuthService.login(credentials);
+          
+          if (response.success) {
+            const { user, accessToken, refreshToken } = response.data;
+            
+            // Guardar en localStorage
+            localStorage.setItem('accessToken', accessToken);
+            localStorage.setItem('refreshToken', refreshToken);
+            localStorage.setItem('user', JSON.stringify(user));
+            
+            // Actualizar estado
+            set({
+              isAuthenticated: true,
+              user,
+              accessToken,
+              refreshToken,
+              isLoading: false,
+              error: null,
+            });
 
-        set({
-          isAuthenticated: true,
-          user,
-          accessToken,
-          refreshToken,
-          isLoading: false,
-          error: null,
-        });
+            console.log('✅ Login successful in authStore');
+            toast.success(response.message || 'Inicio de sesión exitoso');
+            return true;
+          }
+          
+          return false;
+        } catch (error: any) {
+          console.error('❌ Login error in authStore:', error);
+          
+          set({
+            isLoading: false,
+            error: error.message,
+          });
 
-        toast.success(`¡Bienvenido ${user.firstName}!`);
-        return true;
-      }
+          // No mostrar toast aquí, lo hace el componente
+          return false;
+        }
+      },
 
-      throw new Error(response.message);
-    } catch (error: any) {
-      const errorMessage = error.message || 'Error al iniciar sesión';
-      
-      set({
-        isLoading: false,
-        error: errorMessage,
-      });
+      // ✅ REGISTRO
+      register: async (data: RegisterData): Promise<boolean> => {
+        set({ isLoading: true, error: null });
 
-      toast.error(errorMessage);
-      return false;
-    }
-  },
+        try {
+          const response = await AuthService.register(data);
+          
+          if (response.success) {
+            set({
+              isLoading: false,
+              error: null,
+            });
 
-  // Registro
-  register: async (data: RegisterData): Promise<boolean> => {
-    set({ isLoading: true, error: null });
+            console.log('✅ Registration successful in authStore');
+            toast.success(response.message || 'Registro exitoso');
+            return true;
+          }
+          
+          return false;
+        } catch (error: any) {
+          console.error('❌ Registration error in authStore:', error);
+          
+          set({
+            isLoading: false,
+            error: error.message,
+          });
 
-    try {
-      const response = await authService.register(data);
-      
-      if (response.success) {
-        set({
-          isLoading: false,
-          error: null,
-        });
+          return false;
+        }
+      },
 
-        toast.success('¡Cuenta creada exitosamente! Revisa tu email para verificar tu cuenta.');
-        return true;
-      }
-      
-      throw new Error(response.message);
-    } catch (error: any) {
-      const errorMessage = error.message || 'Error al registrar usuario';
-      
-      set({
-        isLoading: false,
-        error: errorMessage,
-      });
+      // ✅ LOGOUT
+      logout: async (): Promise<void> => {
+        set({ isLoading: true });
 
-      toast.error(errorMessage);
-      return false;
-    }
-  },
-
-  // Login con Google
-  loginWithGoogle: async (credential: string): Promise<boolean> => {
-    set({ isLoading: true, error: null });
-
-    try {
-      const response = await authService.loginWithGoogle(credential);
-
-      if (response.success) {
-        const { user, accessToken, refreshToken, isNewUser } = response.data;
-
-        // Almacenar datos de autenticación
-        authService.setAuthData(user, accessToken, refreshToken);
-
-        set({
-          isAuthenticated: true,
-          user,
-          accessToken,
-          refreshToken,
-          isLoading: false,
-          error: null,
-        });
-
-        const message = isNewUser 
-          ? `¡Bienvenido a Wiru, ${user.firstName}!` 
-          : `¡Bienvenido de vuelta, ${user.firstName}!`;
-
-        toast.success(message);
-        return true;
-      }
-
-      throw new Error(response.message);
-    } catch (error: any) {
-      const errorMessage = error.message || 'Error al autenticar con Google';
-      
-      set({
-        isLoading: false,
-        error: errorMessage,
-      });
-
-      toast.error(errorMessage);
-      return false;
-    }
-  },
-
-  // Login con Facebook
-  loginWithFacebook: async (accessToken: string): Promise<boolean> => {
-    set({ isLoading: true, error: null });
-
-    try {
-      const response = await authService.loginWithFacebook(accessToken);
-
-      if (response.success) {
-        const { user, accessToken: authToken, refreshToken, isNewUser } = response.data;
-
-        // Almacenar datos de autenticación
-        authService.setAuthData(user, authToken, refreshToken);
-
-        set({
-          isAuthenticated: true,
-          user,
-          accessToken: authToken,
-          refreshToken,
-          isLoading: false,
-          error: null,
-        });
-
-        const message = isNewUser 
-          ? `¡Bienvenido a Wiru, ${user.firstName}!` 
-          : `¡Bienvenido de vuelta, ${user.firstName}!`;
-
-        toast.success(message);
-        return true;
-      }
-
-      throw new Error(response.message);
-    } catch (error: any) {
-      const errorMessage = error.message || 'Error al autenticar con Facebook';
-      
-      set({
-        isLoading: false,
-        error: errorMessage,
-      });
-
-      toast.error(errorMessage);
-      return false;
-    }
-  },
-
-  // Logout
-  logout: async (): Promise<void> => {
-    set({ isLoading: true });
-
-    try {
-      await authService.logout();
-    } catch (error) {
-      console.error('Error during logout:', error);
-    } finally {
-      set({
-        isAuthenticated: false,
-        user: null,
-        accessToken: null,
-        refreshToken: null,
-        isLoading: false,
-        error: null,
-      });
-
-      toast.success('Sesión cerrada exitosamente');
-    }
-  },
-
-  // Verificar email
-  verifyEmail: async (token: string): Promise<boolean> => {
-    set({ isLoading: true, error: null });
-
-    try {
-      const response = await authService.verifyEmail(token);
-
-      if (response.success) {
-        // Actualizar usuario actual si está logueado
-        const currentUser = authService.getCurrentUser(); // ✅ Método correcto
-        if (currentUser) {
-          const updatedUser = { ...currentUser, isEmailVerified: true };
-          authService.setAuthData(
-            updatedUser,
-            authService.getAccessToken() || '',
-            authService.getRefreshToken() || ''
-          );
-          set({ user: updatedUser });
+        try {
+          // Intentar logout en servidor
+          await AuthService.logout();
+          console.log('✅ Server logout successful');
+        } catch (error) {
+          console.error('⚠️ Server logout failed:', error);
+          // Continuar con logout local aunque falle el servidor
         }
 
-        set({ isLoading: false });
-        toast.success('¡Email verificado exitosamente!');
-        return true;
-      }
+        // Limpiar estado local siempre
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
 
-      throw new Error(response.message);
-    } catch (error: any) {
-      const errorMessage = error.message || 'Error al verificar email';
-      
-      set({
-        isLoading: false,
-        error: errorMessage,
-      });
-
-      toast.error(errorMessage);
-      return false;
-    }
-  },
-
-  // Reenviar verificación
-  resendVerification: async (email: string): Promise<boolean> => {
-    set({ isLoading: true, error: null });
-
-    try {
-      const response = await authService.resendVerification(email);
-
-      if (response.success) {
-        set({ isLoading: false });
-        toast.success('Email de verificación reenviado');
-        return true;
-      }
-
-      throw new Error(response.message);
-    } catch (error: any) {
-      const errorMessage = error.message || 'Error al reenviar verificación';
-      
-      set({
-        isLoading: false,
-        error: errorMessage,
-      });
-
-      toast.error(errorMessage);
-      return false;
-    }
-  },
-
-  // Forgot password
-  forgotPassword: async (email: string): Promise<boolean> => {
-    set({ isLoading: true, error: null });
-
-    try {
-      const response = await authService.forgotPassword(email);
-
-      if (response.success) {
-        set({ isLoading: false });
-        toast.success('Si el email existe, recibirás instrucciones para restablecer tu contraseña');
-        return true;
-      }
-
-      throw new Error(response.message);
-    } catch (error: any) {
-      const errorMessage = error.message || 'Error al solicitar restablecimiento';
-      
-      set({
-        isLoading: false,
-        error: errorMessage,
-      });
-
-      toast.error(errorMessage);
-      return false;
-    }
-  },
-
-  // Reset password
-  resetPassword: async (token: string, newPassword: string): Promise<boolean> => {
-    set({ isLoading: true, error: null });
-
-    try {
-      const response = await authService.resetPassword(token, newPassword);
-
-      if (response.success) {
-        set({ isLoading: false });
-        toast.success('Contraseña restablecida exitosamente');
-        return true;
-      }
-
-      throw new Error(response.message);
-    } catch (error: any) {
-      const errorMessage = error.message || 'Error al restablecer contraseña';
-      
-      set({
-        isLoading: false,
-        error: errorMessage,
-      });
-
-      toast.error(errorMessage);
-      return false;
-    }
-  },
-
-  // Change password
-  changePassword: async (currentPassword: string, newPassword: string): Promise<boolean> => {
-    set({ isLoading: true, error: null });
-
-    try {
-      const response = await authService.changePassword(currentPassword, newPassword);
-
-      if (response.success) {
-        // Logout automático ya que el backend invalida los tokens
         set({
           isAuthenticated: false,
           user: null,
@@ -879,69 +676,238 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           error: null,
         });
 
-        toast.success('Contraseña cambiada exitosamente. Por favor inicia sesión nuevamente.');
-        return true;
-      }
+        console.log('✅ Logout successful in authStore');
+        toast.success('Sesión cerrada correctamente');
+      },
 
-      throw new Error(response.message);
-    } catch (error: any) {
-      const errorMessage = error.message || 'Error al cambiar contraseña';
-      
-      set({
-        isLoading: false,
-        error: errorMessage,
-      });
+      // ✅ VERIFICAR EMAIL
+      verifyEmail: async (token: string): Promise<boolean> => {
+        set({ isLoading: true, error: null });
 
-      toast.error(errorMessage);
-      return false;
+        try {
+          const response = await AuthService.verifyEmail(token);
+          
+          if (response.success) {
+            // Actualizar usuario si está logueado
+            const currentUser = get().user;
+            if (currentUser) {
+              const updatedUser = { ...currentUser, isEmailVerified: true };
+              
+              set({ user: updatedUser });
+              localStorage.setItem('user', JSON.stringify(updatedUser));
+            }
+
+            set({ isLoading: false });
+            toast.success('Email verificado exitosamente');
+            return true;
+          }
+          
+          return false;
+        } catch (error: any) {
+          console.error('❌ Email verification error:', error);
+          
+          set({
+            isLoading: false,
+            error: error.message,
+          });
+
+          toast.error(error.message || 'Error al verificar email');
+          return false;
+        }
+      },
+
+      // ✅ REENVIAR VERIFICACIÓN
+      resendVerification: async (email: string): Promise<boolean> => {
+        set({ isLoading: true, error: null });
+
+        try {
+          const response = await AuthService.resendVerification(email);
+          
+          if (response.success) {
+            set({ isLoading: false });
+            toast.success('Nuevo enlace de verificación enviado');
+            return true;
+          }
+          
+          return false;
+        } catch (error: any) {
+          console.error('❌ Resend verification error:', error);
+          
+          set({
+            isLoading: false,
+            error: error.message,
+          });
+
+          toast.error(error.message || 'Error al reenviar verificación');
+          return false;
+        }
+      },
+
+      // ✅ OAUTH - GOOGLE (preparado para futuro)
+      loginWithGoogle: async (credential: string): Promise<boolean> => {
+        set({ isLoading: true, error: null });
+
+        try {
+          // TODO: Implementar cuando esté listo el backend
+          toast.error('Login con Google no implementado aún');
+          
+          set({ isLoading: false });
+          return false;
+        } catch (error: any) {
+          console.error('❌ Google login error:', error);
+          
+          set({
+            isLoading: false,
+            error: error.message,
+          });
+
+          toast.error('Error al iniciar sesión con Google');
+          return false;
+        }
+      },
+
+      // ✅ OAUTH - FACEBOOK (preparado para futuro)
+      loginWithFacebook: async (accessToken: string): Promise<boolean> => {
+        set({ isLoading: true, error: null });
+
+        try {
+          // TODO: Implementar cuando esté listo el backend
+          toast.error('Login con Facebook no implementado aún');
+          
+          set({ isLoading: false });
+          return false;
+        } catch (error: any) {
+          console.error('❌ Facebook login error:', error);
+          
+          set({
+            isLoading: false,
+            error: error.message,
+          });
+
+          toast.error('Error al iniciar sesión con Facebook');
+          return false;
+        }
+      },
+
+      // ✅ FORGOT PASSWORD (preparado para futuro)
+      forgotPassword: async (email: string): Promise<boolean> => {
+        set({ isLoading: true, error: null });
+
+        try {
+          // TODO: Implementar cuando esté listo el backend
+          toast.error('Recuperación de contraseña no implementada aún');
+          
+          set({ isLoading: false });
+          return false;
+        } catch (error: any) {
+          console.error('❌ Forgot password error:', error);
+          
+          set({
+            isLoading: false,
+            error: error.message,
+          });
+
+          toast.error('Error al enviar email de recuperación');
+          return false;
+        }
+      },
+
+      // ✅ RESET PASSWORD (preparado para futuro)
+      resetPassword: async (token: string, newPassword: string): Promise<boolean> => {
+        set({ isLoading: true, error: null });
+
+        try {
+          // TODO: Implementar cuando esté listo el backend
+          toast.error('Reset de contraseña no implementado aún');
+          
+          set({ isLoading: false });
+          return false;
+        } catch (error: any) {
+          console.error('❌ Reset password error:', error);
+          
+          set({
+            isLoading: false,
+            error: error.message,
+          });
+
+          toast.error('Error al restablecer contraseña');
+          return false;
+        }
+      },
+
+      // ✅ UTILIDADES
+      clearError: () => {
+        set({ error: null });
+      },
+
+      updateUser: (userData: Partial<User>) => {
+        const currentUser = get().user;
+        if (currentUser) {
+          const updatedUser = { ...currentUser, ...userData };
+          
+          set({ user: updatedUser });
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+        }
+      },
+
+      // ✅ HELPERS
+      hasRole: (role: string): boolean => {
+        const user = get().user;
+        return user?.role === role;
+      },
+
+      isAdmin: (): boolean => {
+        const user = get().user;
+        return user?.role === 'ADMIN';
+      },
+
+      isEmailVerified: (): boolean => {
+        const user = get().user;
+        return user?.isEmailVerified === true;
+      },
+
+      getDisplayName: (): string => {
+        const user = get().user;
+        if (!user) return '';
+        
+        if (user.type === 'COMPANY' && user.companyName) {
+          return user.companyName;
+        }
+        
+        return `${user.firstName} ${user.lastName}`.trim();
+      },
+    }),
+    {
+      name: 'wiru-auth-storage',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        isAuthenticated: state.isAuthenticated,
+        user: state.user,
+        accessToken: state.accessToken,
+        refreshToken: state.refreshToken,
+      }),
+      onRehydrateStorage: () => (state) => {
+        // Se ejecuta después de cargar desde localStorage
+        if (state) {
+          state.isLoading = false;
+          console.log('✅ Auth state rehydrated from localStorage');
+        }
+      },
     }
-  },
+  )
+);
 
-  // Refresh tokens
-  refreshTokens: async (): Promise<boolean> => {
-    try {
-      const { accessToken, refreshToken } = await authService.refreshToken();
-      
-      set({
-        accessToken,
-        refreshToken,
-      });
+// ✅ SELECTORES PARA OPTIMIZAR RE-RENDERS
+export const useAuthUser = () => useAuthStore((state) => state.user);
+export const useIsAuthenticated = () => useAuthStore((state) => state.isAuthenticated);
+export const useAuthLoading = () => useAuthStore((state) => state.isLoading);
+export const useAuthError = () => useAuthStore((state) => state.error);
 
-      return true;
-    } catch (error) {
-      console.error('Token refresh failed:', error);
-      
-      // Si falla el refresh, cerrar sesión
-      set({
-        isAuthenticated: false,
-        user: null,
-        accessToken: null,
-        refreshToken: null,
-        error: 'Sesión expirada',
-      });
-
-      return false;
-    }
-  },
-
-  // Clear error
-  clearError: () => {
-    set({ error: null });
-  },
-
-  // Helpers
-  hasRole: (role: string): boolean => {
-    const { user } = get();
-    return user?.role === role;
-  },
-
-  isAdmin: (): boolean => {
-    const { hasRole } = get();
-    return hasRole('ADMIN');
-  },
-
-  isEmailVerified: (): boolean => {
-    const { user } = get();
-    return user?.isEmailVerified === true;
-  },
-}));
+// ✅ INICIALIZAR AUTH AL IMPORTAR EL STORE
+// Esto se ejecuta automáticamente cuando se importa el store
+if (typeof window !== 'undefined') {
+  // Solo en el browser, no en SSR
+  setTimeout(() => {
+    useAuthStore.getState().initializeAuth();
+  }, 0);
+}
