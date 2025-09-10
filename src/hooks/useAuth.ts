@@ -1,81 +1,10 @@
-// import { useEffect } from 'react';
-// import { useAuthStore } from '@/stores/authStore';
-
-// export const useAuth = () => {
-//   const store = useAuthStore();
-
-//   // Inicializar autenticación al montar el hook
-//   useEffect(() => {
-//     store.initializeAuth();
-//   }, []);
-
-//   return {
-//     // Estado
-//     isAuthenticated: store.isAuthenticated,
-//     user: store.user,
-//     isLoading: store.isLoading,
-//     error: store.error,
-    
-//     // Acciones
-//     login: store.login,
-//     register: store.register,
-//     logout: store.logout,
-//     loginWithGoogle: store.loginWithGoogle,
-//     loginWithFacebook: store.loginWithFacebook,
-//     verifyEmail: store.verifyEmail,
-//     resendVerification: store.resendVerification,
-//     resetPassword: store.resetPassword,
-//     updateUser: store.updateUser,
-//     refreshUserData: store.refreshUserData,
-//     clearError: store.clearError,
-    
-//     // Utilidades
-//     isEmailVerified: store.user?.isVerified ?? false,
-//     userFullName: store.user ? `${store.user.firstName} ${store.user.lastName}` : '',
-//     userInitials: store.user ? `${store.user.firstName[0]}${store.user.lastName[0]}` : '',
-//   };
-// };
-
-
-
-
-
-// // src/hooks/useAuth.ts (Frontend) - Versión Completa con OAuth
-// import { useState, useEffect, useCallback } from 'react';
-// import { AuthService } from '@/services/authService';
+// import { useCallback } from 'react';
+// import { useNavigate } from 'react-router-dom';
 // import { toast } from 'react-hot-toast';
+// import { AuthService } from '@/services/authService';
+// import { useAuth as useAuthContext } from '@/contexts/AuthContext';
 
 // // Tipos
-// interface User {
-//   id: string;
-//   email: string;
-//   firstName: string;
-//   lastName: string;
-//   phone?: string;
-//   avatar?: string;
-//   role: string;
-//   type: string;
-//   status: string;
-//   isEmailVerified: boolean;
-//   companyName?: string;
-//   referralCode?: string;
-//   createdAt: string;
-//   wallet?: {
-//     balance: number;
-//     availableBalance: number;
-//     pendingBalance: number;
-//     currency: string;
-//     status: string;
-//   };
-// }
-
-// interface AuthState {
-//   isAuthenticated: boolean;
-//   user: User | null;
-//   isLoading: boolean;
-//   error: string | null;
-// }
-
 // interface LoginCredentials {
 //   email: string;
 //   password: string;
@@ -94,660 +23,385 @@
 //   [key: string]: any;
 // }
 
-// const initialState: AuthState = {
-//   isAuthenticated: false,
-//   user: null,
-//   isLoading: true,
-//   error: null,
-// };
-
 // export const useAuth = () => {
-//   const [state, setState] = useState<AuthState>(initialState);
+//   const navigate = useNavigate();
+//   const auth = useAuthContext();
 
-//   // Función para actualizar el estado
-//   const updateState = useCallback((updates: Partial<AuthState>) => {
-//     setState(prev => ({ ...prev, ...updates }));
-//   }, []);
-
-//   // Función para limpiar errores
-//   const clearError = useCallback(() => {
-//     updateState({ error: null });
-//   }, [updateState]);
-
-//   // Inicializar autenticación al cargar la página
-//   useEffect(() => {
-//     const initializeAuth = async () => {
-//       try {
-//         const token = AuthService.getAccessToken();
-//         const user = AuthService.getCurrentUser();
-
-//         if (token && user) {
-//           updateState({
-//             isAuthenticated: true,
-//             user,
-//             isLoading: false,
-//             error: null,
-//           });
-//         } else {
-//           updateState({
-//             isAuthenticated: false,
-//             user: null,
-//             isLoading: false,
-//             error: null,
-//           });
-//         }
-//       } catch (error) {
-//         console.error('Error initializing auth:', error);
-//         updateState({
-//           isAuthenticated: false,
-//           user: null,
-//           isLoading: false,
-//           error: null,
-//         });
-//       }
-//     };
-
-//     initializeAuth();
-//   }, [updateState]);
-
-//   // Función de login
+//   // ✅ LOGIN
 //   const login = useCallback(async (credentials: LoginCredentials): Promise<boolean> => {
-//     updateState({ isLoading: true, error: null });
-
 //     try {
-//       const response = await authService.login(credentials);
+//       const result = await AuthService.login(credentials);
 
-//       if (response.success) {
-//         const { user, accessToken, refreshToken } = response.data;
+//       if (result.success) {
+//         // Guardar en localStorage
+//         localStorage.setItem('accessToken', result.data.accessToken);
+//         localStorage.setItem('refreshToken', result.data.refreshToken);
+//         localStorage.setItem('user', JSON.stringify(result.data.user));
 
-//         // Almacenar datos de autenticación
-//         authService.setAuthData(user, accessToken, refreshToken);
+//         // Actualizar contexto
+//         auth.setUser(result.data.user);
+//         auth.setAuthenticated(true);
 
-//         updateState({
-//           isAuthenticated: true,
-//           user,
-//           isLoading: false,
-//           error: null,
-//         });
-
-//         toast.success(`¡Bienvenido ${user.firstName}!`);
+//         console.log('✅ Login successful in useAuth');
 //         return true;
 //       }
 
-//       throw new Error(response.message);
-//     } catch (error: any) {
-//       updateState({ 
-//         isLoading: false, 
-//         error: error.message 
-//       });
-//       toast.error(error.message);
 //       return false;
+//     } catch (error) {
+//       console.error('❌ Login error in useAuth:', error);
+//       throw error;
 //     }
-//   }, [updateState]);
+//   }, [auth]);
 
-//   // Función de registro
+//   // ✅ REGISTER
 //   const register = useCallback(async (data: RegisterData): Promise<boolean> => {
-//     updateState({ isLoading: true, error: null });
-
 //     try {
-//       const response = await authService.register(data);
+//       const result = await AuthService.register(data);
 
-//       if (response.success) {
-//         updateState({
-//           isLoading: false,
-//           error: null,
-//         });
-
-//         toast.success('¡Cuenta creada exitosamente! Revisa tu email para verificar tu cuenta.');
+//       if (result.success) {
+//         console.log('✅ Registration successful in useAuth');
 //         return true;
 //       }
 
-//       throw new Error(response.message);
-//     } catch (error: any) {
-//       updateState({ 
-//         isLoading: false, 
-//         error: error.message 
-//       });
-//       toast.error(error.message);
 //       return false;
-//     }
-//   }, [updateState]);
-
-//   // Función de login con Google
-//   const loginWithGoogle = useCallback(async (credential: string): Promise<{ success: boolean; message: string; data?: any }> => {
-//     updateState({ isLoading: true, error: null });
-
-//     try {
-//       const response = await authService.loginWithGoogle(credential);
-
-//       if (response.success) {
-//         const { user, accessToken, refreshToken, isNewUser } = response.data;
-
-//         // Almacenar datos de autenticación
-//         authService.setAuthData(user, accessToken, refreshToken);
-
-//         updateState({
-//           isAuthenticated: true,
-//           user,
-//           isLoading: false,
-//           error: null,
-//         });
-
-//         const message = isNewUser 
-//           ? `¡Bienvenido a Wiru, ${user.firstName}!` 
-//           : `¡Bienvenido de vuelta, ${user.firstName}!`;
-
-//         return { success: true, message, data: response.data };
-//       }
-
-//       throw new Error(response.message);
-//     } catch (error: any) {
-//       updateState({ 
-//         isLoading: false, 
-//         error: error.message 
-//       });
-//       return { success: false, message: error.message };
-//     }
-//   }, [updateState]);
-
-//   // Función de login con Facebook
-//   const loginWithFacebook = useCallback(async (accessToken: string): Promise<{ success: boolean; message: string; data?: any }> => {
-//     updateState({ isLoading: true, error: null });
-
-//     try {
-//       const response = await authService.loginWithFacebook(accessToken);
-
-//       if (response.success) {
-//         const { user, accessToken: authToken, refreshToken, isNewUser } = response.data;
-
-//         // Almacenar datos de autenticación
-//         authService.setAuthData(user, authToken, refreshToken);
-
-//         updateState({
-//           isAuthenticated: true,
-//           user,
-//           isLoading: false,
-//           error: null,
-//         });
-
-//         const message = isNewUser 
-//           ? `¡Bienvenido a Wiru, ${user.firstName}!` 
-//           : `¡Bienvenido de vuelta, ${user.firstName}!`;
-
-//         return { success: true, message, data: response.data };
-//       }
-
-//       throw new Error(response.message);
-//     } catch (error: any) {
-//       updateState({ 
-//         isLoading: false, 
-//         error: error.message 
-//       });
-//       return { success: false, message: error.message };
-//     }
-//   }, [updateState]);
-
-//   // Función de logout
-//   const logout = useCallback(async (): Promise<void> => {
-//     updateState({ isLoading: true });
-
-//     try {
-//       await authService.logout();
 //     } catch (error) {
-//       console.error('Error during logout:', error);
-//     } finally {
-//       updateState({
-//         isAuthenticated: false,
-//         user: null,
-//         isLoading: false,
-//         error: null,
-//       });
-
-//       toast.success('Sesión cerrada exitosamente');
+//       console.error('❌ Registration error in useAuth:', error);
+//       throw error;
 //     }
-//   }, [updateState]);
+//   }, []);
 
-//   // Función para verificar email
+//   // ✅ LOGOUT
+//   const logout = useCallback(async () => {
+//     try {
+//       // Intentar logout en el servidor
+//       try {
+//         await AuthService.logout();
+//       } catch (error) {
+//         console.error('⚠️ Server logout failed:', error);
+//         // Continuar con logout local aunque falle el servidor
+//       }
+
+//       // Limpiar estado local
+//       auth.clearAuth();
+
+//       console.log('✅ Logout successful');
+      
+//       // Redirigir al login
+//       navigate('/login', { replace: true });
+
+//     } catch (error) {
+//       console.error('❌ Logout error:', error);
+//     }
+//   }, [auth, navigate]);
+
+//   // ✅ VERIFY EMAIL
 //   const verifyEmail = useCallback(async (token: string): Promise<boolean> => {
-//     updateState({ isLoading: true, error: null });
-
 //     try {
-//       const response = await authService.verifyEmail(token);
-
-//       if (response.success) {
-//         // Actualizar usuario actual si está logueado
-//         const currentUser = authService.getCurrentUser();
-//         if (currentUser) {
-//           const updatedUser = { ...currentUser, isEmailVerified: true };
-//           authService.setAuthData(
-//             updatedUser,
-//             authService.getAccessToken() || '',
-//             authService.getRefreshToken() || ''
-//           );
-//           updateState({ user: updatedUser });
+//       const result = await AuthService.verifyEmail(token);
+      
+//       if (result.success) {
+//         // Actualizar usuario si está logueado
+//         if (auth.user) {
+//           const updatedUser = { ...auth.user, isEmailVerified: true };
+//           auth.setUser(updatedUser);
+//           localStorage.setItem('user', JSON.stringify(updatedUser));
 //         }
-
-//         updateState({ isLoading: false });
-//         toast.success('¡Email verificado exitosamente!');
+        
+//         toast.success('Email verificado exitosamente');
 //         return true;
 //       }
-
-//       throw new Error(response.message);
+      
+//       return false;
 //     } catch (error: any) {
-//       updateState({ 
-//         isLoading: false, 
-//         error: error.message 
-//       });
-//       toast.error(error.message);
+//       console.error('❌ Email verification error:', error);
+//       toast.error(error.message || 'Error al verificar email');
 //       return false;
 //     }
-//   }, [updateState]);
+//   }, [auth]);
 
-//   // Función para reenviar verificación
+//   // ✅ RESEND VERIFICATION
 //   const resendVerification = useCallback(async (email: string): Promise<boolean> => {
-//     updateState({ isLoading: true, error: null });
-
 //     try {
-//       const response = await authService.resendVerification(email);
-
-//       if (response.success) {
-//         updateState({ isLoading: false });
-//         toast.success('Email de verificación reenviado');
+//       const result = await AuthService.resendVerification(email);
+      
+//       if (result.success) {
+//         toast.success('Nuevo enlace de verificación enviado');
 //         return true;
 //       }
-
-//       throw new Error(response.message);
+      
+//       return false;
 //     } catch (error: any) {
-//       updateState({ 
-//         isLoading: false, 
-//         error: error.message 
-//       });
-//       toast.error(error.message);
+//       console.error('❌ Resend verification error:', error);
+//       toast.error(error.message || 'Error al reenviar verificación');
 //       return false;
 //     }
-//   }, [updateState]);
+//   }, []);
 
-//   // Función para solicitar reset de contraseña
-//   const forgotPassword = useCallback(async (email: string): Promise<boolean> => {
-//     updateState({ isLoading: true, error: null });
-
+//   // ✅ LOGIN WITH GOOGLE (Future implementation)
+//   const loginWithGoogle = useCallback(async (credential: string) => {
 //     try {
-//       const response = await authService.forgotPassword(email);
-
-//       if (response.success) {
-//         updateState({ isLoading: false });
-//         toast.success('Si el email existe, recibirás instrucciones para restablecer tu contraseña');
-//         return true;
-//       }
-
-//       throw new Error(response.message);
+//       // TODO: Implementar OAuth con Google
+//       toast.error('Login con Google no implementado aún');
+//       return { success: false, message: 'No implementado' };
 //     } catch (error: any) {
-//       updateState({ 
-//         isLoading: false, 
-//         error: error.message 
-//       });
-//       toast.error(error.message);
-//       return false;
-//     }
-//   }, [updateState]);
-
-//   // Función para confirmar reset de contraseña
-//   const resetPassword = useCallback(async (token: string, newPassword: string): Promise<boolean> => {
-//     updateState({ isLoading: true, error: null });
-
-//     try {
-//       const response = await authService.resetPassword(token, newPassword);
-
-//       if (response.success) {
-//         updateState({ isLoading: false });
-//         toast.success('Contraseña restablecida exitosamente');
-//         return true;
-//       }
-
-//       throw new Error(response.message);
-//     } catch (error: any) {
-//       updateState({ 
-//         isLoading: false, 
-//         error: error.message 
-//       });
-//       toast.error(error.message);
-//       return false;
-//     }
-//   }, [updateState]);
-
-//   // Función para cambiar contraseña
-//   const changePassword = useCallback(async (currentPassword: string, newPassword: string): Promise<{ success: boolean; message: string }> => {
-//     updateState({ isLoading: true, error: null });
-
-//     try {
-//       const response = await authService.changePassword(currentPassword, newPassword);
-
-//       if (response.success) {
-//         // Logout automático ya que el backend invalida los tokens
-//         updateState({
-//           isAuthenticated: false,
-//           user: null,
-//           isLoading: false,
-//           error: null,
-//         });
-
-//         return { success: true, message: response.message };
-//       }
-
-//       throw new Error(response.message);
-//     } catch (error: any) {
-//       updateState({ 
-//         isLoading: false, 
-//         error: error.message 
-//       });
+//       console.error('❌ Google login error:', error);
 //       return { success: false, message: error.message };
 //     }
-//   }, [updateState]);
+//   }, []);
 
-//   // Función para obtener cuentas OAuth
-//   const getOAuthAccounts = useCallback(async (): Promise<{ google: boolean; facebook: boolean }> => {
+//   // ✅ LOGIN WITH FACEBOOK (Future implementation)
+//   const loginWithFacebook = useCallback(async (accessToken: string) => {
 //     try {
-//       return await authService.getOAuthAccounts();
+//       // TODO: Implementar OAuth con Facebook
+//       toast.error('Login con Facebook no implementado aún');
+//       return { success: false, message: 'No implementado' };
 //     } catch (error: any) {
-//       toast.error('Error al obtener cuentas OAuth');
-//       throw error;
+//       console.error('❌ Facebook login error:', error);
+//       return { success: false, message: error.message };
 //     }
 //   }, []);
 
-//   // Función para desvincular cuenta OAuth
-//   const unlinkOAuthAccount = useCallback(async (provider: 'google' | 'facebook'): Promise<void> => {
-//     try {
-//       await authService.unlinkOAuthAccount(provider);
-//       toast.success(`Cuenta de ${provider} desvinculada exitosamente`);
-//     } catch (error: any) {
-//       toast.error(error.message);
-//       throw error;
-//     }
-//   }, []);
-
-//   // Función para renovar tokens
-//   const refreshTokens = useCallback(async (): Promise<boolean> => {
-//     try {
-//       // const { accessToken, refreshToken } = await authService.refreshToken();
-      
-//       updateState({
-//         // No cambiar isAuthenticated ni user, solo actualizar tokens internamente
-//         isLoading: false,
-//         error: null,
-//       });
-
-//       return true;
-//     } catch (error) {
-//       console.error('Token refresh failed:', error);
-      
-//       // Si falla el refresh, cerrar sesión
-//       updateState({
-//         isAuthenticated: false,
-//         user: null,
-//         isLoading: false,
-//         error: 'Sesión expirada',
-//       });
-
-//       return false;
-//     }
-//   }, [updateState]);
-
-//   // Helpers
-//   const hasRole = useCallback((role: string): boolean => {
-//     return state.user?.role === role;
-//   }, [state.user]);
-
-//   const isAdmin = useCallback((): boolean => {
-//     return hasRole('ADMIN');
-//   }, [hasRole]);
-
-//   const isEmailVerified = useCallback((): boolean => {
-//     return state.user?.isEmailVerified === true;
-//   }, [state.user]);
-
-//   const updateUser = useCallback((updates: Partial<User>) => {
-//     if (state.user) {
-//       const updatedUser = { ...state.user, ...updates };
-//       authService.setAuthData(
-//         updatedUser,
-//         authService.getAccessToken() || '',
-//         authService.getRefreshToken() || ''
-//       );
-//       updateState({ user: updatedUser });
-//     }
-//   }, [state.user, updateState]);
-
+//   // ✅ RETURN - Combina contexto + hook
 //   return {
-//     // Estado
-//     isAuthenticated: state.isAuthenticated,
-//     user: state.user,
-//     isLoading: state.isLoading,
-//     error: state.error,
+//     // Estado del contexto
+//     user: auth.user,
+//     isAuthenticated: auth.isAuthenticated,
+//     isLoading: auth.isLoading,
     
-//     // Acciones básicas
+//     // Acciones del hook
 //     login,
 //     register,
 //     logout,
     
-//     // OAuth
-//     loginWithGoogle,
-//     loginWithFacebook,
-//     getOAuthAccounts,
-//     unlinkOAuthAccount,
-    
-//     // Verificación y recuperación
+//     // Email verification
 //     verifyEmail,
 //     resendVerification,
-//     forgotPassword,
-//     resetPassword,
-//     changePassword,
     
-//     // Utilidades
-//     refreshTokens,
-//     clearError,
-//     updateUser,
+//     // OAuth (future)
+//     loginWithGoogle,
+//     loginWithFacebook,
     
-//     // Helpers
-//     hasRole,
-//     isAdmin,
-//     isEmailVerified,
+//     // Helpers del contexto
+//     hasRole: auth.hasRole,
+//     isAdmin: auth.isAdmin,
+//     isEmailVerified: auth.isEmailVerified,
+//     getDisplayName: auth.getDisplayName,
 //   };
 // };
 
 
 
 
-
-
-
-// src/hooks/useAuth.ts - HOOK DE AUTENTICACIÓN CORREGIDO
+// src/hooks/useAuth.ts
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { AuthService } from '@/services/authService';
+import { AuthService, LoginCredentials, RegisterData } from '@/services/authService';
 import { useAuth as useAuthContext } from '@/contexts/AuthContext';
-
-// Tipos
-interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-interface RegisterData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  phone?: string;
-  userType: 'person' | 'company';
-  acceptTerms: boolean;
-  acceptPrivacy: boolean;
-  [key: string]: any;
-}
 
 export const useAuth = () => {
   const navigate = useNavigate();
   const auth = useAuthContext();
 
-  // ✅ LOGIN
-  const login = useCallback(async (credentials: LoginCredentials): Promise<boolean> => {
+  // ===== LOGIN =====
+  const login = useCallback(async (credentials: LoginCredentials): Promise<void> => {
     try {
+      auth.setLoading(true);
+      
+      console.log('🚀 useAuth.login called with:', { email: credentials.email });
+      
       const result = await AuthService.login(credentials);
 
-      if (result.success) {
-        // Guardar en localStorage
-        localStorage.setItem('accessToken', result.data.accessToken);
-        localStorage.setItem('refreshToken', result.data.refreshToken);
-        localStorage.setItem('user', JSON.stringify(result.data.user));
-
+      if (result.success && result.data) {
         // Actualizar contexto
         auth.setUser(result.data.user);
         auth.setAuthenticated(true);
 
-        console.log('✅ Login successful in useAuth');
-        return true;
-      }
+        // Mostrar mensaje de éxito
+        toast.success(result.message || `¡Bienvenido, ${result.data.user.firstName}!`);
 
-      return false;
-    } catch (error) {
+        console.log('✅ Login successful, redirecting to dashboard');
+        
+        // Redirigir al dashboard
+        navigate('/dashboard', { replace: true });
+      }
+    } catch (error: any) {
       console.error('❌ Login error in useAuth:', error);
-      throw error;
-    }
-  }, [auth]);
-
-  // ✅ REGISTER
-  const register = useCallback(async (data: RegisterData): Promise<boolean> => {
-    try {
-      const result = await AuthService.register(data);
-
-      if (result.success) {
-        console.log('✅ Registration successful in useAuth');
-        return true;
-      }
-
-      return false;
-    } catch (error) {
-      console.error('❌ Registration error in useAuth:', error);
-      throw error;
-    }
-  }, []);
-
-  // ✅ LOGOUT
-  const logout = useCallback(async () => {
-    try {
-      // Intentar logout en el servidor
-      try {
-        await AuthService.logout();
-      } catch (error) {
-        console.error('⚠️ Server logout failed:', error);
-        // Continuar con logout local aunque falle el servidor
-      }
-
-      // Limpiar estado local
-      auth.clearAuth();
-
-      console.log('✅ Logout successful');
       
-      // Redirigir al login
-      navigate('/login', { replace: true });
-
-    } catch (error) {
-      console.error('❌ Logout error:', error);
+      // Mostrar error específico del backend
+      toast.error(error.message || 'Error al iniciar sesión');
+      
+      // Re-lanzar el error para que el componente pueda manejarlo si es necesario
+      throw error;
+    } finally {
+      auth.setLoading(false);
     }
   }, [auth, navigate]);
 
-  // ✅ VERIFY EMAIL
-  const verifyEmail = useCallback(async (token: string): Promise<boolean> => {
+  // ===== REGISTER =====
+  const register = useCallback(async (data: RegisterData): Promise<void> => {
     try {
+      auth.setLoading(true);
+      
+      console.log('🚀 useAuth.register called');
+      
+      const result = await AuthService.register(data);
+
+      if (result.success) {
+        // Mostrar mensaje de éxito
+        toast.success(result.message || 'Registro exitoso. Verifica tu email para continuar.');
+
+        console.log('✅ Register successful, redirecting to login');
+        
+        // Redirigir al login con mensaje
+        navigate('/login?message=verify-email', { replace: true });
+      }
+    } catch (error: any) {
+      console.error('❌ Register error in useAuth:', error);
+      
+      // Mostrar error específico del backend
+      toast.error(error.message || 'Error en el registro');
+      
+      throw error;
+    } finally {
+      auth.setLoading(false);
+    }
+  }, [auth, navigate]);
+
+  // ===== LOGOUT =====
+  const logout = useCallback(async (): Promise<void> => {
+    try {
+      await auth.logout();
+      
+      toast.success('Sesión cerrada exitosamente');
+      
+      console.log('✅ Logout successful, redirecting to home');
+      
+      // Redirigir al home
+      navigate('/', { replace: true });
+    } catch (error: any) {
+      console.error('❌ Logout error:', error);
+      toast.error('Error al cerrar sesión');
+    }
+  }, [auth, navigate]);
+
+  // ===== VERIFY EMAIL =====
+  const verifyEmail = useCallback(async (token: string): Promise<void> => {
+    try {
+      auth.setLoading(true);
+      
       const result = await AuthService.verifyEmail(token);
       
       if (result.success) {
-        // Actualizar usuario si está logueado
+        toast.success(result.message || 'Email verificado exitosamente');
+        
+        // Si el usuario está logueado, actualizar su estado
         if (auth.user) {
-          const updatedUser = { ...auth.user, isEmailVerified: true };
-          auth.setUser(updatedUser);
-          localStorage.setItem('user', JSON.stringify(updatedUser));
+          auth.setUser({ ...auth.user, isEmailVerified: true });
         }
         
-        toast.success('Email verificado exitosamente');
-        return true;
+        navigate('/dashboard', { replace: true });
       }
-      
-      return false;
     } catch (error: any) {
       console.error('❌ Email verification error:', error);
       toast.error(error.message || 'Error al verificar email');
-      return false;
+      throw error;
+    } finally {
+      auth.setLoading(false);
     }
-  }, [auth]);
+  }, [auth, navigate]);
 
-  // ✅ RESEND VERIFICATION
-  const resendVerification = useCallback(async (email: string): Promise<boolean> => {
+  // ===== RESEND VERIFICATION =====
+  const resendVerification = useCallback(async (email: string): Promise<void> => {
     try {
       const result = await AuthService.resendVerification(email);
       
       if (result.success) {
-        toast.success('Nuevo enlace de verificación enviado');
-        return true;
+        toast.success(result.message || 'Email de verificación reenviado');
       }
-      
-      return false;
     } catch (error: any) {
       console.error('❌ Resend verification error:', error);
       toast.error(error.message || 'Error al reenviar verificación');
-      return false;
+      throw error;
     }
   }, []);
 
-  // ✅ LOGIN WITH GOOGLE (Future implementation)
-  const loginWithGoogle = useCallback(async (credential: string) => {
+  // ===== FORGOT PASSWORD =====
+  const forgotPassword = useCallback(async (email: string): Promise<void> => {
     try {
-      // TODO: Implementar OAuth con Google
-      toast.error('Login con Google no implementado aún');
-      return { success: false, message: 'No implementado' };
+      const result = await AuthService.forgotPassword(email);
+      
+      if (result.success) {
+        toast.success(result.message || 'Revisa tu email para las instrucciones');
+        navigate('/login', { replace: true });
+      }
     } catch (error: any) {
-      console.error('❌ Google login error:', error);
-      return { success: false, message: error.message };
+      console.error('❌ Forgot password error:', error);
+      toast.error(error.message || 'Error al solicitar reset de contraseña');
+      throw error;
     }
-  }, []);
+  }, [navigate]);
 
-  // ✅ LOGIN WITH FACEBOOK (Future implementation)
-  const loginWithFacebook = useCallback(async (accessToken: string) => {
+  // ===== RESET PASSWORD =====
+  const resetPassword = useCallback(async (token: string, password: string): Promise<void> => {
     try {
-      // TODO: Implementar OAuth con Facebook
-      toast.error('Login con Facebook no implementado aún');
-      return { success: false, message: 'No implementado' };
+      const result = await AuthService.resetPassword(token, password);
+      
+      if (result.success) {
+        toast.success(result.message || 'Contraseña actualizada exitosamente');
+        navigate('/login', { replace: true });
+      }
     } catch (error: any) {
-      console.error('❌ Facebook login error:', error);
-      return { success: false, message: error.message };
+      console.error('❌ Reset password error:', error);
+      toast.error(error.message || 'Error al resetear contraseña');
+      throw error;
     }
-  }, []);
+  }, [navigate]);
 
-  // ✅ RETURN - Combina contexto + hook
+  // ===== UPDATE PROFILE =====
+  const updateProfile = useCallback(async (data: any): Promise<void> => {
+    try {
+      auth.setLoading(true);
+      
+      const result = await AuthService.updateProfile(data);
+      
+      if (result.success) {
+        auth.setUser(result.user);
+        toast.success('Perfil actualizado exitosamente');
+      }
+    } catch (error: any) {
+      console.error('❌ Update profile error:', error);
+      toast.error(error.message || 'Error al actualizar perfil');
+      throw error;
+    } finally {
+      auth.setLoading(false);
+    }
+  }, [auth]);
+
+  // ===== RETURN OBJECT =====
   return {
     // Estado del contexto
     user: auth.user,
     isAuthenticated: auth.isAuthenticated,
     isLoading: auth.isLoading,
     
-    // Acciones del hook
+    // Acciones principales
     login,
     register,
     logout,
     
-    // Email verification
+    // Verificación y recuperación
     verifyEmail,
     resendVerification,
-    
-    // OAuth (future)
-    loginWithGoogle,
-    loginWithFacebook,
+    forgotPassword,
+    resetPassword,
+    updateProfile,
     
     // Helpers del contexto
     hasRole: auth.hasRole,
     isAdmin: auth.isAdmin,
     isEmailVerified: auth.isEmailVerified,
     getDisplayName: auth.getDisplayName,
+    getUserInitials: auth.getUserInitials,
   };
 };

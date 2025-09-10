@@ -885,133 +885,391 @@
 
 
 
-// src/App.tsx - ESTRUCTURA CORREGIDA
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
+// // src/App.tsx - ESTRUCTURA CORREGIDA
+// import React from 'react';
+// import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+// import { Toaster } from 'react-hot-toast';
 
-// Contextos
-import { AuthProvider } from '@/contexts/AuthContext';
+// // Contextos
+// import { AuthProvider } from '@/contexts/AuthContext';
 
-// Páginas
+// // Páginas
+// import { LoginPage } from '@/pages/auth/LoginPage';
+// import { RegisterPage } from '@/pages/auth/RegisterPage';
+// import { VerifyEmailPage } from '@/pages/auth/VerifyEmailPage';
+// import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
+// import { DashboardPage } from './pages/dashboard/DashboardPage';
+
+// // Componentes de protección
+// // import { RequireAuth, RequireGuest } from '@/contexts/AuthContext';
+
+// function App() {
+//   return (
+//     <>
+//       {/* Configuración de toasts */}
+//       <Toaster 
+//         position="top-right"
+//         toastOptions={{
+//           duration: 4000,
+//           style: {
+//             background: '#363636',
+//             color: '#fff',
+//           },
+//           success: {
+//             duration: 3000,
+//             iconTheme: {
+//               primary: '#4ade80',
+//               secondary: '#fff',
+//             },
+//           },
+//           error: {
+//             duration: 5000,
+//             iconTheme: {
+//               primary: '#ef4444',
+//               secondary: '#fff',
+//             },
+//           },
+//         }}
+//       />
+
+//       {/* ✅ Router DEBE estar ANTES que AuthProvider */}
+//       <Router>
+//         {/* ✅ AuthProvider DENTRO del Router */}
+//         <AuthProvider>
+//           <div className="App">
+//             <Routes>
+//               {/* Rutas públicas (solo para no autenticados) */}
+//               <Route 
+//                 path="/login" 
+//                 element={
+//                   <RequireGuest fallback={<DashboardPage />}>
+//                     <LoginPage />
+//                   </RequireGuest>
+//                 } 
+//               />
+              
+//               <Route 
+//                 path="/register" 
+//                 element={
+//                   <RequireGuest fallback={<DashboardPage />}>
+//                     <RegisterPage />
+//                   </RequireGuest>
+//                 } 
+//               />
+              
+//               <Route 
+//                 path="/forgot-password" 
+//                 element={
+//                   <RequireGuest fallback={<DashboardPage />}>
+//                     <ForgotPasswordPage />
+//                   </RequireGuest>
+//                 } 
+//               />
+
+//               {/* Rutas que NO requieren autenticación */}
+//               <Route path="/verify-email" element={<VerifyEmailPage />} />
+
+//               {/* Rutas protegidas (requieren autenticación) */}
+//               <Route 
+//                 path="/dashboard" 
+//                 element={
+//                   <RequireAuth fallback={<LoginPage />}>
+//                     <DashboardPage />
+//                   </RequireAuth>
+//                 } 
+//               />
+
+//               {/* Ruta por defecto */}
+//               <Route 
+//                 path="/" 
+//                 element={
+//                   <RequireGuest fallback={<DashboardPage />}>
+//                     <LoginPage />
+//                   </RequireGuest>
+//                 } 
+//               />
+
+//               {/* 404 - Página no encontrada */}
+//               <Route 
+//                 path="*" 
+//                 element={
+//                   <div className="min-h-screen flex items-center justify-center bg-gray-50">
+//                     <div className="text-center">
+//                       <h1 className="text-4xl font-bold text-gray-900">404</h1>
+//                       <p className="text-gray-600 mt-2">Página no encontrada</p>
+//                       <a 
+//                         href="/" 
+//                         className="mt-4 inline-block bg-[#a8c241] text-white px-4 py-2 rounded hover:bg-[#8ea635]"
+//                       >
+//                         Volver al inicio
+//                       </a>
+//                     </div>
+//                   </div>
+//                 } 
+//               />
+//             </Routes>
+//           </div>
+//         </AuthProvider>
+//       </Router>
+//     </>
+//   );
+// }
+
+// export default App;
+
+
+
+
+// // src/App.tsx
+// import React from 'react';
+// import { Routes, Route, Navigate } from 'react-router-dom';
+// import { useAuth } from '@/contexts/AuthContext';
+
+// // Layouts
+// import { PublicLayout } from '@/components/layout/PublicLayout';
+// import { AuthLayout } from '@/components/layout/AuthLayout';
+// // import { DashboardLayout } from '@/components/layout/DashboardLayout';
+
+// // Pages - Public
+// // import { HomePage } from '@/pages/public/HomePage';
+// // import { AboutPage } from '@/pages/public/AboutPage';
+// // import { ContactPage } from '@/pages/public/ContactPage';
+// // import { PricingPage } from '@/pages/public/PricingPage';
+
+// // Pages - Auth
+// import { LoginPage } from '@/pages/auth/LoginPage';
+// import { RegisterPage } from '@/pages/auth/RegisterPage';
+// import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
+// // import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
+// import { VerifyEmailPage } from '@/pages/auth/VerifyEmailPage';
+
+// // Pages - Dashboard
+// import { DashboardPage } from '@/pages/dashboard/DashboardPage';
+// import  SellPage  from '@/pages/dashboard/SellPage';
+// import  OrdersPage  from '@/pages/dashboard/OrdersPage';
+// // import { WalletPage } from '@/pages/dashboard/WalletPage';
+// import  ReferralsPage  from '@/pages/dashboard/ReferralsPage';
+// import { ProfilePage } from '@/pages/dashboard/ProfilePage';
+// // import { SettingsPage } from '@/pages/dashboard/SettingsPage';
+
+// // Components
+// import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+// import { LoadingScreen } from '@/components/ui/LoadingScreen';
+// import HomePage from './pages/HomePage';
+// import AboutPage from './pages/AboutPage';
+// import ContactPage from './pages/ContactPage';
+// import { DashboardLayout } from './components/layout/DashboardLayout';
+
+// function App() {
+//   const { isLoading } = useAuth();
+
+//   // Mostrar loading mientras se inicializa la autenticación
+//   if (isLoading) {
+//     return <LoadingScreen message="Inicializando aplicación..." />;
+//   }
+
+//   return (
+//     <Routes>
+//       {/* ===== RUTAS PÚBLICAS ===== */}
+//       <Route path="/" element={<PublicLayout />}>
+//         <Route index element={<HomePage />} />
+//         <Route path="about" element={<AboutPage />} />
+//         <Route path="contact" element={<ContactPage />} />
+//         {/* <Route path="pricing" element={<PricingPage />} /> */}
+//       </Route>
+
+//       {/* ===== RUTAS DE AUTENTICACIÓN ===== */}
+//       <Route path="/auth" element={<AuthLayout />}>
+//         <Route 
+//           path="login" 
+//           element={
+//             <ProtectedRoute requireAuth={false} redirectTo="/dashboard">
+//               <LoginPage />
+//             </ProtectedRoute>
+//           } 
+//         />
+//         <Route 
+//           path="register" 
+//           element={
+//             <ProtectedRoute requireAuth={false} redirectTo="/dashboard">
+//               <RegisterPage />
+//             </ProtectedRoute>
+//           } 
+//         />
+//         <Route path="forgot-password" element={<ForgotPasswordPage />} />
+//         {/* <Route path="reset-password" element={<ResetPasswordPage />} /> */}
+//         <Route path="verify-email" element={<VerifyEmailPage />} />
+//       </Route>
+
+//       {/* Redirects para compatibilidad */}
+//       <Route path="/login" element={<Navigate to="/auth/login" replace />} />
+//       <Route path="/register" element={<Navigate to="/auth/register" replace />} />
+
+//       {/* ===== RUTAS PROTEGIDAS (DASHBOARD) ===== */}
+//       <Route 
+//         path="/dashboard" 
+//         element={
+//           <ProtectedRoute requireAuth={true}>
+//             <DashboardLayout />
+//           </ProtectedRoute>
+//         }
+//       >
+//         <Route index element={<DashboardPage />} />
+//         <Route path="sell" element={<SellPage />} />
+//         <Route path="orders" element={<OrdersPage />} />
+//         {/* <Route path="orders/:id" element={<OrderDetailsPage />} /> */}
+//         {/* <Route path="wallet" element={<WalletPage />} /> */}
+//         <Route path="referrals" element={<ReferralsPage />} />
+//         <Route path="profile" element={<ProfilePage />} />
+//         {/* <Route path="settings" element={<SettingsPage />} /> */}
+//       </Route>
+
+//       {/* ===== RUTAS DE ERROR ===== */}
+//       {/* <Route path="/unauthorized" element={<UnauthorizedPage />} />
+//       <Route path="/404" element={<NotFoundPage />} /> */}
+      
+//       {/* Catch all - redirect to 404 */}
+//       <Route path="*" element={<Navigate to="/404" replace />} />
+//     </Routes>
+//   );
+// }
+
+// export default App;
+
+
+
+
+
+
+// src/App.tsx
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+
+// Layouts
+import { PublicLayout } from '@/components/layout/PublicLayout';
+import  AuthLayout  from '@/components/layout/AuthLayout';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
+
+
+
+// Pages - Auth
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
-import { VerifyEmailPage } from '@/pages/auth/VerifyEmailPage';
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
-import { DashboardPage } from './pages/dashboard/DashboardPage';
+// import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
+import { VerifyEmailPage } from '@/pages/auth/VerifyEmailPage';
 
-// Componentes de protección
-import { RequireAuth, RequireGuest } from '@/contexts/AuthContext';
+// Pages - Dashboard
+import { DashboardPage } from '@/pages/dashboard/DashboardPage';
+import  SellPage  from '@/pages/dashboard/SellPage';
+import  OrdersPage  from '@/pages/dashboard/OrdersPage';
+// import { WalletPage } from '@/pages/dashboard/WalletPage';
+import  ReferralsPage  from '@/pages/dashboard/ReferralsPage';
+import { ProfilePage } from '@/pages/dashboard/ProfilePage';
+// import { SettingsPage } from '@/pages/dashboard/SettingsPage';
+
+// Components
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { LoadingScreen } from '@/components/ui/LoadingScreen';
+import HomePage from './pages/HomePage';
+import AboutPage from './pages/AboutPage';
+import ContactPage from './pages/ContactPage';
 
 function App() {
+  const { isLoading } = useAuth();
+
+  // Mostrar loading mientras se inicializa la autenticación
+  if (isLoading) {
+    return <LoadingScreen message="Inicializando aplicación..." />;
+  }
+
   return (
-    <>
-      {/* Configuración de toasts */}
-      <Toaster 
-        position="top-right"
-        toastOptions={{
-          duration: 4000,
-          style: {
-            background: '#363636',
-            color: '#fff',
-          },
-          success: {
-            duration: 3000,
-            iconTheme: {
-              primary: '#4ade80',
-              secondary: '#fff',
-            },
-          },
-          error: {
-            duration: 5000,
-            iconTheme: {
-              primary: '#ef4444',
-              secondary: '#fff',
-            },
-          },
-        }}
+    <Routes>
+      {/* ===== RUTAS PÚBLICAS ===== */}
+      <Route path="/" element={<PublicLayout />}>
+        <Route index element={<HomePage />} />
+        <Route path="about" element={<AboutPage />} />
+        <Route path="contact" element={<ContactPage />} />
+        {/* <Route path="pricing" element={<PricingPage />} /> */}
+      </Route>
+
+      {/* ===== RUTAS DE AUTENTICACIÓN ===== */}
+      {/* Estas rutas NO requieren autenticación, pero redirigen si ya está logueado */}
+      <Route 
+        path="/auth/login" 
+        element={
+          <ProtectedRoute requireAuth={false} redirectTo="/dashboard">
+            <AuthLayout>
+              <LoginPage />
+            </AuthLayout>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/auth/register" 
+        element={
+          <ProtectedRoute requireAuth={false} redirectTo="/dashboard">
+            <AuthLayout>
+              <RegisterPage />
+            </AuthLayout>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/auth/forgot-password" 
+        element={
+          <AuthLayout>
+            <ForgotPasswordPage />
+          </AuthLayout>
+        } 
+      />
+      {/* <Route 
+        path="/auth/reset-password" 
+        element={
+          <AuthLayout>
+            <ResetPasswordPage />
+          </AuthLayout>
+        } 
+      /> */}
+      <Route 
+        path="/auth/verify-email" 
+        element={
+          <AuthLayout>
+            <VerifyEmailPage />
+          </AuthLayout>
+        } 
       />
 
-      {/* ✅ Router DEBE estar ANTES que AuthProvider */}
-      <Router>
-        {/* ✅ AuthProvider DENTRO del Router */}
-        <AuthProvider>
-          <div className="App">
-            <Routes>
-              {/* Rutas públicas (solo para no autenticados) */}
-              <Route 
-                path="/login" 
-                element={
-                  <RequireGuest fallback={<DashboardPage />}>
-                    <LoginPage />
-                  </RequireGuest>
-                } 
-              />
-              
-              <Route 
-                path="/register" 
-                element={
-                  <RequireGuest fallback={<DashboardPage />}>
-                    <RegisterPage />
-                  </RequireGuest>
-                } 
-              />
-              
-              <Route 
-                path="/forgot-password" 
-                element={
-                  <RequireGuest fallback={<DashboardPage />}>
-                    <ForgotPasswordPage />
-                  </RequireGuest>
-                } 
-              />
+      {/* Redirects para compatibilidad */}
+      <Route path="/login" element={<Navigate to="/auth/login" replace />} />
+      <Route path="/register" element={<Navigate to="/auth/register" replace />} />
 
-              {/* Rutas que NO requieren autenticación */}
-              <Route path="/verify-email" element={<VerifyEmailPage />} />
+      {/* ===== RUTAS PROTEGIDAS (DASHBOARD) ===== */}
+      {/* Estas rutas SÍ requieren autenticación */}
+      <Route 
+        path="/dashboard" 
+        element={
+          <ProtectedRoute requireAuth={true}>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<DashboardPage />} />
+        <Route path="sell" element={<SellPage />} />
+        <Route path="orders" element={<OrdersPage />} />
+        {/* <Route path="wallet" element={<WalletPage />} /> */}
+        <Route path="referrals" element={<ReferralsPage />} />
+        <Route path="profile" element={<ProfilePage />} />
+        {/* <Route path="settings" element={<SettingsPage />} /> */}
+      </Route>
 
-              {/* Rutas protegidas (requieren autenticación) */}
-              <Route 
-                path="/dashboard" 
-                element={
-                  <RequireAuth fallback={<LoginPage />}>
-                    <DashboardPage />
-                  </RequireAuth>
-                } 
-              />
-
-              {/* Ruta por defecto */}
-              <Route 
-                path="/" 
-                element={
-                  <RequireGuest fallback={<DashboardPage />}>
-                    <LoginPage />
-                  </RequireGuest>
-                } 
-              />
-
-              {/* 404 - Página no encontrada */}
-              <Route 
-                path="*" 
-                element={
-                  <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                    <div className="text-center">
-                      <h1 className="text-4xl font-bold text-gray-900">404</h1>
-                      <p className="text-gray-600 mt-2">Página no encontrada</p>
-                      <a 
-                        href="/" 
-                        className="mt-4 inline-block bg-[#a8c241] text-white px-4 py-2 rounded hover:bg-[#8ea635]"
-                      >
-                        Volver al inicio
-                      </a>
-                    </div>
-                  </div>
-                } 
-              />
-            </Routes>
-          </div>
-        </AuthProvider>
-      </Router>
-    </>
+      {/* ===== RUTAS DE ERROR ===== */}
+      <Route path="/unauthorized" element={<div>No autorizado</div>} />
+      <Route path="/404" element={<div>Página no encontrada</div>} />
+      
+      {/* Catch all - redirect to 404 */}
+      <Route path="*" element={<Navigate to="/404" replace />} />
+    </Routes>
   );
 }
 
