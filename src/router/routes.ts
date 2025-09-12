@@ -10,7 +10,10 @@ const HomePage = lazy(() => import('@/pages/HomePage'));
 // Auth pages
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage').then(module => ({ default: module.LoginPage })));
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage').then(module => ({ default: module.RegisterPage })));
+
 const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage').then(module => ({ default: module.ForgotPasswordPage })));
+const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage').then(module => ({ default: module.ResetPasswordPage })));
+
 // const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage').then(module => ({ default: module.ResetPasswordPage })));
 const VerifyEmailPage = lazy(() => import('@/pages/auth/VerifyEmailPage').then(module => ({ default: module.VerifyEmailPage })));
 
@@ -65,6 +68,15 @@ export const publicRoutes: RouteConfig[] = [
     title: 'Inicio - Chatarra Electrónica',
     description: 'Convierte tu chatarra electrónica en dinero'
   },
+
+  {
+  path: '/reset-password',
+  component: ResetPasswordPage,
+  requireAuth: false,
+  layout: 'auth',
+  title: 'Nueva Contraseña',
+  description: 'Establece una nueva contraseña'
+},
 //   {
 //     path: '/about',
 //     component: AboutPage,
@@ -113,14 +125,15 @@ export const authRoutes: RouteConfig[] = [
     title: 'Crear Cuenta',
     description: 'Únete a nuestra plataforma'
   },
-  {
-    path: '/forgot-password',
-    component: ForgotPasswordPage,
-    requireAuth: false,
-    layout: 'auth',
-    title: 'Recuperar Contraseña',
-    description: 'Recupera el acceso a tu cuenta'
-  },
+ {
+  path: '/forgot-password',
+  component: ForgotPasswordPage,
+  requireAuth: false,
+  layout: 'auth',
+  title: 'Recuperar Contraseña',
+  description: 'Recupera el acceso a tu cuenta'
+},
+
 //   {
 //     path: '/reset-password',
 //     component: ResetPasswordPage,

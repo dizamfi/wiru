@@ -518,39 +518,69 @@ static async resendVerification(email: string): Promise<{ success: boolean; mess
 }
 
   /**
-   * Solicitar reset de contraseña
-   */
-  static async forgotPassword(email: string): Promise<{ success: boolean; message: string }> {
-    try {
-      const response = await apiService.post(`${this.BASE_URL}/forgot-password`, { email });
-      
+ * Solicitar reset de contraseña
+ */
+static async forgotPassword(email: string): Promise<{ success: boolean; message: string }> {
+  try {
+    console.log('🔍 AuthService.forgotPassword called for:', email);
+    
+    const response = await apiService.post(`${this.BASE_URL}/forgot-password`, { 
+      email 
+    });
+    
+    console.log('✅ Forgot password response:', response);
+    
+    if (response.success) {
       return {
-        success: response.success,
-        message: response.message
+        success: true,
+        message: response.message || 'Revisa tu email para las instrucciones'
       };
-    } catch (error: any) {
-      throw new Error(error.message || 'Error al solicitar reset de contraseña');
     }
+    
+    throw new Error(response.message || 'Error al solicitar reset de contraseña');
+  } catch (error: any) {
+    console.error('❌ Error en forgotPassword:', {
+      status: error.status,
+      message: error.message,
+      errors: error.errors
+    });
+    
+    throw new Error(error.message || 'Error al solicitar reset de contraseña');
   }
+}
 
-  /**
-   * Reset de contraseña
-   */
-  static async resetPassword(token: string, password: string): Promise<{ success: boolean; message: string }> {
-    try {
-      const response = await apiService.post(`${this.BASE_URL}/reset-password`, {
-        token,
-        password
-      });
-      
+ /**
+ * Reset de contraseña con token
+ */
+static async resetPassword(token: string, password: string): Promise<{ success: boolean; message: string }> {
+  try {
+    console.log('🔍 AuthService.resetPassword called with token:', token.substring(0, 10) + '...');
+    
+    const response = await apiService.post(`${this.BASE_URL}/reset-password`, {
+      token,
+      password
+    });
+    
+    console.log('✅ Reset password response:', response);
+    
+    if (response.success) {
       return {
-        success: response.success,
-        message: response.message
+        success: true,
+        message: response.message || 'Contraseña restablecida exitosamente'
       };
-    } catch (error: any) {
-      throw new Error(error.message || 'Error al resetear contraseña');
     }
+    
+    throw new Error(response.message || 'Error al restablecer contraseña');
+  } catch (error: any) {
+    console.error('❌ Error en resetPassword:', {
+      status: error.status,
+      message: error.message,
+      errors: error.errors
+    });
+    
+    throw new Error(error.message || 'Error al restablecer contraseña');
   }
+}
 
   /**
    * Actualizar perfil de usuario
@@ -701,4 +731,136 @@ static async resendVerification(email: string): Promise<{ success: boolean; mess
     const user = this.getCurrentUser();
     return user?.isEmailVerified === true;
   }
+
+
+/**
+ * Autenticación con Google
+ */
+static async loginWithGoogle(credential: string): Promise<AuthResponse> {
+  try {
+    console.log('🔍 AuthService.loginWithGoogle called');
+    
+    const response = await apiService.post(`${this.BASE_URL}/google`, {
+      credential
+    });
+    
+    console.log('✅ Google login response:', response);
+    
+    if (response.success && response.data) {
+      // Guardar datos de autenticación
+      localStorage.setItem('accessToken', response.data.tokens.accessToken);
+      localStorage.setItem('refreshToken', response.data.tokens.refreshToken);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+      
+      return {
+        success: true,
+        message: response.message || 'Login exitoso con Google',
+        data: {
+          user: response.data.user,
+          accessToken: response.data.tokens.accessToken,
+          refreshToken: response.data.tokens.refreshToken,
+          isNewUser: response.data.isNewUser || false
+        }
+      };
+    }
+    
+    throw new Error(response.message || 'Error en la autenticación con Google');
+  } catch (error: any) {
+    console.error('❌ Error en loginWithGoogle:', {
+      status: error.status,
+      message: error.message,
+      errors: error.errors
+    });
+    
+    throw new Error(error.message || 'Error en la autenticación con Google');
+  }
+}
+
+/**
+ * Autenticación con Google usando access token
+ */
+static async loginWithGoogleAccessToken(accessToken: string): Promise<AuthResponse> {
+  try {
+    console.log('🔍 AuthService.loginWithGoogleAccessToken called');
+    
+    const response = await apiService.post(`${this.BASE_URL}/google`, {
+      access_token: accessToken
+    });
+    
+    console.log('✅ Google access token login response:', response);
+    
+    if (response.success && response.data) {
+      // Guardar datos de autenticación
+      localStorage.setItem('accessToken', response.data.tokens.accessToken);
+      localStorage.setItem('refreshToken', response.data.tokens.refreshToken);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+      
+      return {
+        success: true,
+        message: response.message || 'Login exitoso con Google',
+        data: {
+          user: response.data.user,
+          accessToken: response.data.tokens.accessToken,
+          refreshToken: response.data.tokens.refreshToken,
+          isNewUser: response.data.isNewUser || false
+        }
+      };
+    }
+    
+    throw new Error(response.message || 'Error en la autenticación con Google');
+  } catch (error: any) {
+    console.error('❌ Error en loginWithGoogleAccessToken:', {
+      status: error.status,
+      message: error.message,
+      errors: error.errors
+    });
+    
+    throw new Error(error.message || 'Error en la autenticación con Google');
+  }
+}
+
+/**
+ * Autenticación con Facebook
+ */
+static async loginWithFacebook(accessToken: string, userID: string): Promise<AuthResponse> {
+  try {
+    console.log('🔍 AuthService.loginWithFacebook called');
+    
+    const response = await apiService.post(`${this.BASE_URL}/facebook`, {
+      accessToken,
+      userID
+    });
+    
+    console.log('✅ Facebook login response:', response);
+    
+    if (response.success && response.data) {
+      // Guardar datos de autenticación
+      localStorage.setItem('accessToken', response.data.tokens.accessToken);
+      localStorage.setItem('refreshToken', response.data.tokens.refreshToken);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+      
+      return {
+        success: true,
+        message: response.message || 'Login exitoso con Facebook',
+        data: {
+          user: response.data.user,
+          accessToken: response.data.tokens.accessToken,
+          refreshToken: response.data.tokens.refreshToken,
+          isNewUser: response.data.isNewUser || false
+        }
+      };
+    }
+    
+    throw new Error(response.message || 'Error en la autenticación con Facebook');
+  } catch (error: any) {
+    console.error('❌ Error en loginWithFacebook:', {
+      status: error.status,
+      message: error.message,
+      errors: error.errors
+    });
+    
+    throw new Error(error.message || 'Error en la autenticación con Facebook');
+  }
+}
+
 }

@@ -154,210 +154,200 @@
 
 
 
-// src/pages/auth/ForgotPasswordPage.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { ArrowLeftIcon, EnvelopeIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { useForgotPasswordForm, ForgotPasswordFormData } from '@/hooks/useAuthForm';
+import { Alert } from '@/components/ui/Alert';
+import { useAuth } from '@/hooks/useAuth';
+import toast from 'react-hot-toast';
 
-// Esquema de validación
+// Schema de validación
 const forgotPasswordSchema = z.object({
-  email: z.string().email('Ingresa un email válido').min(1, 'El email es requerido'),
+  email: z.string().email('Email inválido'),
 });
 
+type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+
 export const ForgotPasswordPage: React.FC = () => {
-  const { onSubmit, isLoading, error, success, clearError, clearSuccess } = useForgotPasswordForm();
+  const [emailSent, setEmailSent] = useState(false);
+  const { forgotPassword, isLoading } = useAuth();
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isValid },
+    watch,
+    formState: { errors },
   } = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
-    mode: 'onChange',
   });
 
-  const handleFormSubmit = (data: ForgotPasswordFormData) => {
-    clearError();
-    clearSuccess();
-    onSubmit(data);
+  const email = watch('email');
+
+  const onSubmit = async (data: ForgotPasswordFormData) => {
+    try {
+      await forgotPassword(data.email);
+      setEmailSent(true);
+    } catch (error) {
+      // El error ya se maneja en el hook useAuth
+    }
   };
+
+  if (emailSent) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
+                <CheckCircleIcon className="w-8 h-8 text-green-600" />
+              </div>
+              
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                Email Enviado
+              </h2>
+              
+              <p className="text-gray-600 mb-6">
+                Hemos enviado un enlace de recuperación a{' '}
+                <span className="font-medium text-[#a8c241]">{email}</span>
+              </p>
+
+              <Alert variant="default" className="mb-6 text-left">
+                <div className="space-y-2 text-sm">
+                  <p><strong>¿No ves el email?</strong> Revisa:</p>
+                  <ul className="list-disc list-inside space-y-1 text-gray-600">
+                    <li>Tu carpeta de spam o correo no deseado</li>
+                    <li>Que el email esté escrito correctamente</li>
+                    <li>Espera unos minutos, puede tardar en llegar</li>
+                  </ul>
+                </div>
+              </Alert>
+
+              <div className="space-y-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setEmailSent(false)}
+                  className="w-full"
+                >
+                  Usar otro email
+                </Button>
+                
+                <Link to="/login">
+                  <Button variant="ghost" className="w-full">
+                    <ArrowLeftIcon className="w-4 h-4 mr-2" />
+                    Volver al login
+                  </Button>
+                </Link>
+              </div>
+
+              <p className="text-xs text-gray-500 mt-6">
+                El enlace de recuperación expira en 2 horas por seguridad.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         {/* Logo */}
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-primary-600">Wiru</h1>
-          <p className="text-gray-600 mt-2">Plataforma de Reciclaje Inteligente</p>
-        </div>
-
-        <div className="mt-8 bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          {/* Header */}
-          <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">
-              ¿Olvidaste tu contraseña?
-            </h2>
-            <p className="text-sm text-gray-600 mt-2">
-              No te preocupes, te ayudamos a recuperarla
-            </p>
-          </div>
-
-          {/* Mensaje de éxito */}
-          {success && (
-            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-md">
-              <div className="flex items-start">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <p className="text-green-600 text-sm">{success}</p>
-                </div>
-                <div className="ml-auto pl-3">
-                  <button
-                    onClick={clearSuccess}
-                    className="text-green-400 hover:text-green-600"
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Mensaje de error */}
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
-              <div className="flex items-start">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <p className="text-red-600 text-sm">{error}</p>
-                </div>
-                <div className="ml-auto pl-3">
-                  <button
-                    onClick={clearError}
-                    className="text-red-400 hover:text-red-600"
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {!success ? (
-            <>
-              {/* Instrucciones */}
-              <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <h3 className="text-sm font-medium text-blue-800">
-                      ¿Cómo funciona?
-                    </h3>
-                    <div className="mt-2 text-sm text-blue-700">
-                      <ol className="list-decimal list-inside space-y-1">
-                        <li>Ingresa tu dirección de email</li>
-                        <li>Te enviaremos un enlace seguro</li>
-                        <li>Haz clic en el enlace del email</li>
-                        <li>Crea tu nueva contraseña</li>
-                      </ol>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Formulario */}
-              <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-                <Input
-                  label="Dirección de Email"
-                  type="email"
-                  placeholder="tu@email.com"
-                  autoComplete="email"
-                  error={errors.email?.message}
-                  {...register('email')}
-                />
-
-                <Button
-                  type="submit"
-                  disabled={!isValid || isLoading}
-                  loading={isLoading}
-                  className="w-full"
-                >
-                  {isLoading ? 'Enviando enlace...' : 'Enviar enlace de restablecimiento'}
-                </Button>
-              </form>
-            </>
-          ) : (
-            /* Estado de éxito - mostrar acciones adicionales */
-            <div className="text-center space-y-4">
-              <div className="mx-auto h-16 w-16 text-green-500">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 7.89a2 2 0 002.83 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        <Link to="/" className="flex justify-center mb-8">
+          <div className="flex items-center space-x-3">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-[#a8c241] to-[#719428] rounded-xl blur-lg opacity-30"></div>
+              <div className="relative bg-gradient-to-br from-[#a8c241] via-[#8ea635] to-[#719428] p-2 rounded-xl shadow-lg">
+                <svg className="h-6 w-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                 </svg>
               </div>
-              
-              <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  ¡Email enviado!
-                </h3>
-                <p className="text-sm text-gray-600 mb-4">
-                  Revisa tu bandeja de entrada y carpeta de spam.
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                <Button
-                  variant="outline"
-                  onClick={() => window.location.reload()}
-                  className="w-full"
-                >
-                  Enviar otro enlace
-                </Button>
-                
-                <Link to="/login">
-                  <Button variant="ghost" className="w-full">
-                    Volver al login
-                  </Button>
-                </Link>
-              </div>
             </div>
-          )}
+            <span className="text-xl font-black bg-gradient-to-r from-[#a8c241] to-[#719428] bg-clip-text text-transparent">
+              WIRU
+            </span>
+          </div>
+        </Link>
 
-          {/* Enlaces de navegación */}
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-gray-900">
+            ¿Olvidaste tu contraseña?
+          </h2>
+          <p className="mt-2 text-sm text-gray-600">
+            No te preocupes, te ayudamos a recuperarla
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                Email de tu cuenta
+              </label>
+              <div className="mt-1 relative">
+                <input
+                  {...register('email')}
+                  type="email"
+                  autoComplete="email"
+                  placeholder="tu@email.com"
+                  className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[#a8c241] focus:border-[#a8c241] sm:text-sm"
+                />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <EnvelopeIcon className="h-5 w-5 text-gray-400" />
+                </div>
+              </div>
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+              )}
+            </div>
+
+            <div>
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-black bg-[#D0FF5B] hover:bg-[#D0FF5B]/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#a8c241] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
+                    Enviando...
+                  </div>
+                ) : (
+                  'Enviar enlace de recuperación'
+                )}
+              </Button>
+            </div>
+          </form>
+
           <div className="mt-6">
-            <Link
-              to="/login"
-              className="flex items-center justify-center text-sm text-primary-600 hover:text-primary-500"
-            >
-              <ArrowLeftIcon className="h-4 w-4 mr-1" />
-              Volver al inicio de sesión
-            </Link>
+            <div className="text-center">
+              <Link
+                to="/login"
+                className="flex items-center justify-center text-sm text-[#a8c241] hover:text-[#719428] transition-colors"
+              >
+                <ArrowLeftIcon className="w-4 h-4 mr-1" />
+                Volver al inicio de sesión
+              </Link>
+            </div>
           </div>
 
-          {/* Ayuda adicional */}
-          <div className="mt-6 text-center">
-            <p className="text-xs text-gray-500">
-              ¿Tienes problemas para recuperar tu cuenta?{' '}
-              <Link to="/contact" className="text-primary-600 hover:text-primary-500">
-                Contáctanos
-              </Link>
-            </p>
+          {/* Info adicional */}
+          <div className="mt-8 p-4 bg-blue-50 rounded-lg">
+            <div className="text-sm text-blue-700">
+              <p className="font-medium mb-2">¿Cómo funciona?</p>
+              <ol className="list-decimal list-inside space-y-1">
+                <li>Ingresa tu email y haz clic en "Enviar"</li>
+                <li>Revisa tu bandeja de entrada</li>
+                <li>Haz clic en el enlace del email</li>
+                <li>Establece tu nueva contraseña</li>
+              </ol>
+            </div>
           </div>
         </div>
       </div>

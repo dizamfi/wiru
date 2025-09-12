@@ -293,91 +293,395 @@
 
 
 
+// // src/pages/auth/VerifyEmailPage.tsx
+// import React, { useEffect, useState } from 'react';
+// import { useSearchParams, Link } from 'react-router-dom';
+// import { CheckCircleIcon, XCircleIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+// import { AuthService } from '@/services/authService';
+// import { Button } from '@/components/ui/Button';
+// import { Alert } from '@/components/ui/Alert';
+
+// type VerificationState = 'verifying' | 'success' | 'error' | 'expired' | 'invalid';
+
+// export const VerifyEmailPage: React.FC = () => {
+//   const [searchParams] = useSearchParams();
+//   const [state, setState] = useState<VerificationState>('verifying');
+//   const [message, setMessage] = useState<string>('');
+//   const [userEmail, setUserEmail] = useState<string>('');
+
+//   // Obtener token de la URL
+//   const token = searchParams.get('token');
+
+//   useEffect(() => {
+//     const verifyEmail = async () => {
+//       if (!token) {
+//         setState('invalid');
+//         setMessage('Token de verificación no encontrado en la URL');
+//         return;
+//       }
+
+//       try {
+//         console.log('🔍 Verificando email con token:', token);
+        
+//         const result = await AuthService.verifyEmail(token);
+        
+//         if (result.success) {
+//           setState('success');
+//           setMessage(result.message || '¡Email verificado exitosamente!');
+//           console.log('✅ Email verificado exitosamente');
+//         } else {
+//           setState('error');
+//           setMessage(result.message || 'Error al verificar el email');
+//         }
+//       } catch (error: any) {
+//         console.error('❌ Error verificando email:', error);
+        
+//         // Manejar diferentes tipos de errores
+//         if (error.message.includes('expirado') || error.message.includes('expired')) {
+//           setState('expired');
+//           setMessage('El enlace de verificación ha expirado');
+//         } else if (error.message.includes('inválido') || error.message.includes('invalid')) {
+//           setState('invalid');
+//           setMessage('El enlace de verificación es inválido');
+//         } else {
+//           setState('error');
+//           setMessage(error.message || 'Error al verificar el email');
+//         }
+//       }
+//     };
+
+//     verifyEmail();
+//   }, [token]);
+
+//   const handleResendVerification = async () => {
+//     if (!userEmail) {
+//       setUserEmail(prompt('Ingresa tu email para reenviar la verificación:') || '');
+//       return;
+//     }
+
+//     try {
+//       await AuthService.resendVerification(userEmail);
+//       setMessage('Se ha enviado un nuevo enlace de verificación a tu email');
+//     } catch (error: any) {
+//       setMessage(error.message || 'Error al reenviar la verificación');
+//     }
+//   };
+
+//   const renderContent = () => {
+//     switch (state) {
+//       case 'verifying':
+//         return (
+//           <div className="text-center">
+//             <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 mb-6">
+//               <ArrowPathIcon className="h-8 w-8 text-blue-600 animate-spin" />
+//             </div>
+//             <h1 className="text-2xl font-bold text-gray-900 mb-2">
+//               Verificando email...
+//             </h1>
+//             <p className="text-gray-600">
+//               Por favor espera mientras verificamos tu dirección de email.
+//             </p>
+//           </div>
+//         );
+
+//       case 'success':
+//         return (
+//           <div className="text-center">
+//             <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-6">
+//               <CheckCircleIcon className="h-8 w-8 text-green-600" />
+//             </div>
+//             <h1 className="text-2xl font-bold text-gray-900 mb-2">
+//               ¡Email verificado exitosamente!
+//             </h1>
+//             <p className="text-gray-600 mb-8">
+//               {message}
+//             </p>
+            
+//             <Alert variant="success" className="mb-6">
+//               <div>
+//                 <h4 className="font-medium">¡Bienvenido a Wiru!</h4>
+//                 <p className="text-sm mt-1">
+//                   Tu cuenta ha sido verificada. Ahora puedes iniciar sesión y comenzar a vender tus dispositivos electrónicos.
+//                 </p>
+//               </div>
+//             </Alert>
+
+//             <div className="space-y-4">
+//               <Link to="/auth/login" className="block">
+//                 <Button className="w-full">
+//                   Iniciar Sesión
+//                 </Button>
+//               </Link>
+//               <Link to="/" className="block">
+//                 <Button variant="outline" className="w-full">
+//                   Volver al Inicio
+//                 </Button>
+//               </Link>
+//             </div>
+//           </div>
+//         );
+
+//       case 'expired':
+//         return (
+//           <div className="text-center">
+//             <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-yellow-100 mb-6">
+//               <XCircleIcon className="h-8 w-8 text-yellow-600" />
+//             </div>
+//             <h1 className="text-2xl font-bold text-gray-900 mb-2">
+//               Enlace expirado
+//             </h1>
+//             <p className="text-gray-600 mb-8">
+//               {message}
+//             </p>
+
+//             <Alert variant="warning" className="mb-6">
+//               <div>
+//                 <h4 className="font-medium">Enlace de verificación expirado</h4>
+//                 <p className="text-sm mt-1">
+//                   Los enlaces de verificación expiran por seguridad. Puedes solicitar uno nuevo.
+//                 </p>
+//               </div>
+//             </Alert>
+
+//             <div className="space-y-4">
+//               <Button 
+//                 onClick={handleResendVerification}
+//                 className="w-full"
+//               >
+//                 Reenviar enlace de verificación
+//               </Button>
+//               <Link to="/auth/login" className="block">
+//                 <Button variant="outline" className="w-full">
+//                   Ir al Login
+//                 </Button>
+//               </Link>
+//             </div>
+//           </div>
+//         );
+
+//       case 'invalid':
+//         return (
+//           <div className="text-center">
+//             <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-6">
+//               <XCircleIcon className="h-8 w-8 text-red-600" />
+//             </div>
+//             <h1 className="text-2xl font-bold text-gray-900 mb-2">
+//               Enlace inválido
+//             </h1>
+//             <p className="text-gray-600 mb-8">
+//               {message}
+//             </p>
+
+//             <Alert variant="danger" className="mb-6">
+//               <div>
+//                 <h4 className="font-medium">Enlace de verificación inválido</h4>
+//                 <p className="text-sm mt-1">
+//                   Este enlace no es válido o ya ha sido utilizado. Verifica la URL o solicita un nuevo enlace.
+//                 </p>
+//               </div>
+//             </Alert>
+
+//             <div className="space-y-4">
+//               <Button 
+//                 onClick={handleResendVerification}
+//                 className="w-full"
+//               >
+//                 Reenviar enlace de verificación
+//               </Button>
+//               <Link to="/auth/register" className="block">
+//                 <Button variant="outline" className="w-full">
+//                   Crear nueva cuenta
+//                 </Button>
+//               </Link>
+//             </div>
+//           </div>
+//         );
+
+//       case 'error':
+//       default:
+//         return (
+//           <div className="text-center">
+//             <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-6">
+//               <XCircleIcon className="h-8 w-8 text-red-600" />
+//             </div>
+//             <h1 className="text-2xl font-bold text-gray-900 mb-2">
+//               Error de verificación
+//             </h1>
+//             <p className="text-gray-600 mb-8">
+//               {message}
+//             </p>
+
+//             <Alert variant="danger" className="mb-6">
+//               <div>
+//                 <h4 className="font-medium">Error al verificar email</h4>
+//                 <p className="text-sm mt-1">
+//                   Ha ocurrido un error inesperado. Inténtalo nuevamente o contacta soporte.
+//                 </p>
+//               </div>
+//             </Alert>
+
+//             <div className="space-y-4">
+//               <Button 
+//                 onClick={() => window.location.reload()}
+//                 variant="outline"
+//                 className="w-full"
+//               >
+//                 Intentar nuevamente
+//               </Button>
+//               <Link to="/contact" className="block">
+//                 <Button variant="outline" className="w-full">
+//                   Contactar Soporte
+//                 </Button>
+//               </Link>
+//               <Link to="/" className="block">
+//                 <Button variant="ghost" className="w-full">
+//                   Volver al Inicio
+//                 </Button>
+//               </Link>
+//             </div>
+//           </div>
+//         );
+//     }
+//   };
+
+//   return (
+//     <div className="w-full max-w-md mx-auto">
+//       {renderContent()}
+      
+//       {/* Debug info (solo en desarrollo) */}
+//       {process.env.NODE_ENV === 'development' && (
+//         <div className="mt-8 p-4 bg-gray-100 rounded-lg text-xs text-gray-600">
+//           <p><strong>Debug Info:</strong></p>
+//           <p>Token: {token || 'No token found'}</p>
+//           <p>State: {state}</p>
+//           <p>Message: {message}</p>
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
+
+
+
+
 // src/pages/auth/VerifyEmailPage.tsx
-import React, { useEffect, useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import React, { useEffect, useState, useRef } from 'react';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { CheckCircleIcon, XCircleIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { AuthService } from '@/services/authService';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
+import toast from 'react-hot-toast';
 
 type VerificationState = 'verifying' | 'success' | 'error' | 'expired' | 'invalid';
 
 export const VerifyEmailPage: React.FC = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [state, setState] = useState<VerificationState>('verifying');
   const [message, setMessage] = useState<string>('');
   const [userEmail, setUserEmail] = useState<string>('');
+  
+  // Usar useRef para evitar múltiples llamadas
+  const hasVerified = useRef(false);
+  const isVerifying = useRef(false);
 
   // Obtener token de la URL
   const token = searchParams.get('token');
 
   useEffect(() => {
     const verifyEmail = async () => {
-      if (!token) {
-        setState('invalid');
-        setMessage('Token de verificación no encontrado en la URL');
+      // Verificar si ya se ha procesado este token o si ya está en proceso
+      if (!token || hasVerified.current || isVerifying.current) {
+        if (!token) {
+          setState('invalid');
+          setMessage('Token de verificación no encontrado en la URL');
+        }
         return;
       }
 
+      // Marcar como "en proceso" para evitar llamadas duplicadas
+      isVerifying.current = true;
+
       try {
-        console.log('🔍 Verificando email con token:', token);
+        console.log('🔍 Verificando email con token:', token.substring(0, 10) + '...');
         
         const result = await AuthService.verifyEmail(token);
         
         if (result.success) {
+          // Marcar como procesado exitosamente
+          hasVerified.current = true;
           setState('success');
           setMessage(result.message || '¡Email verificado exitosamente!');
-          console.log('✅ Email verificado exitosamente');
+          
+          // Mostrar toast de éxito
+          toast.success('¡Email verificado exitosamente!');
+          
+          // Auto-redirigir al login después de 3 segundos
+          setTimeout(() => {
+            navigate('/login?verified=true', { replace: true });
+          }, 3000);
         } else {
           setState('error');
-          setMessage(result.message || 'Error al verificar el email');
+          setMessage('Error al verificar el email');
         }
       } catch (error: any) {
-        console.error('❌ Error verificando email:', error);
+        console.error('❌ Error al verificar email:', error);
+        
+        setState('error');
         
         // Manejar diferentes tipos de errores
-        if (error.message.includes('expirado') || error.message.includes('expired')) {
-          setState('expired');
+        if (error.message.includes('expirado')) {
           setMessage('El enlace de verificación ha expirado');
-        } else if (error.message.includes('inválido') || error.message.includes('invalid')) {
+          setState('expired');
+        } else if (error.message.includes('inválido') || error.message.includes('utilizado')) {
+          setMessage('El enlace de verificación es inválido o ya ha sido utilizado');
           setState('invalid');
-          setMessage('El enlace de verificación es inválido');
         } else {
-          setState('error');
           setMessage(error.message || 'Error al verificar el email');
         }
+        
+        // Mostrar toast de error
+        toast.error(error.message || 'Error al verificar el email');
+      } finally {
+        // Marcar como no "en proceso"
+        isVerifying.current = false;
       }
     };
 
-    verifyEmail();
-  }, [token]);
+    // Solo ejecutar si tenemos un token y no se ha verificado antes
+    if (token && !hasVerified.current) {
+      verifyEmail();
+    }
+  }, [token, navigate]); // Dependencias mínimas
 
   const handleResendVerification = async () => {
     if (!userEmail) {
-      setUserEmail(prompt('Ingresa tu email para reenviar la verificación:') || '');
+      toast.error('Ingresa tu email para reenviar la verificación');
       return;
     }
 
     try {
-      await AuthService.resendVerification(userEmail);
-      setMessage('Se ha enviado un nuevo enlace de verificación a tu email');
+      const result = await AuthService.resendVerification(userEmail);
+      if (result.success) {
+        toast.success('Nuevo email de verificación enviado');
+        setMessage('Se ha enviado un nuevo email de verificación a tu bandeja de entrada');
+      }
     } catch (error: any) {
-      setMessage(error.message || 'Error al reenviar la verificación');
+      toast.error(error.message || 'Error al reenviar verificación');
     }
   };
 
+  // Renderizar contenido según el estado
   const renderContent = () => {
     switch (state) {
       case 'verifying':
         return (
           <div className="text-center">
-            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 mb-6">
-              <ArrowPathIcon className="h-8 w-8 text-blue-600 animate-spin" />
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Verificando email...
-            </h1>
+            <ArrowPathIcon className="w-16 h-16 mx-auto mb-4 text-blue-500 animate-spin" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Verificando tu email...
+            </h2>
             <p className="text-gray-600">
               Por favor espera mientras verificamos tu dirección de email.
             </p>
@@ -387,176 +691,130 @@ export const VerifyEmailPage: React.FC = () => {
       case 'success':
         return (
           <div className="text-center">
-            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-6">
-              <CheckCircleIcon className="h-8 w-8 text-green-600" />
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            <CheckCircleIcon className="w-16 h-16 mx-auto mb-4 text-green-500" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
               ¡Email verificado exitosamente!
-            </h1>
-            <p className="text-gray-600 mb-8">
-              {message}
-            </p>
-            
+            </h2>
             <Alert variant="success" className="mb-6">
-              <div>
-                <h4 className="font-medium">¡Bienvenido a Wiru!</h4>
+              <div className="text-center">
+                <p className="font-medium">¡Bienvenido a Wiru!</p>
                 <p className="text-sm mt-1">
-                  Tu cuenta ha sido verificada. Ahora puedes iniciar sesión y comenzar a vender tus dispositivos electrónicos.
+                  Tu cuenta ha sido verificada. Ahora puedes iniciar sesión y comenzar a vender
+                  tus dispositivos electrónicos.
                 </p>
               </div>
             </Alert>
-
-            <div className="space-y-4">
-              <Link to="/auth/login" className="block">
-                <Button className="w-full">
+            <div className="space-y-3">
+              <Link to="/login">
+                <Button className="w-full bg-[#D0FF5B] text-black hover:bg-[#D0FF5B]/90">
                   Iniciar Sesión
                 </Button>
               </Link>
-              <Link to="/" className="block">
-                <Button variant="outline" className="w-full">
-                  Volver al Inicio
-                </Button>
-              </Link>
-            </div>
-          </div>
-        );
-
-      case 'expired':
-        return (
-          <div className="text-center">
-            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-yellow-100 mb-6">
-              <XCircleIcon className="h-8 w-8 text-yellow-600" />
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Enlace expirado
-            </h1>
-            <p className="text-gray-600 mb-8">
-              {message}
-            </p>
-
-            <Alert variant="warning" className="mb-6">
-              <div>
-                <h4 className="font-medium">Enlace de verificación expirado</h4>
-                <p className="text-sm mt-1">
-                  Los enlaces de verificación expiran por seguridad. Puedes solicitar uno nuevo.
-                </p>
-              </div>
-            </Alert>
-
-            <div className="space-y-4">
-              <Button 
-                onClick={handleResendVerification}
-                className="w-full"
-              >
-                Reenviar enlace de verificación
-              </Button>
-              <Link to="/auth/login" className="block">
-                <Button variant="outline" className="w-full">
-                  Ir al Login
-                </Button>
-              </Link>
-            </div>
-          </div>
-        );
-
-      case 'invalid':
-        return (
-          <div className="text-center">
-            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-6">
-              <XCircleIcon className="h-8 w-8 text-red-600" />
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Enlace inválido
-            </h1>
-            <p className="text-gray-600 mb-8">
-              {message}
-            </p>
-
-            <Alert variant="danger" className="mb-6">
-              <div>
-                <h4 className="font-medium">Enlace de verificación inválido</h4>
-                <p className="text-sm mt-1">
-                  Este enlace no es válido o ya ha sido utilizado. Verifica la URL o solicita un nuevo enlace.
-                </p>
-              </div>
-            </Alert>
-
-            <div className="space-y-4">
-              <Button 
-                onClick={handleResendVerification}
-                className="w-full"
-              >
-                Reenviar enlace de verificación
-              </Button>
-              <Link to="/auth/register" className="block">
-                <Button variant="outline" className="w-full">
-                  Crear nueva cuenta
-                </Button>
-              </Link>
-            </div>
-          </div>
-        );
-
-      case 'error':
-      default:
-        return (
-          <div className="text-center">
-            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-6">
-              <XCircleIcon className="h-8 w-8 text-red-600" />
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Error de verificación
-            </h1>
-            <p className="text-gray-600 mb-8">
-              {message}
-            </p>
-
-            <Alert variant="danger" className="mb-6">
-              <div>
-                <h4 className="font-medium">Error al verificar email</h4>
-                <p className="text-sm mt-1">
-                  Ha ocurrido un error inesperado. Inténtalo nuevamente o contacta soporte.
-                </p>
-              </div>
-            </Alert>
-
-            <div className="space-y-4">
-              <Button 
-                onClick={() => window.location.reload()}
-                variant="outline"
-                className="w-full"
-              >
-                Intentar nuevamente
-              </Button>
-              <Link to="/contact" className="block">
-                <Button variant="outline" className="w-full">
-                  Contactar Soporte
-                </Button>
-              </Link>
-              <Link to="/" className="block">
+              <Link to="/">
                 <Button variant="ghost" className="w-full">
                   Volver al Inicio
                 </Button>
               </Link>
             </div>
+            <p className="text-sm text-gray-500 mt-4">
+              Serás redirigido automáticamente en unos segundos...
+            </p>
           </div>
         );
+
+      case 'error':
+      case 'expired':
+      case 'invalid':
+        return (
+          <div className="text-center">
+            <XCircleIcon className="w-16 h-16 mx-auto mb-4 text-red-500" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Error en la verificación
+            </h2>
+            <Alert variant="danger" className="mb-6">
+              <p>{message}</p>
+            </Alert>
+            
+            {(state === 'expired' || state === 'invalid') && (
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                    Ingresa tu email para recibir un nuevo enlace:
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    value={userEmail}
+                    onChange={(e) => setUserEmail(e.target.value)}
+                    placeholder="tu@email.com"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D0FF5B] focus:border-transparent"
+                  />
+                </div>
+                <Button 
+                  onClick={handleResendVerification}
+                  disabled={!userEmail.trim()}
+                  className="w-full bg-[#D0FF5B] text-black hover:bg-[#D0FF5B]/90"
+                >
+                  Reenviar Verificación
+                </Button>
+              </div>
+            )}
+            
+            <div className="space-y-3 mt-6">
+              <Link to="/register">
+                <Button variant="ghost" className="w-full">
+                  Crear Nueva Cuenta
+                </Button>
+              </Link>
+              <Link to="/login">
+                <Button variant="ghost" className="w-full">
+                  Volver al Login
+                </Button>
+              </Link>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
     }
   };
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      {renderContent()}
-      
-      {/* Debug info (solo en desarrollo) */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="mt-8 p-4 bg-gray-100 rounded-lg text-xs text-gray-600">
-          <p><strong>Debug Info:</strong></p>
-          <p>Token: {token || 'No token found'}</p>
-          <p>State: {state}</p>
-          <p>Message: {message}</p>
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        {/* Logo */}
+        <Link to="/" className="flex justify-center mb-8">
+          <div className="flex items-center space-x-3">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-[#a8c241] to-[#719428] rounded-xl blur-lg opacity-30"></div>
+              <div className="relative bg-gradient-to-br from-[#a8c241] via-[#8ea635] to-[#719428] p-2 rounded-xl shadow-lg">
+                <CheckCircleIcon className="h-6 w-6 text-white" />
+              </div>
+            </div>
+            <span className="text-xl font-black bg-gradient-to-r from-[#a8c241] to-[#719428] bg-clip-text text-transparent">
+              WIRU
+            </span>
+          </div>
+        </Link>
+
+        {/* Content Card */}
+        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          {renderContent()}
         </div>
-      )}
+
+        {/* Debug Info (solo en desarrollo) */}
+        {process.env.NODE_ENV === 'development' && token && (
+          <div className="mt-4 p-4 bg-gray-100 rounded-lg">
+            <p className="text-xs text-gray-600">
+              <strong>Debug Info:</strong><br />
+              Token: {token.substring(0, 20)}...<br />
+              Estado: {state}<br />
+              Ha verificado: {hasVerified.current ? 'Sí' : 'No'}
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

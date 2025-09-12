@@ -145,76 +145,154 @@
 
 
 // src/components/auth/GoogleSignInButton.tsx
-import React from 'react';
-import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
-import { useAuthContext } from '@/contexts/AuthContext';
-import { toast } from 'react-hot-toast';
+import React, { useEffect, useRef } from 'react';
+import { FcGoogle } from 'react-icons/fc';
+import { Button } from '@/components/ui/Button';
+import { env } from '@/utils/env';
+import { cn } from '@/utils/cn';
 
 interface GoogleSignInButtonProps {
+  onSuccess: (credential: string) => void;
+  onError: (error: string) => void;
   disabled?: boolean;
-  onSuccess?: (response: any) => void;
-  onError?: (error: string) => void;
+  className?: string;
+  text?: string;
+  variant?: 'contained' | 'outlined';
+  size?: 'small' | 'medium' | 'large';
+}
+
+declare global {
+  interface Window {
+    google: any;
+    gapi: any;
+  }
 }
 
 export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
-  disabled = false,
   onSuccess,
   onError,
+  disabled = false,
+  className,
+  text = 'Continuar con Google',
+  variant = 'outlined',
+  size = 'medium',
 }) => {
-  const { loginWithGoogle } = useAuthContext();
+  const buttonRef = useRef<HTMLDivElement>(null);
+  const [isLoaded, setIsLoaded] = React.useState(false);
 
-  const handleSuccess = async (credentialResponse: CredentialResponse) => {
+  useEffect(() => {
+    // Verificar si ya está cargado
+    if (window.google) {
+      initializeGoogleSignIn();
+      return;
+    }
+
+    // Cargar Google Sign-In script
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      initializeGoogleSignIn();
+    };
+    script.onerror = () => {
+      onError('Error al cargar Google Sign-In');
+    };
+
+    document.head.appendChild(script);
+
+    return () => {
+      // Cleanup
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+    };
+  }, []);
+
+  const initializeGoogleSignIn = () => {
+    if (!window.google || !env.GOOGLE_CLIENT_ID) {
+      onError('Google Sign-In no está configurado correctamente');
+      return;
+    }
+
     try {
-      if (!credentialResponse.credential) {
-        throw new Error('No se recibió credencial de Google');
+      window.google.accounts.id.initialize({
+        client_id: env.GOOGLE_CLIENT_ID,
+        callback: handleCredentialResponse,
+        auto_select: false,
+        cancel_on_tap_outside: true,
+      });
+
+      // Renderizar el botón
+      if (buttonRef.current) {
+        window.google.accounts.id.renderButton(buttonRef.current, {
+          type: 'standard',
+          theme: variant === 'outlined' ? 'outline' : 'filled_blue',
+          size: size === 'small' ? 'small' : size === 'large' ? 'large' : 'medium',
+          text: 'signin_with',
+          shape: 'rectangular',
+          logo_alignment: 'left',
+          width: '100%',
+        });
       }
 
-      const result = await loginWithGoogle(credentialResponse.credential);
-      
-      if (result.success) {
-        toast.success(result.message);
-        onSuccess?.(result);
-      } else {
-        throw new Error(result.message);
-      }
-    } catch (error: any) {
-      console.error('Google Sign-In error:', error);
-      toast.error(error.message || 'Error al iniciar sesión con Google');
-      onError?.(error.message);
+      setIsLoaded(true);
+    } catch (error) {
+      console.error('Error initializing Google Sign-In:', error);
+      onError('Error al inicializar Google Sign-In');
     }
   };
 
-  const handleError = () => {
-    const errorMessage = 'Error al iniciar sesión con Google';
-    console.error('Google Sign-In error');
-    toast.error(errorMessage);
-    onError?.(errorMessage);
+  const handleCredentialResponse = (response: any) => {
+    if (response.credential) {
+      onSuccess(response.credential);
+    } else {
+      onError('No se recibió credencial de Google');
+    }
   };
+
+  const handleCustomButtonClick = () => {
+    if (window.google && isLoaded) {
+      window.google.accounts.id.prompt();
+    }
+  };
+
+  // Si queremos usar un botón personalizado en lugar del oficial de Google
+  const CustomButton = () => (
+    <Button
+      type="button"
+      variant={variant === 'outlined' ? 'outline' : 'default'}
+      onClick={handleCustomButtonClick}
+      disabled={disabled || !isLoaded}
+      className={cn(
+        'w-full flex items-center justify-center space-x-3 border-gray-300 text-gray-700 hover:bg-gray-50',
+        className
+      )}
+    >
+      <FcGoogle className="w-5 h-5" />
+      <span>{text}</span>
+    </Button>
+  );
 
   return (
     <div className="w-full">
-      <GoogleLogin
-        onSuccess={handleSuccess}
-        onError={handleError}
-        theme="outline"
-        size="large"
-        width="100%"
-        text="signin_with"
-        locale="es"
+      {/* Botón oficial de Google (recomendado) */}
+      <div 
+        ref={buttonRef} 
+        className={cn('w-full', className)}
+        style={{ display: isLoaded ? 'block' : 'none' }}
       />
-      {disabled && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            background: 'rgba(255,255,255,0.6)',
-            cursor: 'not-allowed',
-            zIndex: 1,
-          }}
-        />
+      
+      {/* Fallback mientras carga */}
+      {!isLoaded && (
+        <Button
+          variant="outline"
+          disabled
+          className="w-full flex items-center justify-center space-x-3 border-gray-300 text-gray-700"
+        >
+          <FcGoogle className="w-5 h-5" />
+          <span>Cargando...</span>
+        </Button>
       )}
     </div>
   );

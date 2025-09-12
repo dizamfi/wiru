@@ -327,36 +327,160 @@ export const useAuth = () => {
   }, []);
 
   // ===== FORGOT PASSWORD =====
-  const forgotPassword = useCallback(async (email: string): Promise<void> => {
-    try {
-      const result = await AuthService.forgotPassword(email);
-      
-      if (result.success) {
-        toast.success(result.message || 'Revisa tu email para las instrucciones');
-        navigate('/login', { replace: true });
-      }
-    } catch (error: any) {
-      console.error('❌ Forgot password error:', error);
-      toast.error(error.message || 'Error al solicitar reset de contraseña');
-      throw error;
+const forgotPassword = useCallback(async (email: string): Promise<void> => {
+  try {
+    const result = await AuthService.forgotPassword(email);
+    
+    if (result.success) {
+      toast.success(result.message || 'Revisa tu email para las instrucciones');
+      console.log('✅ Forgot password request successful');
     }
-  }, [navigate]);
+  } catch (error: any) {
+    console.error('❌ Forgot password error in useAuth:', error);
+    toast.error(error.message || 'Error al solicitar reset de contraseña');
+    throw error;
+  }
+}, []);
 
   // ===== RESET PASSWORD =====
-  const resetPassword = useCallback(async (token: string, password: string): Promise<void> => {
-    try {
-      const result = await AuthService.resetPassword(token, password);
+const resetPassword = useCallback(async (token: string, password: string): Promise<void> => {
+  try {
+    const result = await AuthService.resetPassword(token, password);
+    
+    if (result.success) {
+      toast.success(result.message || 'Contraseña restablecida exitosamente');
+      console.log('✅ Password reset successful');
       
-      if (result.success) {
-        toast.success(result.message || 'Contraseña actualizada exitosamente');
-        navigate('/login', { replace: true });
-      }
-    } catch (error: any) {
-      console.error('❌ Reset password error:', error);
-      toast.error(error.message || 'Error al resetear contraseña');
-      throw error;
+      // Redirigir al login después del reset exitoso
+      navigate('/login?message=password-reset-success', { replace: true });
     }
-  }, [navigate]);
+  } catch (error: any) {
+    console.error('❌ Reset password error in useAuth:', error);
+    toast.error(error.message || 'Error al restablecer contraseña');
+    throw error;
+  }
+}, [navigate]);
+
+
+  // ===== GOOGLE OAUTH =====
+const loginWithGoogle = useCallback(async (credential: string): Promise<void> => {
+  try {
+    auth.setLoading(true);
+    
+    const result = await AuthService.loginWithGoogle(credential);
+    
+    if (result.success && result.data) {
+      // Actualizar estado de autenticación
+      auth.setUser(result.data.user);
+      auth.setAuthenticated(true);
+      
+      // Mostrar mensaje según si es nuevo usuario o existente
+      if (result.data.isNewUser) {
+        toast.success('¡Cuenta creada exitosamente con Google! Bienvenido a Wiru.');
+      } else {
+        toast.success('¡Bienvenido de vuelta!');
+      }
+      
+      console.log('✅ Google login successful');
+      
+      // Redirigir según el estado del usuario
+      if (result.data.isNewUser) {
+        // Usuario nuevo -> dashboard con onboarding
+        navigate('/dashboard?welcome=true', { replace: true });
+      } else {
+        // Usuario existente -> dashboard
+        navigate('/dashboard', { replace: true });
+      }
+    }
+  } catch (error: any) {
+    console.error('❌ Google login error in useAuth:', error);
+    toast.error(error.message || 'Error al iniciar sesión con Google');
+    throw error;
+  } finally {
+    auth.setLoading(false);
+  }
+}, [auth, navigate]);
+
+
+// ===== GOOGLE OAUTH CON ACCESS TOKEN =====
+const loginWithGoogleAccessToken = useCallback(async (accessToken: string): Promise<void> => {
+  try {
+    auth.setLoading(true);
+    
+    const result = await AuthService.loginWithGoogleAccessToken(accessToken);
+    
+    if (result.success && result.data) {
+      // Actualizar estado de autenticación
+      auth.setUser(result.data.user);
+      auth.setAuthenticated(true);
+      
+      // Mostrar mensaje según si es nuevo usuario o existente
+      if (result.data.isNewUser) {
+        toast.success('¡Cuenta creada exitosamente con Google! Bienvenido a Wiru.');
+      } else {
+        toast.success('¡Bienvenido de vuelta!');
+      }
+      
+      console.log('✅ Google access token login successful');
+      
+      // Redirigir según el estado del usuario
+      if (result.data.isNewUser) {
+        navigate('/dashboard?welcome=true', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
+    }
+  } catch (error: any) {
+    console.error('❌ Google access token login error in useAuth:', error);
+    toast.error(error.message || 'Error al iniciar sesión con Google');
+    throw error;
+  } finally {
+    auth.setLoading(false);
+  }
+}, [auth, navigate]);
+
+
+// ===== FACEBOOK OAUTH =====
+const loginWithFacebook = useCallback(async (accessToken: string, userID: string): Promise<void> => {
+  try {
+    auth.setLoading(true);
+    
+    const result = await AuthService.loginWithFacebook(accessToken, userID);
+    
+    if (result.success && result.data) {
+      // Actualizar estado de autenticación
+      auth.setUser(result.data.user);
+      auth.setAuthenticated(true);
+      
+      // Mostrar mensaje según si es nuevo usuario o existente
+      if (result.data.isNewUser) {
+        toast.success('¡Cuenta creada exitosamente con Facebook! Bienvenido a Wiru.');
+      } else {
+        toast.success('¡Bienvenido de vuelta!');
+      }
+      
+      console.log('✅ Facebook login successful');
+      
+      // Redirigir según el estado del usuario
+      if (result.data.isNewUser) {
+        // Usuario nuevo -> dashboard con onboarding
+        navigate('/dashboard?welcome=true', { replace: true });
+      } else {
+        // Usuario existente -> dashboard
+        navigate('/dashboard', { replace: true });
+      }
+    }
+  } catch (error: any) {
+    console.error('❌ Facebook login error in useAuth:', error);
+    toast.error(error.message || 'Error al iniciar sesión con Facebook');
+    throw error;
+  } finally {
+    auth.setLoading(false);
+  }
+}, [auth, navigate]);
+
+
+
 
   // ===== UPDATE PROFILE =====
   const updateProfile = useCallback(async (data: any): Promise<void> => {
@@ -389,6 +513,13 @@ export const useAuth = () => {
     login,
     register,
     logout,
+
+    // Google OAuth
+  loginWithGoogle,
+  loginWithGoogleAccessToken,
+
+  // Facebook OAuth
+  loginWithFacebook,
     
     // Verificación y recuperación
     verifyEmail,

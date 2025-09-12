@@ -296,14 +296,518 @@
 
 
 
-// src/pages/auth/LoginPage.tsx
-import React from 'react';
-import { LoginForm } from '@/components/auth/LoginForm';
+// // src/pages/auth/LoginPage.tsx
+// import React from 'react';
+// import { LoginForm } from '@/components/auth/LoginForm';
+
+// export const LoginPage: React.FC = () => {
+//   return (
+//     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+//       <LoginForm />
+//     </div>
+//   );
+// };
+
+
+
+// Actualizar src/pages/auth/LoginPage.tsx para incluir Google Sign-In
+
+// import React, { useState } from 'react';
+// import { Link, useSearchParams } from 'react-router-dom';
+// import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+// import { useForm } from 'react-hook-form';
+// import { zodResolver } from '@hookform/resolvers/zod';
+// import { z } from 'zod';
+// import { Button } from '@/components/ui/Button';
+// import { Alert } from '@/components/ui/Alert';
+// import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
+// import { FacebookSignInButton } from '@/components/auth/FacebookSignInButton';
+// import { useAuth } from '@/hooks/useAuth';
+// import { env } from '@/utils/env';
+// import toast from 'react-hot-toast';
+
+// // Schema de validación
+// const loginSchema = z.object({
+//   email: z.string().email('Email inválido'),
+//   password: z.string().min(1, 'Contraseña requerida'),
+// });
+
+// type LoginFormData = z.infer<typeof loginSchema>;
+
+// export const LoginPage: React.FC = () => {
+//   const [searchParams] = useSearchParams();
+//   const [showPassword, setShowPassword] = useState(false);
+//   const { login, loginWithGoogle, isLoading } = useAuth();
+
+//   // Mensajes basados en parámetros de URL
+//   const verified = searchParams.get('verified');
+//   const message = searchParams.get('message');
+
+//   const {
+//     register,
+//     handleSubmit,
+//     formState: { errors },
+//   } = useForm<LoginFormData>({
+//     resolver: zodResolver(loginSchema),
+//   });
+
+//   const onSubmit = async (data: LoginFormData) => {
+//     try {
+//       await login({ email: data.email, password: data.password });
+//     } catch (error) {
+//       // El error ya se maneja en el hook useAuth
+//     }
+//   };
+
+//   const handleGoogleSuccess = async (credential: string) => {
+//     try {
+//       await loginWithGoogle(credential);
+//     } catch (error) {
+//       // El error ya se maneja en el hook useAuth
+//     }
+//   };
+
+//   const handleGoogleError = (error: string) => {
+//     console.error('Google Sign-In error:', error);
+//     toast.error(error);
+//   };
+
+//   return (
+//     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+//       <div className="sm:mx-auto sm:w-full sm:max-w-md">
+//         {/* Logo */}
+//         <Link to="/" className="flex justify-center mb-8">
+//           <div className="flex items-center space-x-3">
+//             <div className="relative">
+//               <div className="absolute inset-0 bg-gradient-to-r from-[#a8c241] to-[#719428] rounded-xl blur-lg opacity-30"></div>
+//               <div className="relative bg-gradient-to-br from-[#a8c241] via-[#8ea635] to-[#719428] p-2 rounded-xl shadow-lg">
+//                 <svg className="h-6 w-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+//                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+//                 </svg>
+//               </div>
+//             </div>
+//             <span className="text-xl font-black bg-gradient-to-r from-[#a8c241] to-[#719428] bg-clip-text text-transparent">
+//               WIRU
+//             </span>
+//           </div>
+//         </Link>
+
+//         <h2 className="text-center text-3xl font-bold text-gray-900">
+//           Iniciar Sesión
+//         </h2>
+//         <p className="mt-2 text-center text-sm text-gray-600">
+//           ¿No tienes cuenta?{' '}
+//           <Link
+//             to="/register"
+//             className="font-medium text-[#a8c241] hover:text-[#719428] transition-colors"
+//           >
+//             Regístrate aquí
+//           </Link>
+//         </p>
+//       </div>
+
+//       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+//         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+//           {/* Alertas */}
+//           {verified === 'true' && (
+//             <Alert variant="success" className="mb-6">
+//               ¡Email verificado exitosamente! Ahora puedes iniciar sesión.
+//             </Alert>
+//           )}
+
+//           {message === 'verify-email' && (
+//             <Alert variant="default" className="mb-6">
+//               Por favor verifica tu email antes de iniciar sesión.
+//             </Alert>
+//           )}
+
+//           {/* Google Sign-In */}
+//           {env.ENABLE_OAUTH && env.GOOGLE_CLIENT_ID && (
+//             <div className="mb-6">
+//               <GoogleSignInButton
+//                 onSuccess={handleGoogleSuccess}
+//                 onError={handleGoogleError}
+//                 disabled={isLoading}
+//                 text="Iniciar sesión con Google"
+//               />
+              
+//               <div className="mt-6 relative">
+//                 <div className="absolute inset-0 flex items-center">
+//                   <div className="w-full border-t border-gray-300" />
+//                 </div>
+//                 <div className="relative flex justify-center text-sm">
+//                   <span className="px-2 bg-white text-gray-500">O continúa con</span>
+//                 </div>
+//               </div>
+//             </div>
+//           )}
+
+//           {/* Formulario de login */}
+//           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+//             {/* Email */}
+//             <div>
+//               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+//                 Email
+//               </label>
+//               <div className="mt-1">
+//                 <input
+//                   {...register('email')}
+//                   type="email"
+//                   autoComplete="email"
+//                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[#a8c241] focus:border-[#a8c241] sm:text-sm"
+//                   placeholder="tu@email.com"
+//                 />
+//                 {errors.email && (
+//                   <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+//                 )}
+//               </div>
+//             </div>
+
+//             {/* Password */}
+//             <div>
+//               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+//                 Contraseña
+//               </label>
+//               <div className="mt-1 relative">
+//                 <input
+//                   {...register('password')}
+//                   type={showPassword ? 'text' : 'password'}
+//                   autoComplete="current-password"
+//                   className="appearance-none block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[#a8c241] focus:border-[#a8c241] sm:text-sm"
+//                   placeholder="Tu contraseña"
+//                 />
+//                 <button
+//                   type="button"
+//                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
+//                   onClick={() => setShowPassword(!showPassword)}
+//                 >
+//                   {showPassword ? (
+//                     <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+//                   ) : (
+//                     <EyeIcon className="h-5 w-5 text-gray-400" />
+//                   )}
+//                 </button>
+//               </div>
+//               {errors.password && (
+//                 <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+//               )}
+//             </div>
+
+//             {/* Forgot Password */}
+//             <div className="flex items-center justify-between">
+//               <div className="text-sm">
+//                 <Link
+//                   to="/forgot-password"
+//                   className="font-medium text-[#a8c241] hover:text-[#719428] transition-colors"
+//                 >
+//                   ¿Olvidaste tu contraseña?
+//                 </Link>
+//               </div>
+//             </div>
+
+//             {/* Submit Button */}
+//             <div>
+//               <Button
+//                 type="submit"
+//                 disabled={isLoading}
+//                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-black bg-[#D0FF5B] hover:bg-[#D0FF5B]/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#a8c241] disabled:opacity-50 disabled:cursor-not-allowed"
+//               >
+//                 {isLoading ? (
+//                   <div className="flex items-center">
+//                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
+//                     Iniciando sesión...
+//                   </div>
+//                 ) : (
+//                   'Iniciar Sesión'
+//                 )}
+//               </Button>
+//             </div>
+//           </form>
+
+//           {/* Links adicionales */}
+//           <div className="mt-6">
+//             <div className="relative">
+//               <div className="relative flex justify-center text-sm">
+//                 <span className="px-2 bg-white text-gray-500">
+//                   ¿Primera vez en Wiru?{' '}
+//                   <Link
+//                     to="/register"
+//                     className="font-medium text-[#a8c241] hover:text-[#719428] transition-colors"
+//                   >
+//                     Crear cuenta
+//                   </Link>
+//                 </span>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+
+
+
+
+import React, { useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Button } from '@/components/ui/Button';
+import { Alert } from '@/components/ui/Alert';
+import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
+import { FacebookSignInButton } from '@/components/auth/FacebookSignInButton';
+import { useAuth } from '@/hooks/useAuth';
+import { env } from '@/utils/env';
+import toast from 'react-hot-toast';
+
+// Schema de validación
+const loginSchema = z.object({
+  email: z.string().email('Email inválido'),
+  password: z.string().min(1, 'Contraseña requerida'),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
 
 export const LoginPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const [showPassword, setShowPassword] = useState(false);
+  const { login, loginWithGoogle, loginWithFacebook, isLoading } = useAuth();
+
+  // Mensajes basados en parámetros de URL
+  const verified = searchParams.get('verified');
+  const message = searchParams.get('message');
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  });
+
+  const onSubmit = async (data: LoginFormData) => {
+    try {
+      await login({ email: data.email, password: data.password });
+    } catch (error) {
+      // El error ya se maneja en el hook useAuth
+    }
+  };
+
+  const handleGoogleSuccess = async (credential: string) => {
+    try {
+      await loginWithGoogle(credential);
+    } catch (error) {
+      // El error ya se maneja en el hook useAuth
+    }
+  };
+
+  const handleGoogleError = (error: string) => {
+    console.error('Google Sign-In error:', error);
+    toast.error(error);
+  };
+
+  const handleFacebookSuccess = async (accessToken: string, userID: string) => {
+    try {
+      await loginWithFacebook(accessToken, userID);
+    } catch (error) {
+      // El error ya se maneja en el hook useAuth
+    }
+  };
+
+  const handleFacebookError = (error: string) => {
+    console.error('Facebook Sign-In error:', error);
+    toast.error(error);
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <LoginForm />
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        {/* Logo */}
+        <Link to="/" className="flex justify-center mb-8">
+          <div className="flex items-center space-x-3">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-[#a8c241] to-[#719428] rounded-xl blur-lg opacity-30"></div>
+              <div className="relative bg-gradient-to-br from-[#a8c241] via-[#8ea635] to-[#719428] p-2 rounded-xl shadow-lg">
+                <svg className="h-6 w-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+              </div>
+            </div>
+            <span className="text-xl font-black bg-gradient-to-r from-[#a8c241] to-[#719428] bg-clip-text text-transparent">
+              WIRU
+            </span>
+          </div>
+        </Link>
+
+        <h2 className="text-center text-3xl font-bold text-gray-900">
+          Iniciar Sesión
+        </h2>
+        <p className="mt-2 text-center text-sm text-gray-600">
+          ¿No tienes cuenta?{' '}
+          <Link
+            to="/register"
+            className="font-medium text-[#a8c241] hover:text-[#719428] transition-colors"
+          >
+            Regístrate aquí
+          </Link>
+        </p>
+      </div>
+
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          {/* Alertas */}
+          {verified === 'true' && (
+            <Alert variant="success" className="mb-6">
+              ¡Email verificado exitosamente! Ahora puedes iniciar sesión.
+            </Alert>
+          )}
+
+          {message === 'verify-email' && (
+            <Alert variant="default" className="mb-6">
+              Por favor verifica tu email antes de iniciar sesión.
+            </Alert>
+          )}
+
+          {/* OAuth Buttons */}
+          {env.ENABLE_OAUTH && (env.GOOGLE_CLIENT_ID || env.FACEBOOK_APP_ID) && (
+            <div className="mb-6">
+              {/* Google Sign-In */}
+              {env.GOOGLE_CLIENT_ID && (
+                <GoogleSignInButton
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                  disabled={isLoading}
+                  text="Iniciar sesión con Google"
+                />
+              )}
+              
+              {/* Facebook Sign-In */}
+              {env.FACEBOOK_APP_ID && (
+                <div className={env.GOOGLE_CLIENT_ID ? "mt-3" : ""}>
+                  <FacebookSignInButton
+                    onSuccess={handleFacebookSuccess}
+                    onError={handleFacebookError}
+                    disabled={isLoading}
+                    text="Iniciar sesión con Facebook"
+                  />
+                </div>
+              )}
+              
+              <div className="mt-6 relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300" />
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">O continúa con email</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Formulario de login */}
+          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+            {/* Email */}
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                Email
+              </label>
+              <div className="mt-1">
+                <input
+                  {...register('email')}
+                  type="email"
+                  autoComplete="email"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[#a8c241] focus:border-[#a8c241] sm:text-sm"
+                  placeholder="tu@email.com"
+                />
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Password */}
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Contraseña
+              </label>
+              <div className="mt-1 relative">
+                <input
+                  {...register('password')}
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
+                  className="appearance-none block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[#a8c241] focus:border-[#a8c241] sm:text-sm"
+                  placeholder="Tu contraseña"
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+                  ) : (
+                    <EyeIcon className="h-5 w-5 text-gray-400" />
+                  )}
+                </button>
+              </div>
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+              )}
+            </div>
+
+            {/* Forgot Password */}
+            <div className="flex items-center justify-between">
+              <div className="text-sm">
+                <Link
+                  to="/forgot-password"
+                  className="font-medium text-[#a8c241] hover:text-[#719428] transition-colors"
+                >
+                  ¿Olvidaste tu contraseña?
+                </Link>
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div>
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-black bg-[#D0FF5B] hover:bg-[#D0FF5B]/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#a8c241] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
+                    Iniciando sesión...
+                  </div>
+                ) : (
+                  'Iniciar Sesión'
+                )}
+              </Button>
+            </div>
+          </form>
+
+          {/* Links adicionales */}
+          <div className="mt-6">
+            <div className="relative">
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">
+                  ¿Primera vez en Wiru?{' '}
+                  <Link
+                    to="/register"
+                    className="font-medium text-[#a8c241] hover:text-[#719428] transition-colors"
+                  >
+                    Crear cuenta
+                  </Link>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
