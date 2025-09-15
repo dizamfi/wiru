@@ -1174,6 +1174,7 @@ import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import HomePage from './pages/HomePage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
+import { ResetPasswordPage } from './pages/auth/ResetPasswordPage';
 
 function App() {
   const { isLoading } = useAuth();
@@ -1223,14 +1224,14 @@ function App() {
           </AuthLayout>
         } 
       />
-      {/* <Route 
+      <Route 
         path="/auth/reset-password" 
         element={
           <AuthLayout>
             <ResetPasswordPage />
           </AuthLayout>
         } 
-      /> */}
+      />
       <Route 
         path="/auth/verify-email" 
         element={
@@ -1243,6 +1244,7 @@ function App() {
       {/* Redirects para compatibilidad */}
       <Route path="/login" element={<Navigate to="/auth/login" replace />} />
       <Route path="/register" element={<Navigate to="/auth/register" replace />} />
+      <Route path="/forgot-password" element={<Navigate to="/auth/forgot-password" replace />} />
 
       {/* ===== RUTAS PROTEGIDAS (DASHBOARD) ===== */}
       {/* Estas rutas SÍ requieren autenticación */}

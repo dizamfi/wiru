@@ -338,7 +338,7 @@ export interface RegisterData {
   acceptTerms: boolean;
   acceptPrivacy: boolean;
   companyName?: string;
-  companyDocument?: string;
+  taxId?: string;
   referralCode?: string;
 }
 
@@ -669,6 +669,7 @@ static async resetPassword(token: string, password: string): Promise<{ success: 
    * Transformar datos de registro para el backend
    */
   private static transformRegisterData(data: RegisterData): any {
+    
     const transformedData: any = {
       firstName: data.firstName,
       lastName: data.lastName,
@@ -689,8 +690,8 @@ static async resetPassword(token: string, password: string): Promise<{ success: 
       if (data.companyName) {
         transformedData.companyName = data.companyName;
       }
-      if (data.companyDocument) {
-        transformedData.companyDocument = data.companyDocument;
+      if (data.taxId) {
+        transformedData.taxId = data.taxId;
       }
     }
 

@@ -234,6 +234,8 @@ export const RegisterPage: React.FC = () => {
       ? (formData.companySize as 'small' | 'medium' | 'large' | 'enterprise')
       : undefined;
 
+      console.log(formData)
+
     const dataToSend = {
       ...formData,
       identificationType: identificationTypeValue,

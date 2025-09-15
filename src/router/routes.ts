@@ -69,14 +69,6 @@ export const publicRoutes: RouteConfig[] = [
     description: 'Convierte tu chatarra electrónica en dinero'
   },
 
-  {
-  path: '/reset-password',
-  component: ResetPasswordPage,
-  requireAuth: false,
-  layout: 'auth',
-  title: 'Nueva Contraseña',
-  description: 'Establece una nueva contraseña'
-},
 //   {
 //     path: '/about',
 //     component: AboutPage,
@@ -132,6 +124,14 @@ export const authRoutes: RouteConfig[] = [
   layout: 'auth',
   title: 'Recuperar Contraseña',
   description: 'Recupera el acceso a tu cuenta'
+},
+ {
+  path: '/reset-password',
+  component: ResetPasswordPage,
+  requireAuth: false,
+  layout: 'auth',
+  title: 'Nueva Contraseña',
+  description: 'Establece una nueva contraseña'
 },
 
 //   {
