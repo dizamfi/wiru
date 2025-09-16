@@ -1153,8 +1153,12 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 
 
 // Pages - Auth
-import { LoginPage } from '@/pages/auth/LoginPage';
-import { RegisterPage } from '@/pages/auth/RegisterPage';
+// import { LoginPage } from '@/pages/auth/LoginPage';
+// import { RegisterPage } from '@/pages/auth/RegisterPage';
+
+import { EliteLoginPage } from '@/pages/auth/elite/EliteLoginPage';
+import { EliteRegisterPage } from '@/pages/auth/elite/EliteRegisterPage';
+
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
 // import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
 import { VerifyEmailPage } from '@/pages/auth/VerifyEmailPage';
@@ -1196,7 +1200,8 @@ function App() {
 
       {/* ===== RUTAS DE AUTENTICACIÓN ===== */}
       {/* Estas rutas NO requieren autenticación, pero redirigen si ya está logueado */}
-      <Route 
+      
+      {/* <Route 
         path="/auth/login" 
         element={
           <ProtectedRoute requireAuth={false} redirectTo="/dashboard">
@@ -1205,8 +1210,8 @@ function App() {
             </AuthLayout>
           </ProtectedRoute>
         } 
-      />
-      <Route 
+      /> */}
+      {/* <Route 
         path="/auth/register" 
         element={
           <ProtectedRoute requireAuth={false} redirectTo="/dashboard">
@@ -1215,7 +1220,11 @@ function App() {
             </AuthLayout>
           </ProtectedRoute>
         } 
-      />
+      /> */}
+
+      <Route path="/auth/login" element={<EliteLoginPage />} />
+      <Route path="/auth/register" element={<EliteRegisterPage />} />
+      
       <Route 
         path="/auth/forgot-password" 
         element={

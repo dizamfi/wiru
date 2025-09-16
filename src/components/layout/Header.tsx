@@ -700,7 +700,7 @@ import { Badge } from '@/components/ui/Badge';
 import { useAuth } from '@/hooks/useAuth';
 
 // Importar el logo SVG existente
-import WiruLogo from '@/assets/logo.svg';
+// import {WiruLogo} from '@/assets/logo.svg'
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -779,7 +779,7 @@ export const Header: React.FC<HeaderProps> = ({
               {(showMenuButton || !isAuthenticated) && (
                 <Button
                   variant="ghost"
-                  size="icon"
+                  size="sm"
                   onClick={showMenuButton ? onMenuClick : () => setMobileMenuOpen(true)}
                   className="lg:hidden text-black hover:bg-[#D0FF5B]/10 hover:text-black"
                 >
@@ -790,7 +790,7 @@ export const Header: React.FC<HeaderProps> = ({
               {/* Logo Wiru - MÁS GRANDE */}
               <Link to={isAuthenticated ? '/dashboard' : '/'} className="flex-shrink-0">
                 <img 
-                  src={WiruLogo} 
+                  src={"/assets/logo.svg"} 
                   alt="Wiru" 
                   className="h-28 w-auto"
                 />
@@ -840,7 +840,7 @@ export const Header: React.FC<HeaderProps> = ({
                   {/* Notificaciones - ICONO NEGRO con hover #D0FF5B */}
                   <Button
                     variant="ghost"
-                    size="icon"
+                    size="sm"
                     className="relative text-black hover:bg-[#D0FF5B]/10 hover:text-black"
                   >
                     <BellIcon className="h-5 w-5" />
@@ -1019,10 +1019,10 @@ export const Header: React.FC<HeaderProps> = ({
               <div className="flex flex-col h-full">
                 {/* Header del menú móvil */}
                 <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-                  <img src={WiruLogo} alt="Wiru" className="h-24 w-auto" />
+                  <img src={"/assets/logo.svg"} alt="Wiru" className="h-24 w-auto" />
                   <Button
                     variant="ghost"
-                    size="icon"
+                    size="sm"
                     onClick={() => setMobileMenuOpen(false)}
                     className="text-black hover:bg-gray-100"
                   >
