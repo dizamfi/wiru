@@ -1,0 +1,345 @@
+// src/hooks/useCategories.ts
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useCategoryService } from '@/services/categoryService';
+import { 
+  CategoryMainType, 
+  Category, 
+  CategoryType, 
+  PriceCalculationRequest,
+  PriceCalculationResult,
+  FieldValidation
+} from '@/types/categories';
+
+interface UseCategoriesState {
+  // Data
+  types: CategoryMainType[];
+  categories: Record<CategoryType, Category[]>;
+  selectedType?: CategoryType;
+  selectedCategory?: Category;
+  currentCategories: Category[]; // Added property
+  
+  // Loading states
+  loading: boolean;
+  loadingTypes: boolean;
+  loadingCategories: boolean;
+  loadingDetails: boolean;
+  
+  // Errors
+  error?: string;
+  
+  // Search
+  searchResults: Category[];
+  searchLoading: boolean;
+  searchTerm: string;
+}
+
+interface UseCategoriesActions {
+  // Navigation
+  selectType: (type: CategoryType) => void;
+  selectCategory: (categoryId: string) => void;
+  clearSelection: () => void;
+  
+  // Data fetching
+  loadTypes: () => Promise<void>;
+  loadCategoriesByType: (type: CategoryType) => Promise<void>;
+  loadCategoryDetails: (categoryId: string) => Promise<Category>;
+  
+  // Search
+  searchCategories: (term: string, type?: CategoryType) => Promise<void>;
+  clearSearch: () => void;
+  
+  // Calculations
+  calculatePrice: (categoryId: string, data: PriceCalculationRequest) => Promise<PriceCalculationResult>;
+  validateFields: (categoryId: string, data: Record<string, any>) => Promise<FieldValidation>;
+  
+  // Utilities
+  refresh: () => Promise<void>;
+  clearCache: () => void;
+}
+
+export const useCategories = (): UseCategoriesState & UseCategoriesActions => {
+  const categoryService = useCategoryService();
+  
+  const [state, setState] = useState<UseCategoriesState>({
+    types: [],
+    categories: {
+      [CategoryType.COMPLETE_DEVICES]: [],
+      [CategoryType.DISMANTLED_DEVICES]: []
+    },
+    selectedType: undefined,
+    selectedCategory: undefined,
+    currentCategories: [],
+    loading: false,
+    loadingTypes: false,
+    loadingCategories: false,
+    loadingDetails: false,
+    error: undefined,
+    searchResults: [],
+    searchLoading: false,
+    searchTerm: ''
+  });
+
+  // Load category types
+  const loadTypes = useCallback(async () => {
+    setState(prev => ({ ...prev, loadingTypes: true, error: undefined }));
+    
+    try {
+      const types = await categoryService.getCategoryTypes();
+      setState(prev => ({ 
+        ...prev, 
+        types, 
+        loadingTypes: false 
+      }));
+    } catch (error) {
+      setState(prev => ({ 
+        ...prev, 
+        error: error instanceof Error ? error.message : 'Error loading types',
+        loadingTypes: false 
+      }));
+    }
+  }, [categoryService]);
+
+  // Load categories by type
+  const loadCategoriesByType = useCallback(async (type: CategoryType) => {
+    setState(prev => ({ ...prev, loadingCategories: true, error: undefined }));
+    
+    try {
+      const categories = await categoryService.getCategoriesByType(type);
+      setState(prev => ({
+        ...prev,
+        categories: {
+          ...prev.categories,
+          [type]: categories
+        },
+        loadingCategories: false
+      }));
+    } catch (error) {
+      setState(prev => ({ 
+        ...prev, 
+        error: error instanceof Error ? error.message : 'Error loading categories',
+        loadingCategories: false 
+      }));
+    }
+  }, [categoryService]);
+
+  // Load category details
+  const loadCategoryDetails = useCallback(async (categoryId: string): Promise<Category> => {
+    setState(prev => ({ ...prev, loadingDetails: true, error: undefined }));
+    
+    try {
+      const category = await categoryService.getCategoryDetails(categoryId);
+      setState(prev => ({ 
+        ...prev, 
+        selectedCategory: category,
+        loadingDetails: false 
+      }));
+      return category;
+    } catch (error) {
+      setState(prev => ({ 
+        ...prev, 
+        error: error instanceof Error ? error.message : 'Error loading category details',
+        loadingDetails: false 
+      }));
+      throw error;
+    }
+  }, [categoryService]);
+
+  // Search categories
+  const searchCategories = useCallback(async (term: string, type?: CategoryType) => {
+    if (!term.trim()) {
+      setState(prev => ({ ...prev, searchResults: [], searchTerm: '' }));
+      return;
+    }
+    
+    setState(prev => ({ 
+      ...prev, 
+      searchLoading: true, 
+      searchTerm: term,
+      error: undefined 
+    }));
+    
+    try {
+      const results = await categoryService.searchCategories(term, type);
+      setState(prev => ({ 
+        ...prev, 
+        searchResults: results,
+        searchLoading: false 
+      }));
+    } catch (error) {
+      setState(prev => ({ 
+        ...prev, 
+        error: error instanceof Error ? error.message : 'Error searching categories',
+        searchLoading: false 
+      }));
+    }
+  }, [categoryService]);
+
+  // Calculate price
+  const calculatePrice = useCallback(async (
+    categoryId: string, 
+    data: PriceCalculationRequest
+  ): Promise<PriceCalculationResult> => {
+    try {
+      return await categoryService.calculatePrice(categoryId, data);
+    } catch (error) {
+      setState(prev => ({ 
+        ...prev, 
+        error: error instanceof Error ? error.message : 'Error calculating price' 
+      }));
+      throw error;
+    }
+  }, [categoryService]);
+
+  // Validate fields
+  const validateFields = useCallback(async (
+    categoryId: string, 
+    data: Record<string, any>
+  ): Promise<FieldValidation> => {
+    try {
+      return await categoryService.validateFields(categoryId, data);
+    } catch (error) {
+      setState(prev => ({ 
+        ...prev, 
+        error: error instanceof Error ? error.message : 'Error validating fields' 
+      }));
+      throw error;
+    }
+  }, [categoryService]);
+
+  // Navigation actions
+  const selectType = useCallback((type: CategoryType) => {
+    setState(prev => ({ 
+      ...prev, 
+      selectedType: type,
+      selectedCategory: undefined 
+    }));
+    
+    // Load categories for this type if not already loaded
+    if (state.categories[type].length === 0) {
+      loadCategoriesByType(type);
+    }
+  }, [loadCategoriesByType, state.categories]);
+
+  const selectCategory = useCallback(async (categoryId: string) => {
+    const existingCategory = Object.values(state.categories)
+      .flat()
+      .find(cat => cat.id === categoryId);
+    
+    if (existingCategory) {
+      setState(prev => ({ ...prev, selectedCategory: existingCategory }));
+    }
+    
+    // Load full details
+    await loadCategoryDetails(categoryId);
+  }, [loadCategoryDetails, state.categories]);
+
+  const clearSelection = useCallback(() => {
+    setState(prev => ({ 
+      ...prev, 
+      selectedType: undefined,
+      selectedCategory: undefined 
+    }));
+  }, []);
+
+  const clearSearch = useCallback(() => {
+    setState(prev => ({ 
+      ...prev, 
+      searchResults: [],
+      searchTerm: '',
+      searchLoading: false 
+    }));
+  }, []);
+
+  // Utility actions
+  const refresh = useCallback(async () => {
+    setState(prev => ({ ...prev, loading: true, error: undefined }));
+    
+    try {
+      await loadTypes();
+      
+      // Reload categories for selected type
+      if (state.selectedType) {
+        await loadCategoriesByType(state.selectedType);
+      }
+      
+      setState(prev => ({ ...prev, loading: false }));
+    } catch (error) {
+      setState(prev => ({ 
+        ...prev, 
+        error: error instanceof Error ? error.message : 'Error refreshing data',
+        loading: false 
+      }));
+    }
+  }, [loadTypes, loadCategoriesByType, state.selectedType]);
+
+  const clearCache = useCallback(() => {
+    categoryService.clearCache();
+  }, [categoryService]);
+
+  // Load initial data
+  useEffect(() => {
+    loadTypes();
+  }, [loadTypes]);
+
+  // Computed values
+  const currentCategories = useMemo(() => {
+    return state.selectedType ? state.categories[state.selectedType] : [];
+  }, [state.categories, state.selectedType]);
+
+  const isLoading = useMemo(() => {
+    return state.loading || state.loadingTypes || state.loadingCategories || state.loadingDetails;
+  }, [state.loading, state.loadingTypes, state.loadingCategories, state.loadingDetails]);
+
+  return {
+    // State
+    ...state,
+    loading: isLoading,
+    
+    // Computed
+    currentCategories,
+    
+    // Actions
+    selectType,
+    selectCategory,
+    clearSelection,
+    loadTypes,
+    loadCategoriesByType,
+    loadCategoryDetails,
+    searchCategories,
+    clearSearch,
+    calculatePrice,
+    validateFields,
+    refresh,
+    clearCache
+  };
+};
+
+// Hook especializado para dispositivos completos
+export const useCompleteDevices = () => {
+  const categories = useCategories();
+  
+  useEffect(() => {
+    categories.selectType(CategoryType.COMPLETE_DEVICES);
+  }, []);
+  
+  return {
+    ...categories,
+    categories: categories.categories[CategoryType.COMPLETE_DEVICES],
+    loading: categories.loadingCategories || categories.loadingTypes
+  };
+};
+
+// Hook especializado para dispositivos desarmables
+export const useDismantledDevices = () => {
+  const categories = useCategories();
+  
+  useEffect(() => {
+    categories.selectType(CategoryType.DISMANTLED_DEVICES);
+  }, []);
+  
+  return {
+    ...categories,
+    categories: categories.categories[CategoryType.DISMANTLED_DEVICES],
+    loading: categories.loadingCategories || categories.loadingTypes
+  };
+};

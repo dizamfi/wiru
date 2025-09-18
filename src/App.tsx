@@ -1179,6 +1179,9 @@ import HomePage from './pages/HomePage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import { ResetPasswordPage } from './pages/auth/ResetPasswordPage';
+import { EliteForgotPasswordPage } from './pages/auth/elite/EliteForgotPasswordPage';
+import { EliteResetPasswordPage } from './pages/auth/elite/EliteResetPasswordPage';
+import { EliteVerifyEmailPage } from './pages/auth/elite/EliteVerifyEmailPage';
 
 function App() {
   const { isLoading } = useAuth();
@@ -1225,15 +1228,18 @@ function App() {
       <Route path="/auth/login" element={<EliteLoginPage />} />
       <Route path="/auth/register" element={<EliteRegisterPage />} />
       
-      <Route 
+      {/* <Route 
         path="/auth/forgot-password" 
         element={
           <AuthLayout>
             <ForgotPasswordPage />
           </AuthLayout>
         } 
-      />
-      <Route 
+      /> */}
+
+            <Route path="/auth/forgot-password" element={<EliteForgotPasswordPage />} />
+
+      {/* <Route 
         path="/auth/reset-password" 
         element={
           <AuthLayout>
@@ -1241,19 +1247,31 @@ function App() {
           </AuthLayout>
         } 
       />
-      <Route 
+       */}
+
+       <Route path="/auth/reset-password" element={<EliteResetPasswordPage />} />
+
+
+      {/* <Route 
         path="/auth/verify-email" 
         element={
           <AuthLayout>
             <VerifyEmailPage />
           </AuthLayout>
         } 
-      />
+      /> */}
+
+      <Route path="/auth/verify-email" element={<EliteVerifyEmailPage />} />
+
+
 
       {/* Redirects para compatibilidad */}
       <Route path="/login" element={<Navigate to="/auth/login" replace />} />
       <Route path="/register" element={<Navigate to="/auth/register" replace />} />
       <Route path="/forgot-password" element={<Navigate to="/auth/forgot-password" replace />} />
+      <Route path="/reset-password" element={<Navigate to="/auth/reset-password" replace />} />
+      <Route path="/verify-email" element={<Navigate to="/auth/verify-email" replace />} />
+
 
       {/* ===== RUTAS PROTEGIDAS (DASHBOARD) ===== */}
       {/* Estas rutas SÍ requieren autenticación */}
