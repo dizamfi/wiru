@@ -6,6 +6,8 @@
 // import { Badge } from '@/components/ui/Badge';
 // import { Button } from '@/components/ui/Button';
 
+import { ReactNode } from "react";
+
 // export interface ProductCategory {
 //   id: string;
 //   name: string;
@@ -541,8 +543,7 @@
 
 
 
-
-// src/types/categories.ts
+// src/types/categories.ts - FIXED AND COMPLETE
 export enum CategoryType {
   COMPLETE_DEVICES = 'COMPLETE_DEVICES',
   DISMANTLED_DEVICES = 'DISMANTLED_DEVICES'
@@ -560,55 +561,71 @@ export enum MaterialGrade {
   LOW_GRADE_GREEN = 'LOW_GRADE_GREEN',
   LOW_GRADE_BROWN = 'LOW_GRADE_BROWN', 
   HIGH_GRADE_CIRCUIT = 'HIGH_GRADE_CIRCUIT',
-  MIXED_COMPONENTS = 'MIXED_COMPONENTS'
+  MIXED_COMPONENTS = 'MIXED_COMPONENTS',
+  PENTIUM_III = 'PENTIUM_III',
+  PENTIUM_IV = 'PENTIUM_IV',
+  MEDIUM_GRADE = 'MEDIUM_GRADE'
 }
 
-// Tipo principal de categoría
+// 🔧 FIX: Tipo principal de categoría - Compatible con el backend
 export interface CategoryMainType {
   id: string;
   type: CategoryType;
   name: string;
   description: string;
   icon: string;
-  color: string;
+  color?: string; // 🔧 Added color field from backend
+  estimatedCategories?: number;
 }
 
-// Categoría específica
+// 🔧 FIX: Categoría específica - Compatible con el backend
 export interface Category {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   type: CategoryType;
   icon?: string;
   image?: string;
   
+  // Estructura jerárquica
+  materialGrade?: MaterialGrade;
+  parentCategoryId?: string;
+  hierarchyPath?: string[];
+  
   // Precios y pesos
   estimatedWeight?: number;
-  basePrice: number;
   pricePerKg: number;
+  pricePerUnit?: number;
   minPrice: number;
   maxPrice: number;
-  materialGrade?: MaterialGrade;
   
-  // Referencias visuales
-  referenceImages: string[];
-  examples: string[];
+  // Condiciones aceptadas
+  acceptedConditions: DeviceCondition[];
   
-  // Validación
+  // Campos requeridos
   requiredFields: string[];
-  conditionMultipliers: Record<string, number>;
-  allowsQuantity: boolean;
-  requiresPhotos: boolean;
-  minPhotos: number;
-  maxPhotos: number;
   
-  // Datos calculados
-  estimatedPriceRange?: PriceRange;
-  validation?: ValidationInfo;
+  // Orden y estado
+  sortOrder?: number;
+  status?: 'ACTIVE' | 'INACTIVE';
   
   // Metadata
-  metadata?: Record<string, any>;
-  createdAt: string;
+  createdAt?: string;
+  updatedAt?: string;
+  
+  // Contadores (para admin)
+  _count?: {
+    orderItems?: number;
+    subCategories?: number;
+  };
+  
+  // Relaciones
+  parentCategory?: {
+    id: string;
+    name: string;
+    type: CategoryType;
+  };
+  subCategories?: Category[];
 }
 
 // Información de rango de precios
@@ -653,19 +670,39 @@ export interface AccessoryOption {
 export interface PriceCalculationRequest {
   quantity?: number;
   weight?: number;
-  condition?: DeviceCondition;
-  accessories?: string[];
+  condition: DeviceCondition;
+  hasAccessories?: boolean;
+  hasOriginalBox?: boolean;
+  hasDocumentation?: boolean;
+  additionalDetails?: Record<string, any>;
 }
 
 // Resultado del cálculo de precio
 export interface PriceCalculationResult {
   categoryId: string;
   categoryName: string;
-  categoryType: CategoryType;
+  calculation: {
+    method: string;
+    basePrice: number;
+    conditionMultiplier: number;
+    adjustedPrice: number;
+    accessoryBonus: number;
+    finalPrice: number;
+    constrainedPrice: number;
+  };
   estimatedPrice: number;
-  breakdown: PriceBreakdown;
-  currency: string;
-  calculatedAt: string;
+  priceRange: {
+    min: number;
+    max: number;
+  };
+  inputs: {
+    quantity: number;
+    weight: number;
+    condition: DeviceCondition;
+    hasAccessories: boolean;
+    hasOriginalBox: boolean;
+    hasDocumentation: boolean;
+  };
 }
 
 // Desglose del precio
@@ -700,52 +737,36 @@ export interface FieldValidation {
 
 // Datos del item del carrito
 export interface CartItemData {
+  estimatedPrice: number;
+  id: string;
   categoryId: string;
   categoryName: string;
-  categoryType: CategoryType;
   
-  // Información del dispositivo
-  deviceName?: string;
-  brand?: string;
-  model?: string;
-  condition: DeviceCondition;
-  
-  // Cantidades
-  quantity?: number;
-  weight?: number;
-  estimatedWeight: number;
-  
-  // Precios
-  estimatedPrice: number;
-  priceBreakdown: PriceBreakdown;
-  
-  // Evidencia
+  // Información básica
+  condition: string;
+  weight: number;
+  description: string;
   images: string[];
-  notes?: string;
-  accessories?: string[];
   
-  // Validación
-  isValid: boolean;
-  validationErrors: string[];
+  // Precio estimado
+  estimatedValue: number;
   
-  // Metadata adicional
-  customFields?: Record<string, any>;
+  // Timestamp
   addedAt: string;
 }
 
 // Estadísticas de categorías
 export interface CategoryStats {
   totalCategories: number;
+  activeCategories: number;
+  inactiveCategories: number;
+  categoriesWithOrders: number;
+  totalOrderItems: number;
+  avgPricePerKg: number;
   categoriesByType: Array<{
     type: CategoryType;
     count: number;
     label: string;
-  }>;
-  popularCategories: Array<{
-    id: string;
-    name: string;
-    type: CategoryType;
-    orderCount: number;
   }>;
 }
 
@@ -759,7 +780,8 @@ export interface CategoryData {
   error?: string;
 }
 
-// Constantes
+// 🔧 CONSTANTS
+
 export const CONDITION_OPTIONS: ConditionOption[] = [
   {
     value: DeviceCondition.EXCELLENT,
@@ -811,53 +833,92 @@ export const ACCESSORY_OPTIONS: AccessoryOption[] = [
 // Material grades para dispositivos desarmables
 export const MATERIAL_GRADE_INFO: Record<MaterialGrade, {
   name: string;
+  label: string;
   description: string;
   color: string;
   icon: string;
 }> = {
   [MaterialGrade.LOW_GRADE_GREEN]: {
-    name: 'Bajo Grado → Verde',
+    name: 'LOW_GRADE_GREEN',
+    label: 'Bajo Grado → Verde',
     description: 'Placas base de computadoras, laptops y servidores con componentes de bajo grado',
     color: 'bg-green-100 text-green-800',
     icon: '🟢'
   },
   [MaterialGrade.LOW_GRADE_BROWN]: {
-    name: 'Bajo Grado → Marrón', 
+    name: 'LOW_GRADE_BROWN',
+    label: 'Bajo Grado → Marrón', 
     description: 'Placas con componentes cerámicos y metales de recuperación',
     color: 'bg-yellow-100 text-yellow-800',
     icon: '🟤'
   },
   [MaterialGrade.HIGH_GRADE_CIRCUIT]: {
-    name: 'Alto Grado → Circuitos',
+    name: 'HIGH_GRADE_CIRCUIT',
+    label: 'Alto Grado → Circuitos',
     description: 'Procesadores, memorias RAM y componentes de alto valor',
     color: 'bg-blue-100 text-blue-800', 
     icon: '🔬'
   },
   [MaterialGrade.MIXED_COMPONENTS]: {
-    name: 'Componentes Mixtos',
+    name: 'MIXED_COMPONENTS',
+    label: 'Componentes Mixtos',
     description: 'Mezcla de diferentes tipos de componentes electrónicos',
     color: 'bg-gray-100 text-gray-800',
     icon: '🔧'
+  },
+  [MaterialGrade.PENTIUM_III]: {
+    name: 'PENTIUM_III',
+    label: 'Pentium III',
+    description: 'Procesadores Pentium III y componentes relacionados',
+    color: 'bg-blue-100 text-blue-800',
+    icon: '💾'
+  },
+  [MaterialGrade.PENTIUM_IV]: {
+    name: 'PENTIUM_IV',
+    label: 'Pentium IV',
+    description: 'Procesadores Pentium IV y componentes relacionados',
+    color: 'bg-purple-100 text-purple-800',
+    icon: '🖥️'
+  },
+  [MaterialGrade.MEDIUM_GRADE]: {
+    name: 'MEDIUM_GRADE',
+    label: 'Medio Grado',
+    description: 'Componentes de grado medio con valor intermedio',
+    color: 'bg-orange-100 text-orange-800',
+    icon: '⚡'
   }
 };
 
-// Helper functions
+// 🔧 Helper functions
 export const getCategoryTypeLabel = (type: CategoryType): string => {
   return type === CategoryType.COMPLETE_DEVICES 
-    ? 'Dispositivos Completos'
+    ? 'Dispositivos Completos' 
     : 'Dispositivos Desarmables';
 };
 
-export const getConditionColor = (condition: DeviceCondition): string => {
+export const getConditionLabel = (condition: DeviceCondition): string => {
   const option = CONDITION_OPTIONS.find(opt => opt.value === condition);
-  return option?.color || 'text-gray-600';
+  return option?.label || condition;
 };
 
 export const getConditionMultiplier = (condition: DeviceCondition): number => {
   const option = CONDITION_OPTIONS.find(opt => opt.value === condition);
-  return option?.multiplier || 0.8;
+  return option?.multiplier || 0.5;
 };
 
 export const getMaterialGradeInfo = (grade: MaterialGrade) => {
-  return MATERIAL_GRADE_INFO[grade];
+  return MATERIAL_GRADE_INFO[grade] || null;
+};
+
+// 🔧 Type guards
+export const isCategoryType = (value: string): value is CategoryType => {
+  return Object.values(CategoryType).includes(value as CategoryType);
+};
+
+export const isDeviceCondition = (value: string): value is DeviceCondition => {
+  return Object.values(DeviceCondition).includes(value as DeviceCondition);
+};
+
+export const isMaterialGrade = (value: string): value is MaterialGrade => {
+  return Object.values(MaterialGrade).includes(value as MaterialGrade);
 };

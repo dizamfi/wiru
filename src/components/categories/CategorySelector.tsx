@@ -1,5 +1,358 @@
-// src/components/categories/CategorySelector.tsx
-import React, { useState } from 'react';
+// // src/components/categories/CategorySelector.tsx
+// import React, { useState } from "react";
+// import { motion, AnimatePresence } from "framer-motion";
+// import {
+//   MagnifyingGlassIcon,
+//   ChevronRightIcon,
+//   PhotoIcon,
+//   InformationCircleIcon,
+//   CheckCircleIcon,
+//   ExclamationTriangleIcon,
+// } from "@heroicons/react/24/outline";
+// import { Card, CardContent } from "@/components/ui/Card";
+// import { Input } from "@/components/ui/Input";
+// import { Button } from "@/components/ui/Button";
+// import { Badge } from "@/components/ui/Badge";
+// import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+// import { useCategories } from "@/hooks/useCategories";
+// import {
+//   CategoryType,
+//   Category,
+//   getCategoryTypeLabel,
+//   MATERIAL_GRADE_INFO,
+//   CategoryMainType,
+// } from "@/types/categories";
+
+// interface CategorySelectorProps {
+//   onCategorySelect: (category: Category) => void;
+//   selectedCategoryId?: string;
+//   className?: string;
+//   types: CategoryMainType[];
+//   categories: Category[];
+//   selectedType?: CategoryType;
+//   onTypeSelect: (type: CategoryType) => void;
+//   loading?: boolean;
+// }
+
+// export const CategorySelector: React.FC<CategorySelectorProps> = ({
+//   onCategorySelect,
+//   selectedCategoryId,
+//   className = "",
+  
+// }) => {
+//   const {
+//     types,
+//     selectedType,
+//     currentCategories,
+//     searchResults,
+//     searchTerm,
+//     loading,
+//     loadingCategories,
+//     searchLoading,
+//     error,
+//     selectType,
+//     searchCategories,
+//     clearSearch,
+//   } = useCategories();
+
+//   const [searchInput, setSearchInput] = useState("");
+
+//   // Handle search
+//   const handleSearch = async (term: string) => {
+//     setSearchInput(term);
+//     if (term.length >= 2) {
+//       await searchCategories(term, selectedType);
+//     } else {
+//       clearSearch();
+//     }
+//   };
+
+//   // Handle category selection
+//   const handleCategorySelect = (category: Category) => {
+//     onCategorySelect(category);
+//   };
+
+//   // Get categories to display
+//   const categoriesToShow = searchTerm ? searchResults : currentCategories;
+
+//   if (loading) {
+//     return (
+//       <div className="flex items-center justify-center py-12">
+//         <LoadingSpinner size="lg" text="Cargando categorías..." />
+//       </div>
+//     );
+//   }
+
+//   if (error) {
+//     return (
+//       <div className="text-center py-12">
+//         <ExclamationTriangleIcon className="mx-auto h-12 w-12 text-red-500 mb-4" />
+//         <h3 className="text-lg font-medium text-gray-900 mb-2">
+//           Error al cargar categorías
+//         </h3>
+//         <p className="text-gray-600 mb-4">{error}</p>
+//         <Button onClick={() => window.location.reload()}>Reintentar</Button>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className={`space-y-6 ${className}`}>
+//       {/* Header */}
+//       <div className="text-center">
+//         <h2 className="text-2xl font-bold text-gray-900 mb-2">
+//           ¿Qué tipo de dispositivo quieres vender?
+//         </h2>
+//         <p className="text-gray-600">
+//           Selecciona la categoría que mejor describa tu dispositivo electrónico
+//         </p>
+//       </div>
+
+//       {/* Type Selection */}
+//       {!selectedType && (
+//         <div className="grid md:grid-cols-2 gap-6">
+//           {types.map((type) => (
+//             <motion.div
+//               key={type.id}
+//               whileHover={{ scale: 1.02 }}
+//               whileTap={{ scale: 0.98 }}
+//             >
+//               <Card
+//                 className="cursor-pointer transition-all duration-200 hover:shadow-lg border-2 hover:border-[#a8c241]"
+//                 onClick={() => selectType(type.type)}
+//               >
+//                 <CardContent className="p-6 text-center">
+//                   <div className="text-4xl mb-4">{type.icon}</div>
+//                   <h3 className="text-xl font-semibold text-gray-900 mb-2">
+//                     {type.name}
+//                   </h3>
+//                   <p className="text-gray-600 mb-4">{type.description}</p>
+//                   <div className="flex items-center justify-center text-[#a8c241]">
+//                     <span className="text-sm font-medium">Seleccionar</span>
+//                     <ChevronRightIcon className="h-4 w-4 ml-1" />
+//                   </div>
+//                 </CardContent>
+//               </Card>
+//             </motion.div>
+//           ))}
+//         </div>
+//       )}
+
+//       {/* Category Selection */}
+//       {selectedType && (
+//         <div className="space-y-6">
+//           {/* Header with back button */}
+//           <div className="flex items-center justify-between">
+//             <div>
+//               <h3 className="text-xl font-semibold text-gray-900">
+//                 {getCategoryTypeLabel(selectedType)}
+//               </h3>
+//               <p className="text-gray-600">
+//                 Selecciona la categoría específica de tu dispositivo
+//               </p>
+//             </div>
+//             <Button
+//               variant="outline"
+//               onClick={() => selectType(undefined as any)}
+//             >
+//               ← Cambiar tipo
+//             </Button>
+//           </div>
+
+//           {/* Search */}
+//           <div className="relative">
+//             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+//               <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+//             </div>
+//             <Input
+//               type="text"
+//               placeholder="Buscar por marca, modelo o tipo..."
+//               value={searchInput}
+//               onChange={(e) => handleSearch(e.target.value)}
+//               className="pl-10"
+//             />
+//             {searchLoading && (
+//               <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+//                 <LoadingSpinner size="sm" />
+//               </div>
+//             )}
+//           </div>
+
+//           {/* Categories Grid */}
+//           {loadingCategories ? (
+//             <div className="flex items-center justify-center py-8">
+//               <LoadingSpinner text="Cargando categorías..." />
+//             </div>
+//           ) : (
+//             <AnimatePresence mode="wait">
+//               <motion.div
+//                 key={selectedType}
+//                 initial={{ opacity: 0, y: 20 }}
+//                 animate={{ opacity: 1, y: 0 }}
+//                 exit={{ opacity: 0, y: -20 }}
+//                 className="grid md:grid-cols-2 lg:grid-cols-3 gap-4"
+//               >
+//                 {categoriesToShow.map((category) => (
+//                   <CategoryCard
+//                     key={category.id}
+//                     category={category}
+//                     isSelected={selectedCategoryId === category.id}
+//                     onSelect={handleCategorySelect}
+//                   />
+//                 ))}
+//               </motion.div>
+//             </AnimatePresence>
+//           )}
+
+//           {/* No results */}
+//           {categoriesToShow.length === 0 && !loadingCategories && (
+//             <div className="text-center py-8">
+//               <PhotoIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+//               <h3 className="text-lg font-medium text-gray-900 mb-2">
+//                 {searchTerm
+//                   ? "No se encontraron resultados"
+//                   : "No hay categorías disponibles"}
+//               </h3>
+//               <p className="text-gray-600">
+//                 {searchTerm
+//                   ? "Intenta con otros términos de búsqueda"
+//                   : "Las categorías se están cargando..."}
+//               </p>
+//               {searchTerm && (
+//                 <Button
+//                   variant="outline"
+//                   onClick={() => handleSearch("")}
+//                   className="mt-4"
+//                 >
+//                   Limpiar búsqueda
+//                 </Button>
+//               )}
+//             </div>
+//           )}
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
+
+// // Componente para cada tarjeta de categoría
+// interface CategoryCardProps {
+//   category: Category;
+//   isSelected: boolean;
+//   onSelect: (category: Category) => void;
+// }
+
+// const CategoryCard: React.FC<CategoryCardProps> = ({
+//   category,
+//   isSelected,
+//   onSelect,
+// }) => {
+//   const materialGradeInfo = category.materialGrade
+//     ? MATERIAL_GRADE_INFO[category.materialGrade]
+//     : null;
+
+//   return (
+//     <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+//       <Card
+//         className={`cursor-pointer transition-all duration-200 border-2 ${
+//           isSelected
+//             ? "border-[#a8c241] bg-green-50 shadow-lg"
+//             : "border-gray-200 hover:border-[#a8c241] hover:shadow-md"
+//         }`}
+//         onClick={() => onSelect(category)}
+//       >
+//         <CardContent className="p-4">
+//           {/* Header */}
+//           <div className="flex items-start justify-between mb-3">
+//             <div className="flex items-center space-x-2">
+//               <span className="text-2xl">{category.icon}</span>
+//               {isSelected && (
+//                 <CheckCircleIcon className="h-5 w-5 text-[#a8c241]" />
+//               )}
+//             </div>
+//             {materialGradeInfo && (
+//               <Badge className={materialGradeInfo.color}>
+//                 {materialGradeInfo.icon}
+//               </Badge>
+//             )}
+//           </div>
+
+//           {/* Title */}
+//           <h4 className="font-semibold text-gray-900 mb-2">{category.name}</h4>
+
+//           {/* Description */}
+//           <p className="text-sm text-gray-600 mb-3">{category.description}</p>
+
+//           {/* Price Info */}
+//           <div className="space-y-2 mb-3">
+//             {category.type === CategoryType.COMPLETE_DEVICES ? (
+//               <div className="text-sm">
+//                 <div className="flex justify-between">
+//                   <span className="text-gray-500">Precio estimado:</span>
+//                   <span className="font-medium text-gray-900">
+//                     ${category.minPrice} - ${category.maxPrice}
+//                   </span>
+//                 </div>
+//                 {category.estimatedWeight && (
+//                   <div className="flex justify-between">
+//                     <span className="text-gray-500">Peso aprox:</span>
+//                     <span className="text-gray-700">
+//                       {category.estimatedWeight} kg
+//                     </span>
+//                   </div>
+//                 )}
+//               </div>
+//             ) : (
+//               <div className="text-sm">
+//                 <div className="flex justify-between">
+//                   <span className="text-gray-500">Precio por kg:</span>
+//                   <span className="font-medium text-gray-900">
+//                     ${category.pricePerKg}/kg
+//                   </span>
+//                 </div>
+//                 <div className="flex justify-between">
+//                   <span className="text-gray-500">Rango:</span>
+//                   <span className="text-gray-700">
+//                     ${category.minPrice} - ${category.maxPrice}
+//                   </span>
+//                 </div>
+//               </div>
+//             )}
+//           </div>
+
+//           {/* Examples */}
+//           {category.examples.length > 0 && (
+//             <div className="text-xs text-gray-500">
+//               <span className="font-medium">Ejemplos: </span>
+//               {category.examples.slice(0, 3).join(", ")}
+//               {category.examples.length > 3 && "..."}
+//             </div>
+//           )}
+
+//           {/* Reference Images Indicator */}
+//           {category.referenceImages.length > 0 && (
+//             <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+//               <div className="flex items-center text-xs text-gray-500">
+//                 <PhotoIcon className="h-4 w-4 mr-1" />
+//                 {category.referenceImages.length} fotos de referencia
+//               </div>
+//               <div className="flex items-center text-xs text-[#a8c241]">
+//                 <InformationCircleIcon className="h-4 w-4 mr-1" />
+//                 Más info
+//               </div>
+//             </div>
+//           )}
+//         </CardContent>
+//       </Card>
+//     </motion.div>
+//   );
+// };
+
+
+
+
+// src/components/categories/CategorySelector.tsx - FIXED
+import React, { useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   MagnifyingGlassIcon, 
@@ -7,84 +360,76 @@ import {
   PhotoIcon,
   InformationCircleIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  ScaleIcon,
+  CurrencyDollarIcon
 } from '@heroicons/react/24/outline';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { useCategories } from '@/hooks/useCategories';
 import { 
   CategoryType, 
   Category,
+  CategoryMainType,
   getCategoryTypeLabel,
   MATERIAL_GRADE_INFO
 } from '@/types/categories';
 
 interface CategorySelectorProps {
+  // 🔧 FIX: Props desde SellPage
+  types: CategoryMainType[];
+  categories: Category[];
+  selectedType?: CategoryType;
+  onTypeSelect: (type: CategoryType) => void;
   onCategorySelect: (category: Category) => void;
-  selectedCategoryId?: string;
+  loading?: boolean;
   className?: string;
 }
 
 export const CategorySelector: React.FC<CategorySelectorProps> = ({
+  types = [], // 🔧 Default empty array
+  categories = [], // 🔧 Default empty array
+  selectedType,
+  onTypeSelect,
   onCategorySelect,
-  selectedCategoryId,
+  loading = false,
   className = ''
 }) => {
-  const {
-    types,
-    selectedType,
-    currentCategories,
-    searchResults,
-    searchTerm,
-    loading,
-    loadingCategories,
-    searchLoading,
-    error,
-    selectType,
-    searchCategories,
-    clearSearch
-  } = useCategories();
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const [searchInput, setSearchInput] = useState('');
-
-  // Handle search
-  const handleSearch = async (term: string) => {
-    setSearchInput(term);
-    if (term.length >= 2) {
-      await searchCategories(term, selectedType);
-    } else {
-      clearSearch();
+  // 🔧 FIX: Filter categories based on search
+  const filteredCategories = useMemo(() => {
+    if (!categories || !Array.isArray(categories)) {
+      return []; // 🔧 Always return array
     }
-  };
+    
+    if (!searchTerm.trim()) {
+      return categories;
+    }
+    
+    return categories.filter(category => 
+      category.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      category.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [categories, searchTerm]);
 
-  // Handle category selection
-  const handleCategorySelect = (category: Category) => {
-    onCategorySelect(category);
-  };
+  // 🔧 Handle search input
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  }, []);
 
-  // Get categories to display
-  const categoriesToShow = searchTerm ? searchResults : currentCategories;
+  // 🔧 Clear search
+  const handleClearSearch = useCallback(() => {
+    setSearchTerm('');
+  }, []);
 
-  if (loading) {
+  // 🔧 FIX: Loading state
+  if (loading && (!types || types.length === 0)) {
     return (
       <div className="flex items-center justify-center py-12">
         <LoadingSpinner size="lg" text="Cargando categorías..." />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="text-center py-12">
-        <ExclamationTriangleIcon className="mx-auto h-12 w-12 text-red-500 mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Error al cargar categorías</h3>
-        <p className="text-gray-600 mb-4">{error}</p>
-        <Button onClick={() => window.location.reload()}>
-          Reintentar
-        </Button>
       </div>
     );
   }
@@ -97,84 +442,47 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
           ¿Qué tipo de dispositivo quieres vender?
         </h2>
         <p className="text-gray-600">
-          Selecciona la categoría que mejor describa tu dispositivo electrónico
+          Selecciona primero el tipo de dispositivo para ver las categorías disponibles
         </p>
       </div>
 
       {/* Type Selection */}
-      {!selectedType && (
-        <div className="grid md:grid-cols-2 gap-6">
-          {types.map((type) => (
-            <motion.div
-              key={type.id}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Card 
-                className="cursor-pointer transition-all duration-200 hover:shadow-lg border-2 hover:border-[#a8c241]"
-                onClick={() => selectType(type.type)}
-              >
-                <CardContent className="p-6 text-center">
-                  <div className="text-4xl mb-4">{type.icon}</div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    {type.name}
-                  </h3>
-                  <p className="text-gray-600 mb-4">
-                    {type.description}
-                  </p>
-                  <div className="flex items-center justify-center text-[#a8c241]">
-                    <span className="text-sm font-medium">Seleccionar</span>
-                    <ChevronRightIcon className="h-4 w-4 ml-1" />
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-      )}
+      <div className="grid md:grid-cols-2 gap-4 mb-8">
+        {types.map((type) => (
+          <TypeCard
+            key={type.id}
+            type={type}
+            isSelected={selectedType === type.type}
+            onSelect={() => onTypeSelect(type.type)}
+          />
+        ))}
+      </div>
 
-      {/* Category Selection */}
+      {/* Categories Section */}
       {selectedType && (
-        <div className="space-y-6">
-          {/* Header with back button */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-xl font-semibold text-gray-900">
-                {getCategoryTypeLabel(selectedType)}
-              </h3>
-              <p className="text-gray-600">
-                Selecciona la categoría específica de tu dispositivo
-              </p>
-            </div>
-            <Button 
-              variant="outline" 
-              onClick={() => selectType(undefined as any)}
-            >
-              ← Cambiar tipo
-            </Button>
-          </div>
-
-          {/* Search */}
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
-            </div>
+        <div className="space-y-4">
+          {/* Search Input */}
+          <div className="relative max-w-md mx-auto">
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               type="text"
-              placeholder="Buscar por marca, modelo o tipo..."
-              value={searchInput}
-              onChange={(e) => handleSearch(e.target.value)}
+              placeholder="Buscar categorías..."
+              value={searchTerm}
+              onChange={handleSearchChange}
               className="pl-10"
             />
-            {searchLoading && (
-              <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                <LoadingSpinner size="sm" />
-              </div>
+            {searchTerm && (
+              <button
+                onClick={handleClearSearch}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                ×
+              </button>
             )}
           </div>
 
           {/* Categories Grid */}
-          {loadingCategories ? (
+          {loading ? (
             <div className="flex items-center justify-center py-8">
               <LoadingSpinner text="Cargando categorías..." />
             </div>
@@ -187,41 +495,40 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
                 exit={{ opacity: 0, y: -20 }}
                 className="grid md:grid-cols-2 lg:grid-cols-3 gap-4"
               >
-                {categoriesToShow.map((category) => (
-                  <CategoryCard
-                    key={category.id}
-                    category={category}
-                    isSelected={selectedCategoryId === category.id}
-                    onSelect={handleCategorySelect}
-                  />
-                ))}
+                {/* 🔧 FIX: Safe mapping */}
+                {filteredCategories && filteredCategories.length > 0 ? (
+                  filteredCategories.map((category) => (
+                    <CategoryCard
+                      key={category.id}
+                      category={category}
+                      onSelect={onCategorySelect}
+                    />
+                  ))
+                ) : (
+                  <div className="col-span-full text-center py-8">
+                    <PhotoIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      {searchTerm ? 'No se encontraron resultados' : 'No hay categorías disponibles'}
+                    </h3>
+                    <p className="text-gray-600">
+                      {searchTerm 
+                        ? 'Intenta con otros términos de búsqueda'
+                        : 'Las categorías se están cargando...'
+                      }
+                    </p>
+                    {searchTerm && (
+                      <Button 
+                        variant="outline" 
+                        onClick={handleClearSearch}
+                        className="mt-4"
+                      >
+                        Limpiar búsqueda
+                      </Button>
+                    )}
+                  </div>
+                )}
               </motion.div>
             </AnimatePresence>
-          )}
-
-          {/* No results */}
-          {categoriesToShow.length === 0 && !loadingCategories && (
-            <div className="text-center py-8">
-              <PhotoIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {searchTerm ? 'No se encontraron resultados' : 'No hay categorías disponibles'}
-              </h3>
-              <p className="text-gray-600">
-                {searchTerm 
-                  ? 'Intenta con otros términos de búsqueda'
-                  : 'Las categorías se están cargando...'
-                }
-              </p>
-              {searchTerm && (
-                <Button 
-                  variant="outline" 
-                  onClick={() => handleSearch('')}
-                  className="mt-4"
-                >
-                  Limpiar búsqueda
-                </Button>
-              )}
-            </div>
           )}
         </div>
       )}
@@ -229,18 +536,57 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
   );
 };
 
-// Componente para cada tarjeta de categoría
+// Type Selection Card Component
+interface TypeCardProps {
+  type: CategoryMainType;
+  isSelected: boolean;
+  onSelect: () => void;
+}
+
+const TypeCard: React.FC<TypeCardProps> = ({ type, isSelected, onSelect }) => {
+  return (
+    <motion.div
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+    >
+      <Card 
+        className={`cursor-pointer transition-all duration-200 border-2 ${
+          isSelected 
+            ? 'border-primary-500 bg-primary-50 shadow-lg' 
+            : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
+        }`}
+        onClick={onSelect}
+      >
+        <CardContent className="p-6 text-center">
+          <div className="text-4xl mb-4">{type.icon}</div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            {type.name}
+          </h3>
+          <p className="text-sm text-gray-600 mb-4">
+            {type.description}
+          </p>
+          {type.estimatedCategories && (
+            <Badge variant="outline" className="mb-2">
+              {type.estimatedCategories} categorías
+            </Badge>
+          )}
+          <div className="flex items-center justify-center text-primary-600 mt-2">
+            <span className="text-sm font-medium">Seleccionar</span>
+            <ChevronRightIcon className="h-4 w-4 ml-1" />
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+};
+
+// Category Card Component
 interface CategoryCardProps {
   category: Category;
-  isSelected: boolean;
   onSelect: (category: Category) => void;
 }
 
-const CategoryCard: React.FC<CategoryCardProps> = ({
-  category,
-  isSelected,
-  onSelect
-}) => {
+const CategoryCard: React.FC<CategoryCardProps> = ({ category, onSelect }) => {
   const materialGradeInfo = category.materialGrade 
     ? MATERIAL_GRADE_INFO[category.materialGrade] 
     : null;
@@ -251,100 +597,66 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
       whileTap={{ scale: 0.98 }}
     >
       <Card 
-        className={`cursor-pointer transition-all duration-200 border-2 ${
-          isSelected 
-            ? 'border-[#a8c241] bg-green-50 shadow-lg' 
-            : 'border-gray-200 hover:border-[#a8c241] hover:shadow-md'
-        }`}
+        className="cursor-pointer transition-all duration-200 border hover:border-primary-300 hover:shadow-md"
         onClick={() => onSelect(category)}
       >
         <CardContent className="p-4">
-          {/* Header */}
-          <div className="flex items-start justify-between mb-3">
-            <div className="flex items-center space-x-2">
-              <span className="text-2xl">{category.icon}</span>
-              {isSelected && (
-                <CheckCircleIcon className="h-5 w-5 text-[#a8c241]" />
+          <div className="text-center">
+            {/* Category Icon/Image */}
+            <div className="w-16 h-16 bg-gray-100 rounded-lg mx-auto mb-3 flex items-center justify-center">
+              {category.icon ? (
+                <span className="text-2xl">{category.icon}</span>
+              ) : (
+                <ScaleIcon className="h-8 w-8 text-gray-600" />
               )}
             </div>
+            
+            {/* Category Name */}
+            <h3 className="font-semibold text-gray-900 mb-1">
+              {category.name}
+            </h3>
+            
+            {/* Description */}
+            {category.description && (
+              <p className="text-xs text-gray-600 mb-2 line-clamp-2">
+                {category.description}
+              </p>
+            )}
+            
+            {/* Price Range */}
+            <div className="space-y-1 mb-2">
+              {category.pricePerKg && (
+                <Badge variant="outline" className="text-xs">
+                  ${category.pricePerKg}/kg
+                </Badge>
+              )}
+              {category.minPrice && category.maxPrice && (
+                <p className="text-xs text-gray-500">
+                  ${category.minPrice} - ${category.maxPrice}
+                </p>
+              )}
+            </div>
+            
+            {/* Material Grade */}
             {materialGradeInfo && (
-              <Badge className={materialGradeInfo.color}>
-                {materialGradeInfo.icon}
+              <Badge 
+                variant="secondary" 
+                className={`text-xs ${materialGradeInfo.color}`}
+              >
+                {materialGradeInfo.label}
               </Badge>
             )}
-          </div>
-
-          {/* Title */}
-          <h4 className="font-semibold text-gray-900 mb-2">
-            {category.name}
-          </h4>
-
-          {/* Description */}
-          <p className="text-sm text-gray-600 mb-3">
-            {category.description}
-          </p>
-
-          {/* Price Info */}
-          <div className="space-y-2 mb-3">
-            {category.type === CategoryType.COMPLETE_DEVICES ? (
-              <div className="text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Precio estimado:</span>
-                  <span className="font-medium text-gray-900">
-                    ${category.minPrice} - ${category.maxPrice}
-                  </span>
-                </div>
-                {category.estimatedWeight && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Peso aprox:</span>
-                    <span className="text-gray-700">
-                      {category.estimatedWeight} kg
-                    </span>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Precio por kg:</span>
-                  <span className="font-medium text-gray-900">
-                    ${category.pricePerKg}/kg
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Rango:</span>
-                  <span className="text-gray-700">
-                    ${category.minPrice} - ${category.maxPrice}
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Examples */}
-          {category.examples.length > 0 && (
-            <div className="text-xs text-gray-500">
-              <span className="font-medium">Ejemplos: </span>
-              {category.examples.slice(0, 3).join(', ')}
-              {category.examples.length > 3 && '...'}
+            
+            {/* Action Indicator */}
+            <div className="flex items-center justify-center text-primary-600 mt-3">
+              <CurrencyDollarIcon className="h-4 w-4 mr-1" />
+              <span className="text-xs font-medium">Ver detalles</span>
             </div>
-          )}
-
-          {/* Reference Images Indicator */}
-          {category.referenceImages.length > 0 && (
-            <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-              <div className="flex items-center text-xs text-gray-500">
-                <PhotoIcon className="h-4 w-4 mr-1" />
-                {category.referenceImages.length} fotos de referencia
-              </div>
-              <div className="flex items-center text-xs text-[#a8c241]">
-                <InformationCircleIcon className="h-4 w-4 mr-1" />
-                Más info
-              </div>
-            </div>
-          )}
+          </div>
         </CardContent>
       </Card>
     </motion.div>
   );
 };
+
+export default CategorySelector;

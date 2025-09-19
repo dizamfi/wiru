@@ -572,8 +572,304 @@
 
 
 
-// src/pages/dashboard/SellPage.tsx
-import React, { useState } from 'react';
+// // src/pages/dashboard/SellPage.tsx
+// import React, { useState } from 'react';
+// import { motion, AnimatePresence } from 'framer-motion';
+// import { 
+//   ArrowLeftIcon,
+//   ShoppingCartIcon,
+//   PlusIcon
+// } from '@heroicons/react/24/outline';
+// import { Button } from '@/components/ui/Button';
+// import { Badge } from '@/components/ui/Badge';
+// import { CategorySelector } from '@/components/categories/CategorySelector';
+// import { CategoryDetails } from '@/components/categories/CategoryDetails';
+// // import { DeviceForm } from '@/components/sell/DeviceForm';
+// // import { CartSummary } from '@/components/sell/CartSummary';
+// import { Category, CartItemData, CategoryType } from '@/types/categories';
+
+// type SellStep = 'category-selection' | 'category-details' | 'device-form' | 'cart-review';
+
+// export const SellPage: React.FC = () => {
+//   const [currentStep, setCurrentStep] = useState<SellStep>('category-selection');
+//   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+//   const [cartItems, setCartItems] = useState<CartItemData[]>([]);
+//   const [showCart, setShowCart] = useState(false);
+
+//   // Navigation handlers
+//   const handleCategorySelect = (category: Category) => {
+//     setSelectedCategory(category);
+//     setCurrentStep('category-details');
+//   };
+
+//   const handleCategoryConfirm = (category: Category) => {
+//     setSelectedCategory(category);
+//     setCurrentStep('device-form');
+//   };
+
+//   const handleDeviceAdd = (deviceData: Omit<CartItemData, 'addedAt'>) => {
+//     const newItem: CartItemData = {
+//       ...deviceData,
+//       addedAt: new Date().toISOString()
+//     };
+    
+//     setCartItems(prev => [...prev, newItem]);
+//     setCurrentStep('category-selection');
+//     setSelectedCategory(null);
+//   };
+
+//   const handleBackToCategories = () => {
+//     setCurrentStep('category-selection');
+//     setSelectedCategory(null);
+//   };
+
+//   const handleBackToCategoryDetails = () => {
+//     setCurrentStep('category-details');
+//   };
+
+//   const handleRemoveItem = (index: number) => {
+//     setCartItems(prev => prev.filter((_, i) => i !== index));
+//   };
+
+//   const handleClearCart = () => {
+//     setCartItems([]);
+//     setShowCart(false);
+//   };
+
+//   const handleCheckout = () => {
+//     // TODO: Implement checkout logic
+//     console.log('Proceeding to checkout with items:', cartItems);
+//   };
+
+//   // Calculate cart totals
+//   const cartTotal = cartItems.reduce((sum, item) => sum + item.estimatedPrice, 0);
+//   const cartItemCount = cartItems.length;
+
+//   return (
+//     <div className="min-h-screen bg-gray-50">
+//       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+//         {/* Header */}
+//         <div className="mb-8">
+//           <div className="flex items-center justify-between">
+//             <div>
+//               <h1 className="text-3xl font-bold text-gray-900 mb-2">
+//                 Vender Dispositivos
+//               </h1>
+//               <p className="text-gray-600">
+//                 Convierte tu chatarra electrónica en dinero de forma rápida y segura
+//               </p>
+//             </div>
+            
+//             {/* Cart Button */}
+//             {cartItemCount > 0 && (
+//               <div className="relative">
+//                 <Button
+//                   onClick={() => setShowCart(!showCart)}
+//                   className="bg-[#a8c241] hover:bg-[#8ea635] text-white relative"
+//                 >
+//                   <ShoppingCartIcon className="h-5 w-5 mr-2" />
+//                   Carrito ({cartItemCount})
+//                   <Badge 
+//                     className="absolute -top-2 -right-2 bg-red-500 text-white"
+//                   >
+//                     {cartItemCount}
+//                   </Badge>
+//                 </Button>
+//               </div>
+//             )}
+//           </div>
+
+//           {/* Progress Steps */}
+//           <div className="mt-6">
+//             <StepIndicator 
+//               currentStep={currentStep} 
+//               cartItemCount={cartItemCount}
+//             />
+//           </div>
+//         </div>
+
+//         <div className="grid lg:grid-cols-4 gap-8">
+          
+//           {/* Main Content */}
+//           <div className="lg:col-span-3">
+//             <AnimatePresence mode="wait">
+              
+//               {/* Step 1: Category Selection */}
+//               {currentStep === 'category-selection' && (
+//                 <motion.div
+//                   key="category-selection"
+//                   initial={{ opacity: 0, x: 20 }}
+//                   animate={{ opacity: 1, x: 0 }}
+//                   exit={{ opacity: 0, x: -20 }}
+//                   transition={{ duration: 0.3 }}
+//                 >
+//                   <CategorySelector
+//                     onCategorySelect={handleCategorySelect} types={[]} categories={[]} onTypeSelect={function (type: CategoryType): void {
+//                       throw new Error('Function not implemented.');
+//                     } }                  />
+//                 </motion.div>
+//               )}
+
+//               {/* Step 2: Category Details */}
+//               {currentStep === 'category-details' && selectedCategory && (
+//                 <motion.div
+//                   key="category-details"
+//                   initial={{ opacity: 0, x: 20 }}
+//                   animate={{ opacity: 1, x: 0 }}
+//                   exit={{ opacity: 0, x: -20 }}
+//                   transition={{ duration: 0.3 }}
+//                 >
+//                   <CategoryDetails
+//                     categoryId={selectedCategory.id}
+//                     onBack={handleBackToCategories}
+//                     onAddToCart={handleCategoryConfirm}
+//                   />
+//                 </motion.div>
+//               )}
+
+//               {/* Step 3: Device Form */}
+//               {currentStep === 'device-form' && selectedCategory && (
+//                 <motion.div
+//                   key="device-form"
+//                   initial={{ opacity: 0, x: 20 }}
+//                   animate={{ opacity: 1, x: 0 }}
+//                   exit={{ opacity: 0, x: -20 }}
+//                   transition={{ duration: 0.3 }}
+//                 >
+//                   {/* <DeviceForm
+//                     category={selectedCategory}
+//                     onBack={handleBackToCategoryDetails}
+//                     onSubmit={handleDeviceAdd}
+//                   /> */}
+//                 </motion.div>
+//               )}
+
+//             </AnimatePresence>
+//           </div>
+
+//           {/* Sidebar - Cart */}
+//           {/* <div className="lg:col-span-1">
+//             <div className="sticky top-8">
+//               <CartSummary
+//                 items={cartItems}
+//                 total={cartTotal}
+//                 onRemoveItem={handleRemoveItem}
+//                 onClearCart={handleClearCart}
+//                 onCheckout={handleCheckout}
+//                 onAddMore={() => setCurrentStep('category-selection')}
+//                 isVisible={showCart || cartItemCount > 0}
+//               />
+//             </div>
+//           </div> */}
+//         </div>
+
+//         {/* Floating Add Button */}
+//         {cartItemCount > 0 && currentStep === 'category-selection' && (
+//           <motion.div
+//             initial={{ scale: 0 }}
+//             animate={{ scale: 1 }}
+//             className="fixed bottom-8 right-8 z-50"
+//           >
+//             <Button
+//               onClick={() => setCurrentStep('category-selection')}
+//               className="bg-[#a8c241] hover:bg-[#8ea635] text-white rounded-full h-14 w-14 shadow-lg"
+//             >
+//               <PlusIcon className="h-6 w-6" />
+//             </Button>
+//           </motion.div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
+
+// // Step Indicator Component
+// interface StepIndicatorProps {
+//   currentStep: SellStep;
+//   cartItemCount: number;
+// }
+
+// const StepIndicator: React.FC<StepIndicatorProps> = ({ 
+//   currentStep, 
+//   cartItemCount 
+// }) => {
+//   const steps = [
+//     { 
+//       id: 'category-selection', 
+//       label: 'Seleccionar Categoría', 
+//       completed: cartItemCount > 0 || ['category-details', 'device-form'].includes(currentStep)
+//     },
+//     { 
+//       id: 'category-details', 
+//       label: 'Detalles', 
+//       completed: ['device-form'].includes(currentStep)
+//     },
+//     { 
+//       id: 'device-form', 
+//       label: 'Información del Dispositivo', 
+//       completed: false
+//     }
+//   ];
+
+//   return (
+//     <div className="flex items-center space-x-4">
+//       {steps.map((step, index) => {
+//         const isActive = step.id === currentStep;
+//         const isCompleted = step.completed;
+        
+//         return (
+//           <React.Fragment key={step.id}>
+//             <div className="flex items-center space-x-2">
+//               <div className={`
+//                 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
+//                 ${isCompleted 
+//                   ? 'bg-green-500 text-white' 
+//                   : isActive 
+//                     ? 'bg-[#a8c241] text-white' 
+//                     : 'bg-gray-200 text-gray-500'
+//                 }
+//               `}>
+//                 {isCompleted ? '✓' : index + 1}
+//               </div>
+//               <span className={`
+//                 text-sm font-medium
+//                 ${isActive 
+//                   ? 'text-[#a8c241]' 
+//                   : isCompleted 
+//                     ? 'text-green-600' 
+//                     : 'text-gray-500'
+//                 }
+//               `}>
+//                 {step.label}
+//               </span>
+//             </div>
+            
+//             {index < steps.length - 1 && (
+//               <div className={`
+//                 flex-1 h-0.5
+//                 ${isCompleted ? 'bg-green-500' : 'bg-gray-200'}
+//               `} />
+//             )}
+//           </React.Fragment>
+//         );
+//       })}
+//     </div>
+//   );
+// };
+
+// export default SellPage;
+
+
+
+
+
+
+
+
+
+// src/pages/dashboard/SellPage.tsx - FIXED VERSION
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowLeftIcon,
@@ -584,276 +880,351 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { CategorySelector } from '@/components/categories/CategorySelector';
 import { CategoryDetails } from '@/components/categories/CategoryDetails';
-// import { DeviceForm } from '@/components/sell/DeviceForm';
-// import { CartSummary } from '@/components/sell/CartSummary';
-import { Category, CartItemData } from '@/types/categories';
+import { useCategories } from '@/hooks/useCategories';
+import { Category, CartItemData, DeviceCondition, CategoryType } from '@/types/categories';
 
 type SellStep = 'category-selection' | 'category-details' | 'device-form' | 'cart-review';
 
 export const SellPage: React.FC = () => {
+  // 🔧 FIX: Usar el hook corregido
+  const categories = useCategories();
+  
   const [currentStep, setCurrentStep] = useState<SellStep>('category-selection');
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [cartItems, setCartItems] = useState<CartItemData[]>([]);
   const [showCart, setShowCart] = useState(false);
 
-  // Navigation handlers
-  const handleCategorySelect = (category: Category) => {
+  // 🔧 FIX: Memoized handlers para evitar re-renders
+  const handleCategorySelect = useCallback((category: Category) => {
+    console.log('🎯 Category selected:', category.name);
     setSelectedCategory(category);
     setCurrentStep('category-details');
-  };
+  }, []);
 
-  const handleCategoryConfirm = (category: Category) => {
+  const handleCategoryConfirm = useCallback((category: Category) => {
+    console.log('✅ Category confirmed:', category.name);
     setSelectedCategory(category);
     setCurrentStep('device-form');
-  };
+  }, []);
 
-  const handleDeviceAdd = (deviceData: Omit<CartItemData, 'addedAt'>) => {
+  const handleDeviceAdd = useCallback((deviceData: Omit<CartItemData, 'addedAt'>) => {
     const newItem: CartItemData = {
       ...deviceData,
       addedAt: new Date().toISOString()
     };
     
+    console.log('➕ Device added to cart:', newItem);
     setCartItems(prev => [...prev, newItem]);
+    
+    // Volver a selección de categorías para agregar más items
     setCurrentStep('category-selection');
     setSelectedCategory(null);
-  };
+  }, []);
 
-  const handleBackToCategories = () => {
-    setCurrentStep('category-selection');
-    setSelectedCategory(null);
-  };
+  const handleBackStep = useCallback(() => {
+    switch (currentStep) {
+      case 'category-details':
+        setCurrentStep('category-selection');
+        setSelectedCategory(null);
+        break;
+      case 'device-form':
+        setCurrentStep('category-details');
+        break;
+      case 'cart-review':
+        setCurrentStep('category-selection');
+        break;
+      default:
+        setCurrentStep('category-selection');
+    }
+  }, [currentStep]);
 
-  const handleBackToCategoryDetails = () => {
-    setCurrentStep('category-details');
-  };
+  const handleCartToggle = useCallback(() => {
+    setShowCart(prev => !prev);
+  }, []);
 
-  const handleRemoveItem = (index: number) => {
-    setCartItems(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const handleClearCart = () => {
-    setCartItems([]);
+  const handleCartReview = useCallback(() => {
+    setCurrentStep('cart-review');
     setShowCart(false);
-  };
+  }, []);
 
-  const handleCheckout = () => {
-    // TODO: Implement checkout logic
-    console.log('Proceeding to checkout with items:', cartItems);
-  };
+  // 🔧 FIX: Memoizar valores computados
+  const cartTotal = useMemo(() => {
+    return cartItems.reduce((total, item) => total + (item.estimatedPrice || 0), 0);
+  }, [cartItems]);
 
-  // Calculate cart totals
-  const cartTotal = cartItems.reduce((sum, item) => sum + item.estimatedPrice, 0);
-  const cartItemCount = cartItems.length;
+  const cartItemCount = useMemo(() => {
+    return cartItems.length;
+  }, [cartItems]);
+
+  // 🔧 FIX: Error boundary para mostrar errores
+  if (categories.error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center p-8 max-w-md">
+          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            Error al cargar categorías
+          </h2>
+          <p className="text-gray-600 mb-4">
+            {categories.error}
+          </p>
+          <Button 
+            onClick={categories.refresh}
+            loading={categories.loading}
+          >
+            Reintentar
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // 🔧 FIX: Loading state mejorado
+  if (categories.loading && categories.types.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Cargando categorías...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Vender Dispositivos
-              </h1>
-              <p className="text-gray-600">
-                Convierte tu chatarra electrónica en dinero de forma rápida y segura
-              </p>
+      {/* Fixed Header */}
+      <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center space-x-4">
+              {/* Back Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleBackStep}
+                className="text-gray-600 hover:text-gray-900"
+              >
+                <ArrowLeftIcon className="h-5 w-5 mr-2" />
+                Atrás
+              </Button>
+
+              {/* Steps Indicator */}
+              <div className="flex items-center space-x-2 text-sm text-gray-500">
+                <span className={currentStep === 'category-selection' ? 'font-medium text-primary-600' : ''}>
+                  1. Seleccionar Categoría
+                </span>
+                <span>→</span>
+                <span className={currentStep === 'category-details' ? 'font-medium text-primary-600' : ''}>
+                  2. Detalles
+                </span>
+                <span>→</span>
+                <span className={currentStep === 'device-form' ? 'font-medium text-primary-600' : ''}>
+                  3. Información del Dispositivo
+                </span>
+              </div>
             </div>
-            
+
             {/* Cart Button */}
-            {cartItemCount > 0 && (
-              <div className="relative">
-                <Button
-                  onClick={() => setShowCart(!showCart)}
-                  className="bg-[#a8c241] hover:bg-[#8ea635] text-white relative"
-                >
-                  <ShoppingCartIcon className="h-5 w-5 mr-2" />
-                  Carrito ({cartItemCount})
-                  <Badge 
-                    className="absolute -top-2 -right-2 bg-red-500 text-white"
-                  >
-                    {cartItemCount}
-                  </Badge>
-                </Button>
-              </div>
-            )}
-          </div>
-
-          {/* Progress Steps */}
-          <div className="mt-6">
-            <StepIndicator 
-              currentStep={currentStep} 
-              cartItemCount={cartItemCount}
-            />
-          </div>
-        </div>
-
-        <div className="grid lg:grid-cols-4 gap-8">
-          
-          {/* Main Content */}
-          <div className="lg:col-span-3">
-            <AnimatePresence mode="wait">
-              
-              {/* Step 1: Category Selection */}
-              {currentStep === 'category-selection' && (
-                <motion.div
-                  key="category-selection"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <CategorySelector
-                    onCategorySelect={handleCategorySelect}
-                    selectedCategoryId={selectedCategory?.id}
-                  />
-                </motion.div>
-              )}
-
-              {/* Step 2: Category Details */}
-              {currentStep === 'category-details' && selectedCategory && (
-                <motion.div
-                  key="category-details"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <CategoryDetails
-                    categoryId={selectedCategory.id}
-                    onBack={handleBackToCategories}
-                    onAddToCart={handleCategoryConfirm}
-                  />
-                </motion.div>
-              )}
-
-              {/* Step 3: Device Form */}
-              {currentStep === 'device-form' && selectedCategory && (
-                <motion.div
-                  key="device-form"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {/* <DeviceForm
-                    category={selectedCategory}
-                    onBack={handleBackToCategoryDetails}
-                    onSubmit={handleDeviceAdd}
-                  /> */}
-                </motion.div>
-              )}
-
-            </AnimatePresence>
-          </div>
-
-          {/* Sidebar - Cart */}
-          {/* <div className="lg:col-span-1">
-            <div className="sticky top-8">
-              <CartSummary
-                items={cartItems}
-                total={cartTotal}
-                onRemoveItem={handleRemoveItem}
-                onClearCart={handleClearCart}
-                onCheckout={handleCheckout}
-                onAddMore={() => setCurrentStep('category-selection')}
-                isVisible={showCart || cartItemCount > 0}
-              />
-            </div>
-          </div> */}
-        </div>
-
-        {/* Floating Add Button */}
-        {cartItemCount > 0 && currentStep === 'category-selection' && (
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className="fixed bottom-8 right-8 z-50"
-          >
             <Button
-              onClick={() => setCurrentStep('category-selection')}
-              className="bg-[#a8c241] hover:bg-[#8ea635] text-white rounded-full h-14 w-14 shadow-lg"
+              variant="outline"
+              onClick={handleCartToggle}
+              className="relative"
             >
-              <PlusIcon className="h-6 w-6" />
+              <ShoppingCartIcon className="h-5 w-5 mr-2" />
+              Carrito
+              {cartItemCount > 0 && (
+                <Badge 
+                  variant="danger" 
+                  className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center text-xs"
+                >
+                  {cartItemCount}
+                </Badge>
+              )}
             </Button>
-          </motion.div>
-        )}
+          </div>
+        </div>
       </div>
-    </div>
-  );
-};
 
-// Step Indicator Component
-interface StepIndicatorProps {
-  currentStep: SellStep;
-  cartItemCount: number;
-}
-
-const StepIndicator: React.FC<StepIndicatorProps> = ({ 
-  currentStep, 
-  cartItemCount 
-}) => {
-  const steps = [
-    { 
-      id: 'category-selection', 
-      label: 'Seleccionar Categoría', 
-      completed: cartItemCount > 0 || ['category-details', 'device-form'].includes(currentStep)
-    },
-    { 
-      id: 'category-details', 
-      label: 'Detalles', 
-      completed: ['device-form'].includes(currentStep)
-    },
-    { 
-      id: 'device-form', 
-      label: 'Información del Dispositivo', 
-      completed: false
-    }
-  ];
-
-  return (
-    <div className="flex items-center space-x-4">
-      {steps.map((step, index) => {
-        const isActive = step.id === currentStep;
-        const isCompleted = step.completed;
-        
-        return (
-          <React.Fragment key={step.id}>
-            <div className="flex items-center space-x-2">
-              <div className={`
-                w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
-                ${isCompleted 
-                  ? 'bg-green-500 text-white' 
-                  : isActive 
-                    ? 'bg-[#a8c241] text-white' 
-                    : 'bg-gray-200 text-gray-500'
-                }
-              `}>
-                {isCompleted ? '✓' : index + 1}
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <AnimatePresence mode="wait">
+          {/* Step 1: Category Selection */}
+          {currentStep === 'category-selection' && (
+            <motion.div
+              key="category-selection"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="mb-6">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  Convertir tu chatarra electrónica en dinero de forma rápida y segura
+                </h1>
+                <p className="text-gray-600">
+                  Selecciona la categoría de tu dispositivo para comenzar
+                </p>
               </div>
-              <span className={`
-                text-sm font-medium
-                ${isActive 
-                  ? 'text-[#a8c241]' 
-                  : isCompleted 
-                    ? 'text-green-600' 
-                    : 'text-gray-500'
-                }
-              `}>
-                {step.label}
-              </span>
-            </div>
+              
+              <CategorySelector
+                types={categories.types}
+                categories={categories.currentCategories}
+                selectedType={categories.selectedType}
+                onTypeSelect={categories.selectType}
+                onCategorySelect={handleCategorySelect}
+                loading={categories.loading}
+              />
+            </motion.div>
+          )}
+
+          {/* Step 2: Category Details */}
+          {currentStep === 'category-details' && selectedCategory && (
+            <motion.div
+              key="category-details"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <CategoryDetails
+                category={selectedCategory}
+                onBack={handleBackStep} onConfirm={function (category: Category): void {
+                  throw new Error('Function not implemented.');
+                } }              />
+            </motion.div>
+          )}
+
+          {/* Step 3: Device Form */}
+          {currentStep === 'device-form' && selectedCategory && (
+            <motion.div
+              key="device-form"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              {/* DeviceForm component will be implemented */}
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-2xl font-bold mb-4">
+                  Información del dispositivo: {selectedCategory.name}
+                </h2>
+                <p className="text-gray-600 mb-4">
+                  Proporciona los detalles de tu dispositivo para obtener una cotización precisa.
+                </p>
+                
+                {/* Placeholder for DeviceForm */}
+                <div className="space-y-4">
+                  <div className="p-4 bg-gray-100 rounded-lg">
+                    <p className="text-sm text-gray-600">
+                      DeviceForm component será implementado aquí
+                    </p>
+                  </div>
+                  
+                  <div className="flex space-x-4">
+                    <Button variant="outline" onClick={handleBackStep}>
+                      Atrás
+                    </Button>
+                    <Button onClick={() => {
+                      // Mock device data for now
+                      handleDeviceAdd({
+                        categoryId: selectedCategory.id,
+                        categoryName: selectedCategory.name,
+
+                        // Mock data
+                        condition: DeviceCondition.GOOD,
+                        weight: 1,
+                        description: 'Mock device',
+                        images: [],
+                        id: '',
+                        estimatedValue: 0,
+                        estimatedPrice: 0
+                      });
+                    }}>
+                      Agregar al Carrito
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Cart Sidebar */}
+      <AnimatePresence>
+        {showCart && (
+          <>
+            {/* Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black bg-opacity-50 z-50"
+              onClick={handleCartToggle}
+            />
             
-            {index < steps.length - 1 && (
-              <div className={`
-                flex-1 h-0.5
-                ${isCompleted ? 'bg-green-500' : 'bg-gray-200'}
-              `} />
-            )}
-          </React.Fragment>
-        );
-      })}
+            {/* Cart Panel */}
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'tween', duration: 0.3 }}
+              className="fixed right-0 top-0 h-full w-96 bg-white shadow-xl z-50 overflow-y-auto"
+            >
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-bold">Carrito de Compras</h2>
+                  <Button variant="ghost" size="sm" onClick={handleCartToggle}>
+                    ×
+                  </Button>
+                </div>
+                
+                {cartItems.length === 0 ? (
+                  <div className="text-center text-gray-500 py-8">
+                    <ShoppingCartIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                    <p>Tu carrito está vacío</p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Cart Items */}
+                    <div className="space-y-4 mb-6">
+                      {cartItems.map((item, index) => (
+                        <div key={index} className="border rounded-lg p-4">
+                          <h3 className="font-semibold">{item.categoryName}</h3>
+                          <p className="text-sm text-gray-600">{item.description}</p>
+                          <p className="text-lg font-bold text-primary-600">
+                            ${item.estimatedPrice}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Cart Total */}
+                    <div className="border-t pt-4 mb-6">
+                      <div className="flex justify-between text-xl font-bold">
+                        <span>Total:</span>
+                        <span className="text-primary-600">${cartTotal}</span>
+                      </div>
+                    </div>
+                    
+                    {/* Cart Actions */}
+                    <div className="space-y-3">
+                      <Button onClick={handleCartReview} className="w-full">
+                        Revisar Orden
+                      </Button>
+                      <Button variant="outline" className="w-full">
+                        <PlusIcon className="h-4 w-4 mr-2" />
+                        Agregar más dispositivos
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
