@@ -408,249 +408,249 @@
 
 
 
-// src/components/categories/CategoryDetails.tsx - SIMPLE VERSION
-import React from 'react';
-import { motion } from 'framer-motion';
-import { 
-  PhotoIcon,
-  InformationCircleIcon,
-  ScaleIcon,
-  CurrencyDollarIcon,
-  CheckCircleIcon,
-  ChevronLeftIcon
-} from '@heroicons/react/24/outline';
-import { Card, CardContent, CardHeader } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { 
-  Category,
-  CategoryType,
-  CONDITION_OPTIONS,
-  MATERIAL_GRADE_INFO,
-  DeviceCondition,
-  getCategoryTypeLabel
-} from '@/types/categories';
+// // src/components/categories/CategoryDetails.tsx - SIMPLE VERSION
+// import React from 'react';
+// import { motion } from 'framer-motion';
+// import { 
+//   PhotoIcon,
+//   InformationCircleIcon,
+//   ScaleIcon,
+//   CurrencyDollarIcon,
+//   CheckCircleIcon,
+//   ChevronLeftIcon
+// } from '@heroicons/react/24/outline';
+// import { Card, CardContent, CardHeader } from '@/components/ui/Card';
+// import { Button } from '@/components/ui/Button';
+// import { Badge } from '@/components/ui/Badge';
+// import { 
+//   Category,
+//   CategoryType,
+//   CONDITION_OPTIONS,
+//   MATERIAL_GRADE_INFO,
+//   DeviceCondition,
+//   getCategoryTypeLabel
+// } from '@/types/categories';
 
-interface CategoryDetailsProps {
-  category: Category;
-  onConfirm: (category: Category) => void;
-  onBack: () => void;
-  loading?: boolean;
-  className?: string;
-}
+// interface CategoryDetailsProps {
+//   category: Category;
+//   onConfirm: (category: Category) => void;
+//   onBack: () => void;
+//   loading?: boolean;
+//   className?: string;
+// }
 
-export const CategoryDetails: React.FC<CategoryDetailsProps> = ({
-  category,
-  onConfirm,
-  onBack,
-  loading = false,
-  className = ''
-}) => {
-  const materialGradeInfo = category.materialGrade 
-    ? MATERIAL_GRADE_INFO[category.materialGrade] 
-    : null;
+// export const CategoryDetails: React.FC<CategoryDetailsProps> = ({
+//   category,
+//   onConfirm,
+//   onBack,
+//   loading = false,
+//   className = ''
+// }) => {
+//   const materialGradeInfo = category.materialGrade 
+//     ? MATERIAL_GRADE_INFO[category.materialGrade] 
+//     : null;
 
-  const handleConfirm = () => {
-    onConfirm(category);
-  };
+//   const handleConfirm = () => {
+//     onConfirm(category);
+//   };
 
-  return (
-    <div className={`space-y-6 ${className}`}>
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <Button 
-          variant="outline"
-          onClick={onBack}
-          className="flex items-center"
-        >
-          <ChevronLeftIcon className="h-4 w-4 mr-2" />
-          Volver a categorías
-        </Button>
+//   return (
+//     <div className={`space-y-6 ${className}`}>
+//       {/* Header */}
+//       <div className="flex items-center justify-between">
+//         <Button 
+//           variant="outline"
+//           onClick={onBack}
+//           className="flex items-center"
+//         >
+//           <ChevronLeftIcon className="h-4 w-4 mr-2" />
+//           Volver a categorías
+//         </Button>
         
-        <Badge variant="outline" className="text-sm">
-          {getCategoryTypeLabel(category.type)}
-        </Badge>
-      </div>
+//         <Badge variant="outline" className="text-sm">
+//           {getCategoryTypeLabel(category.type)}
+//         </Badge>
+//       </div>
 
-      {/* Category Details Card */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center space-x-4">
-            {/* Icon */}
-            <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
-              {category.icon ? (
-                <span className="text-2xl">{category.icon}</span>
-              ) : (
-                <ScaleIcon className="h-8 w-8 text-gray-600" />
-              )}
-            </div>
+//       {/* Category Details Card */}
+//       <Card>
+//         <CardHeader>
+//           <div className="flex items-center space-x-4">
+//             {/* Icon */}
+//             <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
+//               {category.icon ? (
+//                 <span className="text-2xl">{category.icon}</span>
+//               ) : (
+//                 <ScaleIcon className="h-8 w-8 text-gray-600" />
+//               )}
+//             </div>
             
-            {/* Basic Info */}
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                {category.name}
-              </h1>
-              {category.description && (
-                <p className="text-gray-600 mb-3">
-                  {category.description}
-                </p>
-              )}
+//             {/* Basic Info */}
+//             <div className="flex-1">
+//               <h1 className="text-2xl font-bold text-gray-900 mb-2">
+//                 {category.name}
+//               </h1>
+//               {category.description && (
+//                 <p className="text-gray-600 mb-3">
+//                   {category.description}
+//                 </p>
+//               )}
               
-              {/* Material Grade */}
-              {materialGradeInfo && (
-                <Badge className={`${materialGradeInfo.color} mb-2`}>
-                  {materialGradeInfo.icon} {materialGradeInfo.label}
-                </Badge>
-              )}
-            </div>
-          </div>
-        </CardHeader>
+//               {/* Material Grade */}
+//               {materialGradeInfo && (
+//                 <Badge className={`${materialGradeInfo.color} mb-2`}>
+//                   {materialGradeInfo.icon} {materialGradeInfo.label}
+//                 </Badge>
+//               )}
+//             </div>
+//           </div>
+//         </CardHeader>
 
-        <CardContent className="space-y-6">
-          {/* Price Information */}
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="space-y-3">
-              <h3 className="font-semibold text-gray-900 flex items-center">
-                <CurrencyDollarIcon className="h-5 w-5 mr-2" />
-                Información de Precios
-              </h3>
+//         <CardContent className="space-y-6">
+//           {/* Price Information */}
+//           <div className="grid md:grid-cols-2 gap-6">
+//             <div className="space-y-3">
+//               <h3 className="font-semibold text-gray-900 flex items-center">
+//                 <CurrencyDollarIcon className="h-5 w-5 mr-2" />
+//                 Información de Precios
+//               </h3>
               
-              <div className="space-y-2">
-                {category.pricePerKg && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Precio por kg:</span>
-                    <span className="font-medium">${category.pricePerKg}</span>
-                  </div>
-                )}
+//               <div className="space-y-2">
+//                 {category.pricePerKg && (
+//                   <div className="flex justify-between">
+//                     <span className="text-gray-600">Precio por kg:</span>
+//                     <span className="font-medium">${category.pricePerKg}</span>
+//                   </div>
+//                 )}
                 
-                {category.pricePerUnit && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Precio por unidad:</span>
-                    <span className="font-medium">${category.pricePerUnit}</span>
-                  </div>
-                )}
+//                 {category.pricePerUnit && (
+//                   <div className="flex justify-between">
+//                     <span className="text-gray-600">Precio por unidad:</span>
+//                     <span className="font-medium">${category.pricePerUnit}</span>
+//                   </div>
+//                 )}
                 
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Rango de precios:</span>
-                  <span className="font-medium">
-                    ${category.minPrice} - ${category.maxPrice}
-                  </span>
-                </div>
+//                 <div className="flex justify-between">
+//                   <span className="text-gray-600">Rango de precios:</span>
+//                   <span className="font-medium">
+//                     ${category.minPrice} - ${category.maxPrice}
+//                   </span>
+//                 </div>
                 
-                {category.estimatedWeight && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Peso estimado:</span>
-                    <span className="font-medium">{category.estimatedWeight} kg</span>
-                  </div>
-                )}
-              </div>
-            </div>
+//                 {category.estimatedWeight && (
+//                   <div className="flex justify-between">
+//                     <span className="text-gray-600">Peso estimado:</span>
+//                     <span className="font-medium">{category.estimatedWeight} kg</span>
+//                   </div>
+//                 )}
+//               </div>
+//             </div>
 
-            {/* Conditions */}
-            <div className="space-y-3">
-              <h3 className="font-semibold text-gray-900 flex items-center">
-                <CheckCircleIcon className="h-5 w-5 mr-2" />
-                Condiciones Aceptadas
-              </h3>
+//             {/* Conditions */}
+//             <div className="space-y-3">
+//               <h3 className="font-semibold text-gray-900 flex items-center">
+//                 <CheckCircleIcon className="h-5 w-5 mr-2" />
+//                 Condiciones Aceptadas
+//               </h3>
               
-              <div className="space-y-2">
-                {category.acceptedConditions?.map((condition: string | number | bigint | null | undefined) => {
-                  const conditionInfo = CONDITION_OPTIONS.find(opt => opt.value === condition);
-                  return (
-                    <div key={condition} className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">
-                        {conditionInfo?.label || condition}
-                      </span>
-                      <Badge variant="outline" className="text-xs">
-                        {Math.round((conditionInfo?.multiplier || 0) * 100)}%
-                      </Badge>
-                    </div>
-                  );
-                }) || (
-                  <p className="text-sm text-gray-500">
-                    Todas las condiciones aceptadas
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
+//               <div className="space-y-2">
+//                 {category.acceptedConditions?.map((condition: string | number | bigint | null | undefined) => {
+//                   const conditionInfo = CONDITION_OPTIONS.find(opt => opt.value === condition);
+//                   return (
+//                     <div key={condition} className="flex items-center justify-between">
+//                       <span className="text-sm text-gray-600">
+//                         {conditionInfo?.label || condition}
+//                       </span>
+//                       <Badge variant="outline" className="text-xs">
+//                         {Math.round((conditionInfo?.multiplier || 0) * 100)}%
+//                       </Badge>
+//                     </div>
+//                   );
+//                 }) || (
+//                   <p className="text-sm text-gray-500">
+//                     Todas las condiciones aceptadas
+//                   </p>
+//                 )}
+//               </div>
+//             </div>
+//           </div>
 
-          {/* Additional Info */}
-          {Array.isArray(category.hierarchyPath) && category.hierarchyPath.length > 1 && (
-            <div className="border-t pt-4">
-              <h3 className="font-semibold text-gray-900 mb-2">Clasificación</h3>
-              <div className="flex flex-wrap gap-2">
-                {category.hierarchyPath.map((path, index) => (
-                  <React.Fragment key={index}>
-                    <Badge variant="secondary" className="text-xs">
-                      {path}
-                    </Badge>
-                    {/* {index < category.hierarchyPath.length - 1 && (
-                      <span className="text-gray-400">→</span>
-                    )} */}
-                  </React.Fragment>
-                ))}
-              </div>
-            </div>
-          )}
+//           {/* Additional Info */}
+//           {Array.isArray(category.hierarchyPath) && category.hierarchyPath.length > 1 && (
+//             <div className="border-t pt-4">
+//               <h3 className="font-semibold text-gray-900 mb-2">Clasificación</h3>
+//               <div className="flex flex-wrap gap-2">
+//                 {category.hierarchyPath.map((path, index) => (
+//                   <React.Fragment key={index}>
+//                     <Badge variant="secondary" className="text-xs">
+//                       {path}
+//                     </Badge>
+//                     {/* {index < category.hierarchyPath.length - 1 && (
+//                       <span className="text-gray-400">→</span>
+//                     )} */}
+//                   </React.Fragment>
+//                 ))}
+//               </div>
+//             </div>
+//           )}
 
-          {/* Required Fields */}
-          {category.requiredFields && category.requiredFields.length > 0 && (
-            <div className="border-t pt-4">
-              <h3 className="font-semibold text-gray-900 mb-2">
-                Información Requerida
-              </h3>
-              <div className="grid grid-cols-2 gap-2">
-                {category.requiredFields.map((field) => (
-                  <div key={field} className="flex items-center">
-                    <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
-                    <span className="text-sm text-gray-600 capitalize">
-                      {field.replace(/([A-Z])/g, ' $1').toLowerCase()}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+//           {/* Required Fields */}
+//           {category.requiredFields && category.requiredFields.length > 0 && (
+//             <div className="border-t pt-4">
+//               <h3 className="font-semibold text-gray-900 mb-2">
+//                 Información Requerida
+//               </h3>
+//               <div className="grid grid-cols-2 gap-2">
+//                 {category.requiredFields.map((field) => (
+//                   <div key={field} className="flex items-center">
+//                     <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
+//                     <span className="text-sm text-gray-600 capitalize">
+//                       {field.replace(/([A-Z])/g, ' $1').toLowerCase()}
+//                     </span>
+//                   </div>
+//                 ))}
+//               </div>
+//             </div>
+//           )}
 
-          {/* Reference Images Placeholder */}
-          <div className="border-t pt-4">
-            <h3 className="font-semibold text-gray-900 mb-2">
-              Imágenes de Referencia
-            </h3>
-            <div className="grid grid-cols-3 gap-4">
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center"
-                >
-                  <PhotoIcon className="h-8 w-8 text-gray-400" />
-                </div>
-              ))}
-            </div>
-            <p className="text-xs text-gray-500 mt-2">
-              Estas son imágenes de referencia del tipo de dispositivo aceptado
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+//           {/* Reference Images Placeholder */}
+//           <div className="border-t pt-4">
+//             <h3 className="font-semibold text-gray-900 mb-2">
+//               Imágenes de Referencia
+//             </h3>
+//             <div className="grid grid-cols-3 gap-4">
+//               {[1, 2, 3].map((i) => (
+//                 <div
+//                   key={i}
+//                   className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center"
+//                 >
+//                   <PhotoIcon className="h-8 w-8 text-gray-400" />
+//                 </div>
+//               ))}
+//             </div>
+//             <p className="text-xs text-gray-500 mt-2">
+//               Estas son imágenes de referencia del tipo de dispositivo aceptado
+//             </p>
+//           </div>
+//         </CardContent>
+//       </Card>
 
-      {/* Action Buttons */}
-      <div className="flex justify-between">
-        <Button variant="outline" onClick={onBack}>
-          ← Cambiar Categoría
-        </Button>
+//       {/* Action Buttons */}
+//       <div className="flex justify-between">
+//         <Button variant="outline" onClick={onBack}>
+//           ← Cambiar Categoría
+//         </Button>
         
-        <Button 
-          onClick={handleConfirm}
-          disabled={loading}
-          className="bg-primary-600 hover:bg-primary-700"
-        >
-          {loading ? 'Cargando...' : 'Continuar con esta Categoría →'}
-        </Button>
-      </div>
-    </div>
-  );
-};
+//         <Button 
+//           onClick={handleConfirm}
+//           disabled={loading}
+//           className="bg-primary-600 hover:bg-primary-700"
+//         >
+//           {loading ? 'Cargando...' : 'Continuar con esta Categoría →'}
+//         </Button>
+//       </div>
+//     </div>
+//   );
+// };
 
-export default CategoryDetails;
+// export default CategoryDetails;

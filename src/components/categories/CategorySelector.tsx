@@ -351,311 +351,491 @@
 
 
 
-// src/components/categories/CategorySelector.tsx - FIXED
-import React, { useState, useCallback, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+// src/components/categories/CategorySelector.tsx
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
-  MagnifyingGlassIcon, 
-  ChevronRightIcon,
-  PhotoIcon,
-  InformationCircleIcon,
+  ChevronRightIcon, 
+  ChevronLeftIcon, 
   CheckCircleIcon,
-  ExclamationTriangleIcon,
-  ScaleIcon,
-  CurrencyDollarIcon
+  MagnifyingGlassIcon,
+  PhotoIcon,
+  ExclamationCircleIcon
 } from '@heroicons/react/24/outline';
-import { Card, CardContent } from '@/components/ui/Card';
-import { Input } from '@/components/ui/Input';
+import { Category, CategorySelectorProps, CategorySelectionState } from '@/types/categories';
+import categoryService from '@/services/categoryService';
+import { cn } from '@/utils/cn';
 import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { 
-  CategoryType, 
-  Category,
-  CategoryMainType,
-  getCategoryTypeLabel,
-  MATERIAL_GRADE_INFO
-} from '@/types/categories';
+import { Alert } from '@/components/ui/Alert';
+import  CategoryBreadcrumb  from './CategoryBreadcrumb';
+import  CategoryCard  from './CategoryCard';
+import  CategoryImageGallery  from './CategoryImageGallery';
 
-interface CategorySelectorProps {
-  // 🔧 FIX: Props desde SellPage
-  types: CategoryMainType[];
-  categories: Category[];
-  selectedType?: CategoryType;
-  onTypeSelect: (type: CategoryType) => void;
-  onCategorySelect: (category: Category) => void;
-  loading?: boolean;
-  className?: string;
-}
-
-export const CategorySelector: React.FC<CategorySelectorProps> = ({
-  types = [], // 🔧 Default empty array
-  categories = [], // 🔧 Default empty array
-  selectedType,
-  onTypeSelect,
+const CategorySelector: React.FC<CategorySelectorProps> = ({
+  type = 'DISMANTLED_DEVICES',
   onCategorySelect,
-  loading = false,
-  className = ''
+  onPathChange,
+  selectedCategoryId,
+  className
 }) => {
-  const [searchTerm, setSearchTerm] = useState('');
+  // Estado principal
+  const [selectionState, setSelectionState] = useState<CategorySelectionState>({
+    selectedPath: [],
+    availableChildren: [],
+    isComplete: false,
+    canProceed: false
+  });
 
-  // 🔧 FIX: Filter categories based on search
-  const filteredCategories = useMemo(() => {
-    if (!categories || !Array.isArray(categories)) {
-      return []; // 🔧 Always return array
+  // Estados de UI
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchResults, setSearchResults] = useState<Category[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+
+  // Cargar categorías iniciales
+  useEffect(() => {
+    loadInitialCategories();
+  }, [type]);
+
+  // Manejar cambios en el path seleccionado
+  useEffect(() => {
+    if (onPathChange) {
+      onPathChange(selectionState.selectedPath);
     }
-    
-    if (!searchTerm.trim()) {
-      return categories;
+  }, [selectionState.selectedPath, onPathChange]);
+
+  /**
+   * Cargar categorías raíz
+   */
+  const loadInitialCategories = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const rootCategories = await categoryService.getRootCategories(type);
+      
+      setSelectionState({
+        selectedPath: [],
+        availableChildren: rootCategories,
+        isComplete: false,
+        canProceed: false
+      });
+    } catch (err) {
+      setError('Error al cargar las categorías. Por favor intenta de nuevo.');
+      console.error('Error loading categories:', err);
+    } finally {
+      setLoading(false);
     }
-    
-    return categories.filter(category => 
-      category.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      category.description?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [categories, searchTerm]);
+  };
 
-  // 🔧 Handle search input
-  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-  }, []);
+  /**
+   * Manejar selección de categoría
+   */
+  const handleCategoryClick = async (category: Category) => {
+    try {
+      setLoading(true);
+      
+      const newPath = [...selectionState.selectedPath, category];
+      
+      if (category.isLeaf) {
+        // Es una categoría final - completar selección
+        setSelectionState({
+          selectedPath: newPath,
+          currentCategory: category,
+          availableChildren: [],
+          isComplete: true,
+          canProceed: true
+        });
+        
+        onCategorySelect(category);
+      } else {
+        // Cargar subcategorías
+        const children = await categoryService.getCategoryChildren(category.id);
+        
+        setSelectionState({
+          selectedPath: newPath,
+          currentCategory: category,
+          availableChildren: children,
+          isComplete: false,
+          canProceed: false
+        });
+      }
+    } catch (err) {
+      setError('Error al cargar las subcategorías.');
+      console.error('Error loading subcategories:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // 🔧 Clear search
-  const handleClearSearch = useCallback(() => {
-    setSearchTerm('');
-  }, []);
+  /**
+   * Retroceder en la selección
+   */
+  const handleGoBack = async () => {
+    try {
+      setLoading(true);
+      
+      if (selectionState.selectedPath.length === 0) {
+        return;
+      }
+      
+      if (selectionState.selectedPath.length === 1) {
+        // Volver al inicio
+        await loadInitialCategories();
+        return;
+      }
 
-  // 🔧 FIX: Loading state
-  if (loading && (!types || types.length === 0)) {
+      // Volver al nivel anterior
+      const newPath = selectionState.selectedPath.slice(0, -1);
+      const parentCategory = newPath[newPath.length - 1];
+      const children = await categoryService.getCategoryChildren(parentCategory.id);
+
+      setSelectionState({
+        selectedPath: newPath,
+        currentCategory: parentCategory,
+        availableChildren: children,
+        isComplete: false,
+        canProceed: false
+      });
+    } catch (err) {
+      setError('Error al retroceder.');
+      console.error('Error going back:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Manejar clic en breadcrumb
+   */
+  const handleBreadcrumbClick = async (clickedCategory: Category, index: number) => {
+    try {
+      setLoading(true);
+      
+      if (index === -1) {
+        // Clic en "Inicio" - volver al principio
+        await loadInitialCategories();
+        return;
+      }
+
+      const newPath = selectionState.selectedPath.slice(0, index + 1);
+      
+      if (clickedCategory.isLeaf) {
+        setSelectionState({
+          selectedPath: newPath,
+          currentCategory: clickedCategory,
+          availableChildren: [],
+          isComplete: true,
+          canProceed: true
+        });
+      } else {
+        const children = await categoryService.getCategoryChildren(clickedCategory.id);
+        
+        setSelectionState({
+          selectedPath: newPath,
+          currentCategory: clickedCategory,
+          availableChildren: children,
+          isComplete: false,
+          canProceed: false
+        });
+      }
+    } catch (err) {
+      setError('Error al navegar.');
+      console.error('Error navigating breadcrumb:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Manejar búsqueda
+   */
+  const handleSearch = useCallback(async (query: string) => {
+    if (query.trim().length < 2) {
+      setSearchResults([]);
+      return;
+    }
+
+    try {
+      setSearchLoading(true);
+      const results = await categoryService.searchCategories(query, { 
+        type,
+        leafOnly: true 
+      });
+      setSearchResults(results);
+    } catch (err) {
+      console.error('Search error:', err);
+      setSearchResults([]);
+    } finally {
+      setSearchLoading(false);
+    }
+  }, [type]);
+
+  /**
+   * Manejar selección desde búsqueda
+   */
+  const handleSearchResultClick = async (category: Category) => {
+    try {
+      setLoading(true);
+      
+      // Construir el path completo
+      const fullPath = await categoryService.buildCategoryPath(category.id);
+      
+      setSelectionState({
+        selectedPath: fullPath,
+        currentCategory: category,
+        availableChildren: [],
+        isComplete: true,
+        canProceed: true
+      });
+      
+      onCategorySelect(category);
+      setShowSearch(false);
+      setSearchQuery('');
+      setSearchResults([]);
+    } catch (err) {
+      setError('Error al seleccionar categoría.');
+      console.error('Error selecting from search:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Resetear selección
+   */
+  const handleReset = () => {
+    loadInitialCategories();
+    setShowSearch(false);
+    setSearchQuery('');
+    setSearchResults([]);
+  };
+
+  if (loading && selectionState.selectedPath.length === 0) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <LoadingSpinner size="lg" text="Cargando categorías..." />
+      <div className="flex items-center justify-center p-8">
+        <LoadingSpinner size="lg" />
+        <span className="ml-3 text-gray-600">Cargando categorías...</span>
       </div>
     );
   }
 
   return (
-    <div className={`space-y-6 ${className}`}>
-      {/* Header */}
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          ¿Qué tipo de dispositivo quieres vender?
-        </h2>
-        <p className="text-gray-600">
-          Selecciona primero el tipo de dispositivo para ver las categorías disponibles
-        </p>
-      </div>
-
-      {/* Type Selection */}
-      <div className="grid md:grid-cols-2 gap-4 mb-8">
-        {types.map((type) => (
-          <TypeCard
-            key={type.id}
-            type={type}
-            isSelected={selectedType === type.type}
-            onSelect={() => onTypeSelect(type.type)}
-          />
-        ))}
-      </div>
-
-      {/* Categories Section */}
-      {selectedType && (
-        <div className="space-y-4">
-          {/* Search Input */}
-          <div className="relative max-w-md mx-auto">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              type="text"
-              placeholder="Buscar categorías..."
-              value={searchTerm}
-              onChange={handleSearchChange}
-              className="pl-10"
-            />
-            {searchTerm && (
-              <button
-                onClick={handleClearSearch}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                ×
-              </button>
-            )}
-          </div>
-
-          {/* Categories Grid */}
-          {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <LoadingSpinner text="Cargando categorías..." />
-            </div>
-          ) : (
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={selectedType}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="grid md:grid-cols-2 lg:grid-cols-3 gap-4"
-              >
-                {/* 🔧 FIX: Safe mapping */}
-                {filteredCategories && filteredCategories.length > 0 ? (
-                  filteredCategories.map((category) => (
-                    <CategoryCard
-                      key={category.id}
-                      category={category}
-                      onSelect={onCategorySelect}
-                    />
-                  ))
-                ) : (
-                  <div className="col-span-full text-center py-8">
-                    <PhotoIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      {searchTerm ? 'No se encontraron resultados' : 'No hay categorías disponibles'}
-                    </h3>
-                    <p className="text-gray-600">
-                      {searchTerm 
-                        ? 'Intenta con otros términos de búsqueda'
-                        : 'Las categorías se están cargando...'
-                      }
-                    </p>
-                    {searchTerm && (
-                      <Button 
-                        variant="outline" 
-                        onClick={handleClearSearch}
-                        className="mt-4"
-                      >
-                        Limpiar búsqueda
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </motion.div>
-            </AnimatePresence>
+    <div className={cn("space-y-6", className)}>
+      {/* Header con búsqueda */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-gray-900">
+          {type === 'COMPLETE_DEVICES' ? 'Selecciona tu dispositivo' : 'Selecciona la categoría específica'}
+        </h3>
+        
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowSearch(!showSearch)}
+            className="flex items-center space-x-2"
+          >
+            <MagnifyingGlassIcon className="h-4 w-4" />
+            <span>{showSearch ? 'Cerrar' : 'Buscar'}</span>
+          </Button>
+          
+          {selectionState.selectedPath.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleReset}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              Reiniciar
+            </Button>
           )}
+        </div>
+      </div>
+
+      {/* Barra de búsqueda */}
+      {showSearch && (
+        <Card>
+          <CardContent className="pt-4">
+            <div className="relative">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder={`Buscar ${type === 'COMPLETE_DEVICES' ? 'dispositivo' : 'categoría'} específica...`}
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  handleSearch(e.target.value);
+                }}
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              />
+            </div>
+            
+            {/* Resultados de búsqueda */}
+            {searchLoading && (
+              <div className="flex items-center justify-center py-4">
+                <LoadingSpinner size="sm" />
+                <span className="ml-2 text-sm text-gray-500">Buscando...</span>
+              </div>
+            )}
+            
+            {searchResults.length > 0 && (
+              <div className="mt-4 space-y-2 max-h-60 overflow-y-auto">
+                {searchResults.map((category) => (
+                  <button
+                    key={category.id}
+                    onClick={() => handleSearchResultClick(category)}
+                    className="w-full text-left p-3 rounded-lg border hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-gray-900">{category.name}</p>
+                        <p className="text-sm text-gray-500">{category.fullPath.replace(/\//g, ' > ')}</p>
+                      </div>
+                      {category.pricePerKg && (
+                        <Badge variant="secondary" className="ml-2">
+                          ${category.pricePerKg}/kg
+                        </Badge>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+            
+            {searchQuery.trim().length >= 2 && !searchLoading && searchResults.length === 0 && (
+              <div className="mt-4 text-center py-4 text-gray-500">
+                No se encontraron resultados para "{searchQuery}"
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Breadcrumb */}
+      {selectionState.selectedPath.length > 0 && (
+        <CategoryBreadcrumb
+          items={[
+            { id: 'root', name: 'Inicio', slug: 'inicio' },
+            ...selectionState.selectedPath.map((cat: Category) => ({
+              id: cat.id,
+              name: cat.name,
+              slug: cat.slug
+            }))
+          ]}
+          onItemClick={(item, index) => {
+            if (index === 0) {
+              handleReset();
+            } else {
+              const category = selectionState.selectedPath[index - 1];
+              handleBreadcrumbClick(category, index - 1);
+            }
+          }}
+        />
+      )}
+
+      {/* Navegación de retroceso */}
+      {selectionState.selectedPath.length > 0 && (
+        <Button
+          variant="outline"
+          onClick={handleGoBack}
+          disabled={loading}
+          className="flex items-center space-x-2"
+        >
+          <ChevronLeftIcon className="h-4 w-4" />
+          <span>Volver atrás</span>
+        </Button>
+      )}
+
+      {/* Error */}
+      {error && (
+        <Alert variant="danger">
+          <ExclamationCircleIcon className="h-4 w-4" />
+          {error}
+        </Alert>
+      )}
+
+      {/* Categoría actual seleccionada (si es hoja) */}
+      {selectionState.isComplete && selectionState.currentCategory && (
+        <Card className="border-green-200 bg-green-50">
+          <CardHeader className="pb-3">
+            <div className="flex items-center space-x-2">
+              <CheckCircleIcon className="h-5 w-5 text-green-600" />
+              <h4 className="font-medium text-green-800">
+                {type === 'COMPLETE_DEVICES' ? 'Dispositivo seleccionado' : 'Categoría seleccionada'}
+              </h4>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <CategoryCard
+              category={selectionState.currentCategory}
+              onClick={() => {}}
+              isSelected={true}
+              showPrice={true}
+              showImages={true}
+              size="lg"
+            />
+            
+            {/* Galería de imágenes de referencia */}
+            {selectionState.currentCategory.images.length > 0 && (
+              <div className="mt-4">
+                <CategoryImageGallery category={selectionState.currentCategory} />
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Lista de categorías disponibles */}
+      {!selectionState.isComplete && selectionState.availableChildren.length > 0 && (
+        <Card>
+          <CardHeader>
+            <h4 className="font-medium text-gray-900">
+              {selectionState.selectedPath.length === 0 
+                ? `Selecciona una categoría ${type === 'COMPLETE_DEVICES' ? 'de dispositivo' : 'principal'}` 
+                : `Subcategorías de "${selectionState.selectedPath[selectionState.selectedPath.length - 1]?.name}"`
+              }
+            </h4>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <LoadingSpinner size="md" />
+                <span className="ml-3 text-gray-600">Cargando subcategorías...</span>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {selectionState.availableChildren.map((category) => (
+                  <CategoryCard
+                    key={category.id}
+                    category={category}
+                    onClick={handleCategoryClick}
+                    isSelected={selectedCategoryId === category.id}
+                    showPrice={category.isLeaf}
+                    showImages={category.isLeaf && category.images.length > 0}
+                    size="md"
+                  />
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Estado vacío */}
+      {!loading && !selectionState.isComplete && selectionState.availableChildren.length === 0 && (
+        <div className="text-center py-8">
+          <div className="text-gray-500">
+            <PhotoIcon className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+            <p className="text-lg font-medium">No hay subcategorías disponibles</p>
+            <p className="text-sm">Esta categoría no tiene elementos adicionales.</p>
+          </div>
         </div>
       )}
     </div>
-  );
-};
-
-// Type Selection Card Component
-interface TypeCardProps {
-  type: CategoryMainType;
-  isSelected: boolean;
-  onSelect: () => void;
-}
-
-const TypeCard: React.FC<TypeCardProps> = ({ type, isSelected, onSelect }) => {
-  return (
-    <motion.div
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-    >
-      <Card 
-        className={`cursor-pointer transition-all duration-200 border-2 ${
-          isSelected 
-            ? 'border-primary-500 bg-primary-50 shadow-lg' 
-            : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
-        }`}
-        onClick={onSelect}
-      >
-        <CardContent className="p-6 text-center">
-          <div className="text-4xl mb-4">{type.icon}</div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            {type.name}
-          </h3>
-          <p className="text-sm text-gray-600 mb-4">
-            {type.description}
-          </p>
-          {type.estimatedCategories && (
-            <Badge variant="outline" className="mb-2">
-              {type.estimatedCategories} categorías
-            </Badge>
-          )}
-          <div className="flex items-center justify-center text-primary-600 mt-2">
-            <span className="text-sm font-medium">Seleccionar</span>
-            <ChevronRightIcon className="h-4 w-4 ml-1" />
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
-};
-
-// Category Card Component
-interface CategoryCardProps {
-  category: Category;
-  onSelect: (category: Category) => void;
-}
-
-const CategoryCard: React.FC<CategoryCardProps> = ({ category, onSelect }) => {
-  const materialGradeInfo = category.materialGrade 
-    ? MATERIAL_GRADE_INFO[category.materialGrade] 
-    : null;
-
-  return (
-    <motion.div
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-    >
-      <Card 
-        className="cursor-pointer transition-all duration-200 border hover:border-primary-300 hover:shadow-md"
-        onClick={() => onSelect(category)}
-      >
-        <CardContent className="p-4">
-          <div className="text-center">
-            {/* Category Icon/Image */}
-            <div className="w-16 h-16 bg-gray-100 rounded-lg mx-auto mb-3 flex items-center justify-center">
-              {category.icon ? (
-                <span className="text-2xl">{category.icon}</span>
-              ) : (
-                <ScaleIcon className="h-8 w-8 text-gray-600" />
-              )}
-            </div>
-            
-            {/* Category Name */}
-            <h3 className="font-semibold text-gray-900 mb-1">
-              {category.name}
-            </h3>
-            
-            {/* Description */}
-            {category.description && (
-              <p className="text-xs text-gray-600 mb-2 line-clamp-2">
-                {category.description}
-              </p>
-            )}
-            
-            {/* Price Range */}
-            <div className="space-y-1 mb-2">
-              {category.pricePerKg && (
-                <Badge variant="outline" className="text-xs">
-                  ${category.pricePerKg}/kg
-                </Badge>
-              )}
-              {category.minPrice && category.maxPrice && (
-                <p className="text-xs text-gray-500">
-                  ${category.minPrice} - ${category.maxPrice}
-                </p>
-              )}
-            </div>
-            
-            {/* Material Grade */}
-            {materialGradeInfo && (
-              <Badge 
-                variant="secondary" 
-                className={`text-xs ${materialGradeInfo.color}`}
-              >
-                {materialGradeInfo.label}
-              </Badge>
-            )}
-            
-            {/* Action Indicator */}
-            <div className="flex items-center justify-center text-primary-600 mt-3">
-              <CurrencyDollarIcon className="h-4 w-4 mr-1" />
-              <span className="text-xs font-medium">Ver detalles</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
   );
 };
 

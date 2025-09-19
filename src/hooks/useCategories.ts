@@ -1,6 +1,6 @@
 // // src/hooks/useCategories.ts
 // import { useState, useEffect, useCallback, useMemo } from 'react';
-// import { useCategoryService } from '@/services/categoryService';
+// import { categoryService } from '@/services/categoryService';
 // import { 
 //   CategoryMainType, 
 //   Category, 
@@ -58,7 +58,7 @@
 // }
 
 // export const useCategories = (): UseCategoriesState & UseCategoriesActions => {
-//   const categoryService = useCategoryService();
+//   const categoryService = categoryService();
   
 //   const [state, setState] = useState<UseCategoriesState>({
 //     types: [],
@@ -351,7 +351,7 @@
 
 // // src/hooks/useCategories.ts - FIXED VERSION
 // import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-// import { useCategoryService } from '@/services/categoryService';
+// import { categoryService } from '@/services/categoryService';
 // import { 
 //   CategoryMainType, 
 //   Category, 
@@ -409,7 +409,7 @@
 // }
 
 // export const useCategories = (): UseCategoriesState & UseCategoriesActions => {
-//   const categoryService = useCategoryService();
+//   const categoryService = categoryService();
   
 //   // 🔧 FIX: Usar ref para evitar re-renders innecesarios
 //   const isInitialized = useRef(false);
@@ -725,339 +725,131 @@
 
 
 
+// src/hooks/useCategories.ts
 
-// src/hooks/useCategories.ts - SIMPLE DEBUG VERSION
 import { useState, useEffect, useCallback } from 'react';
-import { useCategoryService } from '@/services/categoryService';
-import { 
-  CategoryMainType, 
-  Category, 
-  CategoryType, 
-  PriceCalculationRequest,
-  PriceCalculationResult,
-  FieldValidation
-} from '@/types/categories';
+import { Category, CategoryTreeNode, CategoryLoadingState } from '@/types/categories';
+import categoryService from '@/services/categoryService';
 
-interface UseCategoriesState {
-  // Data
-  types: CategoryMainType[];
-  categories: Record<CategoryType, Category[]>;
-  selectedType?: CategoryType;
-  selectedCategory?: Category;
-  currentCategories: Category[];
-  
-  // Loading states
-  loading: boolean;
-  loadingTypes: boolean;
-  loadingCategories: boolean;
-  loadingDetails: boolean;
-  
-  // Errors
-  error?: string;
-  
-  // Search
-  searchResults: Category[];
-  searchLoading: boolean;
-  searchTerm: string;
-}
-
-interface UseCategoriesActions {
-  selectType: (type: CategoryType) => void;
-  selectCategory: (categoryId: string) => void;
-  clearSelection: () => void;
-  loadTypes: () => Promise<void>;
-  loadCategoriesByType: (type: CategoryType) => Promise<void>;
-  loadCategoryDetails: (categoryId: string) => Promise<Category>;
-  searchCategories: (term: string, type?: CategoryType) => Promise<void>;
-  clearSearch: () => void;
-  calculatePrice: (categoryId: string, data: PriceCalculationRequest) => Promise<PriceCalculationResult>;
-  validateFields: (categoryId: string, data: Record<string, any>) => Promise<FieldValidation>;
-  refresh: () => Promise<void>;
-  clearCache: () => void;
-}
-
-export const useCategories = (): UseCategoriesState & UseCategoriesActions => {
-  console.log('🔄 useCategories hook initialized');
-  
-  const categoryService = useCategoryService();
-  
-  const [state, setState] = useState<UseCategoriesState>({
-    types: [],
-    categories: {
-      [CategoryType.COMPLETE_DEVICES]: [],
-      [CategoryType.DISMANTLED_DEVICES]: []
-    },
-    selectedType: undefined,
-    selectedCategory: undefined,
-    currentCategories: [],
-    loading: false,
-    loadingTypes: false,
-    loadingCategories: false,
-    loadingDetails: false,
-    error: undefined,
-    searchResults: [],
-    searchLoading: false,
-    searchTerm: ''
+export const useCategories = (type?: string) => {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [tree, setTree] = useState<CategoryTreeNode[]>([]);
+  const [loading, setLoading] = useState<CategoryLoadingState>({
+    tree: false,
+    children: false,
+    search: false,
+    details: false
   });
+  const [error, setError] = useState<string | null>(null);
 
-  // 🔧 SIMPLE loadTypes function
-  const loadTypes = useCallback(async () => {
-    console.log('🔄 loadTypes called');
-    
-    // Prevent multiple simultaneous calls
-    if (state.loadingTypes) {
-      console.log('⏳ loadTypes already running, skipping');
-      return;
+  // Cargar árbol de categorías
+  const loadTree = useCallback(async (categoryType?: string) => {
+    try {
+      setLoading(prev => ({ ...prev, tree: true }));
+      setError(null);
+      
+      const treeData = await categoryService.getCategoryTree(categoryType || type);
+      setTree(treeData);
+    } catch (err) {
+      setError('Error al cargar el árbol de categorías');
+      console.error('Error loading category tree:', err);
+    } finally {
+      setLoading(prev => ({ ...prev, tree: false }));
     }
-    
-    setState(prev => {
-      console.log('📝 Setting loadingTypes: true');
-      return { ...prev, loadingTypes: true, error: undefined };
-    });
+  }, [type]);
+
+  // Cargar categorías raíz
+  const loadRootCategories = useCallback(async (categoryType?: string) => {
+    try {
+      setLoading(prev => ({ ...prev, tree: true }));
+      setError(null);
+      
+      const rootData = await categoryService.getRootCategories(categoryType || type);
+      setCategories(rootData);
+    } catch (err) {
+      setError('Error al cargar las categorías principales');
+      console.error('Error loading root categories:', err);
+    } finally {
+      setLoading(prev => ({ ...prev, tree: false }));
+    }
+  }, [type]);
+
+  // Cargar hijos de una categoría
+  const loadChildren = useCallback(async (categoryId: string) => {
+    try {
+      setLoading(prev => ({ ...prev, children: true }));
+      setError(null);
+      
+      const children = await categoryService.getCategoryChildren(categoryId);
+      return children;
+    } catch (err) {
+      setError('Error al cargar las subcategorías');
+      console.error('Error loading category children:', err);
+      return [];
+    } finally {
+      setLoading(prev => ({ ...prev, children: false }));
+    }
+  }, []);
+
+  // Buscar categorías
+  const searchCategories = useCallback(async (query: string, options?: { leafOnly?: boolean }) => {
+    if (query.trim().length < 2) return [];
     
     try {
-      console.log('🚀 Calling categoryService.getCategoryTypes()');
-      const types = await categoryService.getCategoryTypes();
+      setLoading(prev => ({ ...prev, search: true }));
+      setError(null);
       
-      console.log('✅ Types received in hook:', types);
-      console.log('📊 Types length:', types?.length);
-      console.log('📊 Types is array:', Array.isArray(types));
-      
-      if (!types) {
-        throw new Error('No types received from service');
-      }
-      
-      if (!Array.isArray(types)) {
-        throw new Error('Types is not an array');
-      }
-      
-      setState(prev => {
-        const newState = { 
-          ...prev, 
-          types, 
-          loadingTypes: false,
-          error: undefined
-        };
-        console.log('📝 Updated state with types:', newState);
-        return newState;
+      const results = await categoryService.searchCategories(query, {
+        type,
+        leafOnly: options?.leafOnly
       });
-      
-      console.log('✅ loadTypes completed successfully');
-      
-    } catch (error) {
-      console.error('❌ Error in loadTypes:', error);
-      
-      setState(prev => ({ 
-        ...prev, 
-        error: error instanceof Error ? error.message : 'Error loading category types',
-        loadingTypes: false 
-      }));
-      
-      console.error('❌ loadTypes failed with error:', error instanceof Error ? error.message : error);
+      return results;
+    } catch (err) {
+      setError('Error en la búsqueda');
+      console.error('Error searching categories:', err);
+      return [];
+    } finally {
+      setLoading(prev => ({ ...prev, search: false }));
     }
-  }, [categoryService, state.loadingTypes]); // Added state.loadingTypes to deps
+  }, [type]);
 
-  // Load categories by type
-  const loadCategoriesByType = useCallback(async (type: CategoryType) => {
-    console.log(`🔄 loadCategoriesByType called for: ${type}`);
-    
-    setState(prev => ({ ...prev, loadingCategories: true, error: undefined }));
-    
+  // Obtener categoría por ID
+  const getCategoryById = useCallback(async (categoryId: string, options?: {
+    includeChildren?: boolean;
+    includeBreadcrumb?: boolean;
+  }) => {
     try {
-      const categories = await categoryService.getCategoriesByType(type);
-      setState(prev => ({ 
-        ...prev, 
-        categories: {
-          ...prev.categories,
-          [type]: categories
-        },
-        loadingCategories: false 
-      }));
+      setLoading(prev => ({ ...prev, details: true }));
+      setError(null);
       
-      console.log(`✅ Categories loaded for ${type}:`, categories.length);
-      
-    } catch (error) {
-      setState(prev => ({ 
-        ...prev, 
-        error: error instanceof Error ? error.message : 'Error loading categories',
-        loadingCategories: false 
-      }));
-      
-      console.error(`❌ Error loading categories for ${type}:`, error);
-    }
-  }, [categoryService]);
-
-  // Other functions (simplified)
-  const loadCategoryDetails = useCallback(async (categoryId: string): Promise<Category> => {
-    setState(prev => ({ ...prev, loadingDetails: true, error: undefined }));
-    
-    try {
-      const category = await categoryService.getCategoryDetails(categoryId);
-      setState(prev => ({ 
-        ...prev, 
-        selectedCategory: category,
-        loadingDetails: false 
-      }));
+      const category = await categoryService.getCategoryById(categoryId, options);
       return category;
-    } catch (error) {
-      setState(prev => ({ 
-        ...prev, 
-        error: error instanceof Error ? error.message : 'Error loading category details',
-        loadingDetails: false 
-      }));
-      throw error;
+    } catch (err) {
+      setError('Error al cargar los detalles de la categoría');
+      console.error('Error loading category details:', err);
+      return null;
+    } finally {
+      setLoading(prev => ({ ...prev, details: false }));
     }
-  }, [categoryService]);
-
-  const searchCategories = useCallback(async (term: string, type?: CategoryType) => {
-    setState(prev => ({ 
-      ...prev, 
-      searchLoading: true, 
-      searchTerm: term, 
-      error: undefined 
-    }));
-    
-    try {
-      const results = await categoryService.searchCategories(term, type);
-      setState(prev => ({ 
-        ...prev, 
-        searchResults: results,
-        searchLoading: false 
-      }));
-    } catch (error) {
-      setState(prev => ({ 
-        ...prev, 
-        error: error instanceof Error ? error.message : 'Error searching categories',
-        searchLoading: false 
-      }));
-    }
-  }, [categoryService]);
-
-  // Navigation actions
-  const selectType = useCallback((type: CategoryType) => {
-    console.log(`🎯 selectType called: ${type}`);
-    
-    setState(prev => ({ 
-      ...prev, 
-      selectedType: type,
-      selectedCategory: undefined,
-      currentCategories: prev.categories[type] || []
-    }));
-    
-    // Load categories for this type if not already loaded
-    if (state.categories[type].length === 0) {
-      console.log(`📥 Loading categories for type: ${type}`);
-      loadCategoriesByType(type);
-    }
-  }, [loadCategoriesByType, state.categories]);
-
-  const selectCategory = useCallback(async (categoryId: string) => {
-    console.log(`🎯 selectCategory called: ${categoryId}`);
-    
-    const existingCategory = Object.values(state.categories)
-      .flat()
-      .find(cat => cat.id === categoryId);
-    
-    if (existingCategory) {
-      setState(prev => ({ ...prev, selectedCategory: existingCategory }));
-    }
-    
-    try {
-      await loadCategoryDetails(categoryId);
-    } catch (error) {
-      console.error('Error loading category details:', error);
-    }
-  }, [loadCategoryDetails, state.categories]);
-
-  const clearSelection = useCallback(() => {
-    setState(prev => ({ 
-      ...prev, 
-      selectedType: undefined,
-      selectedCategory: undefined,
-      currentCategories: []
-    }));
   }, []);
 
-  const clearSearch = useCallback(() => {
-    setState(prev => ({ 
-      ...prev, 
-      searchResults: [],
-      searchTerm: '',
-      searchLoading: false 
-    }));
-  }, []);
-
-  // Utility actions (simplified)
-  const refresh = useCallback(async () => {
-    console.log('🔄 refresh called');
-    setState(prev => ({ ...prev, loading: true, error: undefined }));
-    
-    try {
-      await loadTypes();
-      setState(prev => ({ ...prev, loading: false }));
-    } catch (error) {
-      setState(prev => ({ 
-        ...prev, 
-        error: error instanceof Error ? error.message : 'Error refreshing data',
-        loading: false 
-      }));
-    }
-  }, [loadTypes]);
-
-  const clearCache = useCallback(() => {
-    categoryService.clearCache();
-  }, [categoryService]);
-
-  // Placeholder functions
-  const calculatePrice = useCallback(async (categoryId: string, data: PriceCalculationRequest): Promise<PriceCalculationResult> => {
-    return await categoryService.calculatePrice(categoryId, data);
-  }, [categoryService]);
-
-  const validateFields = useCallback(async (categoryId: string, data: Record<string, any>): Promise<FieldValidation> => {
-    return await categoryService.validateFields(categoryId, data);
-  }, [categoryService]);
-
-  // 🔧 Load types on mount
+  // Cargar datos iniciales
   useEffect(() => {
-    console.log('🚀 useCategories useEffect triggered');
-    console.log('📊 Current types length:', state.types.length);
-    console.log('📊 Currently loading:', state.loadingTypes);
-    
-    if (state.types.length === 0 && !state.loadingTypes) {
-      console.log('📥 Loading initial category types');
-      loadTypes().catch(error => {
-        console.error('❌ Failed to load initial types:', error);
-      });
+    if (type) {
+      loadRootCategories(type);
     }
-  }, []); // Empty dependency array - only run on mount
-
-  // Debug logging
-  useEffect(() => {
-    console.log('📊 State updated:', {
-      typesLength: state.types.length,
-      loadingTypes: state.loadingTypes,
-      error: state.error,
-      selectedType: state.selectedType,
-      currentCategoriesLength: state.currentCategories.length
-    });
-  }, [state]);
+  }, [type, loadRootCategories]);
 
   return {
-    // State
-    ...state,
-    
-    // Actions
-    selectType,
-    selectCategory,
-    clearSelection,
-    loadTypes,
-    loadCategoriesByType,
-    loadCategoryDetails,
+    categories,
+    tree,
+    loading,
+    error,
+    loadTree,
+    loadRootCategories,
+    loadChildren,
     searchCategories,
-    clearSearch,
-    calculatePrice,
-    validateFields,
-    refresh,
-    clearCache
+    getCategoryById,
+    clearError: () => setError(null)
   };
 };

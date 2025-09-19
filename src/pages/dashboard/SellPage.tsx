@@ -868,363 +868,717 @@
 
 
 
-// src/pages/dashboard/SellPage.tsx - FIXED VERSION
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+// // src/pages/dashboard/SellPage.tsx - FIXED VERSION
+// import React, { useState, useEffect, useCallback, useMemo } from 'react';
+// import { motion, AnimatePresence } from 'framer-motion';
+// import { 
+//   ArrowLeftIcon,
+//   ShoppingCartIcon,
+//   PlusIcon
+// } from '@heroicons/react/24/outline';
+// import { Button } from '@/components/ui/Button';
+// import { Badge } from '@/components/ui/Badge';
+// import { CategorySelector } from '@/components/categories/CategorySelector';
+// import { CategoryDetails } from '@/components/categories/CategoryDetails';
+// import { useCategories } from '@/hooks/useCategories';
+// import { Category, CartItemData, DeviceCondition, CategoryType } from '@/types/categories';
+
+// type SellStep = 'category-selection' | 'category-details' | 'device-form' | 'cart-review';
+
+// export const SellPage: React.FC = () => {
+//   // 🔧 FIX: Usar el hook corregido
+//   const categories = useCategories();
+  
+//   const [currentStep, setCurrentStep] = useState<SellStep>('category-selection');
+//   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+//   const [cartItems, setCartItems] = useState<CartItemData[]>([]);
+//   const [showCart, setShowCart] = useState(false);
+
+//   // 🔧 FIX: Memoized handlers para evitar re-renders
+//   const handleCategorySelect = useCallback((category: Category) => {
+//     console.log('🎯 Category selected:', category.name);
+//     setSelectedCategory(category);
+//     setCurrentStep('category-details');
+//   }, []);
+
+//   const handleCategoryConfirm = useCallback((category: Category) => {
+//     console.log('✅ Category confirmed:', category.name);
+//     setSelectedCategory(category);
+//     setCurrentStep('device-form');
+//   }, []);
+
+//   const handleDeviceAdd = useCallback((deviceData: Omit<CartItemData, 'addedAt'>) => {
+//     const newItem: CartItemData = {
+//       ...deviceData,
+//       addedAt: new Date().toISOString()
+//     };
+    
+//     console.log('➕ Device added to cart:', newItem);
+//     setCartItems(prev => [...prev, newItem]);
+    
+//     // Volver a selección de categorías para agregar más items
+//     setCurrentStep('category-selection');
+//     setSelectedCategory(null);
+//   }, []);
+
+//   const handleBackStep = useCallback(() => {
+//     switch (currentStep) {
+//       case 'category-details':
+//         setCurrentStep('category-selection');
+//         setSelectedCategory(null);
+//         break;
+//       case 'device-form':
+//         setCurrentStep('category-details');
+//         break;
+//       case 'cart-review':
+//         setCurrentStep('category-selection');
+//         break;
+//       default:
+//         setCurrentStep('category-selection');
+//     }
+//   }, [currentStep]);
+
+//   const handleCartToggle = useCallback(() => {
+//     setShowCart(prev => !prev);
+//   }, []);
+
+//   const handleCartReview = useCallback(() => {
+//     setCurrentStep('cart-review');
+//     setShowCart(false);
+//   }, []);
+
+//   // 🔧 FIX: Memoizar valores computados
+//   const cartTotal = useMemo(() => {
+//     return cartItems.reduce((total, item) => total + (item.estimatedPrice || 0), 0);
+//   }, [cartItems]);
+
+//   const cartItemCount = useMemo(() => {
+//     return cartItems.length;
+//   }, [cartItems]);
+
+//   // 🔧 FIX: Error boundary para mostrar errores
+//   if (categories.error) {
+//     return (
+//       <div className="min-h-screen flex items-center justify-center">
+//         <div className="text-center p-8 max-w-md">
+//           <div className="text-red-500 text-6xl mb-4">⚠️</div>
+//           <h2 className="text-2xl font-bold text-gray-900 mb-2">
+//             Error al cargar categorías
+//           </h2>
+//           <p className="text-gray-600 mb-4">
+//             {categories.error}
+//           </p>
+//           <Button 
+//             onClick={categories.refresh}
+//             loading={categories.loading}
+//           >
+//             Reintentar
+//           </Button>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   // 🔧 FIX: Loading state mejorado
+//   if (categories.loading && categories.types.length === 0) {
+//     return (
+//       <div className="min-h-screen flex items-center justify-center">
+//         <div className="text-center">
+//           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+//           <p className="text-gray-600">Cargando categorías...</p>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="min-h-screen bg-gray-50">
+//       {/* Fixed Header */}
+//       <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+//         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+//           <div className="flex items-center justify-between h-16">
+//             <div className="flex items-center space-x-4">
+//               {/* Back Button */}
+//               <Button
+//                 variant="ghost"
+//                 size="sm"
+//                 onClick={handleBackStep}
+//                 className="text-gray-600 hover:text-gray-900"
+//               >
+//                 <ArrowLeftIcon className="h-5 w-5 mr-2" />
+//                 Atrás
+//               </Button>
+
+//               {/* Steps Indicator */}
+//               <div className="flex items-center space-x-2 text-sm text-gray-500">
+//                 <span className={currentStep === 'category-selection' ? 'font-medium text-primary-600' : ''}>
+//                   1. Seleccionar Categoría
+//                 </span>
+//                 <span>→</span>
+//                 <span className={currentStep === 'category-details' ? 'font-medium text-primary-600' : ''}>
+//                   2. Detalles
+//                 </span>
+//                 <span>→</span>
+//                 <span className={currentStep === 'device-form' ? 'font-medium text-primary-600' : ''}>
+//                   3. Información del Dispositivo
+//                 </span>
+//               </div>
+//             </div>
+
+//             {/* Cart Button */}
+//             <Button
+//               variant="outline"
+//               onClick={handleCartToggle}
+//               className="relative"
+//             >
+//               <ShoppingCartIcon className="h-5 w-5 mr-2" />
+//               Carrito
+//               {cartItemCount > 0 && (
+//                 <Badge 
+//                   variant="danger" 
+//                   className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center text-xs"
+//                 >
+//                   {cartItemCount}
+//                 </Badge>
+//               )}
+//             </Button>
+//           </div>
+//         </div>
+//       </div>
+
+//       {/* Main Content */}
+//       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+//         <AnimatePresence mode="wait">
+//           {/* Step 1: Category Selection */}
+//           {currentStep === 'category-selection' && (
+//             <motion.div
+//               key="category-selection"
+//               initial={{ opacity: 0, x: 20 }}
+//               animate={{ opacity: 1, x: 0 }}
+//               exit={{ opacity: 0, x: -20 }}
+//               transition={{ duration: 0.3 }}
+//             >
+//               <div className="mb-6">
+//                 <h1 className="text-3xl font-bold text-gray-900 mb-2">
+//                   Convertir tu chatarra electrónica en dinero de forma rápida y segura
+//                 </h1>
+//                 <p className="text-gray-600">
+//                   Selecciona la categoría de tu dispositivo para comenzar
+//                 </p>
+//               </div>
+              
+//               <CategorySelector
+//                 types={categories.types}
+//                 categories={categories.currentCategories}
+//                 selectedType={categories.selectedType}
+//                 onTypeSelect={categories.selectType}
+//                 onCategorySelect={handleCategorySelect}
+//                 loading={categories.loading}
+//               />
+//             </motion.div>
+//           )}
+
+//           {/* Step 2: Category Details */}
+//           {currentStep === 'category-details' && selectedCategory && (
+//             <motion.div
+//               key="category-details"
+//               initial={{ opacity: 0, x: 20 }}
+//               animate={{ opacity: 1, x: 0 }}
+//               exit={{ opacity: 0, x: -20 }}
+//               transition={{ duration: 0.3 }}
+//             >
+//               <CategoryDetails
+//                 category={selectedCategory}
+//                 onBack={handleBackStep} onConfirm={function (category: Category): void {
+//                   throw new Error('Function not implemented.');
+//                 } }              />
+//             </motion.div>
+//           )}
+
+//           {/* Step 3: Device Form */}
+//           {currentStep === 'device-form' && selectedCategory && (
+//             <motion.div
+//               key="device-form"
+//               initial={{ opacity: 0, x: 20 }}
+//               animate={{ opacity: 1, x: 0 }}
+//               exit={{ opacity: 0, x: -20 }}
+//               transition={{ duration: 0.3 }}
+//             >
+//               {/* DeviceForm component will be implemented */}
+//               <div className="bg-white rounded-lg shadow p-6">
+//                 <h2 className="text-2xl font-bold mb-4">
+//                   Información del dispositivo: {selectedCategory.name}
+//                 </h2>
+//                 <p className="text-gray-600 mb-4">
+//                   Proporciona los detalles de tu dispositivo para obtener una cotización precisa.
+//                 </p>
+                
+//                 {/* Placeholder for DeviceForm */}
+//                 <div className="space-y-4">
+//                   <div className="p-4 bg-gray-100 rounded-lg">
+//                     <p className="text-sm text-gray-600">
+//                       DeviceForm component será implementado aquí
+//                     </p>
+//                   </div>
+                  
+//                   <div className="flex space-x-4">
+//                     <Button variant="outline" onClick={handleBackStep}>
+//                       Atrás
+//                     </Button>
+//                     <Button onClick={() => {
+//                       // Mock device data for now
+//                       handleDeviceAdd({
+//                         categoryId: selectedCategory.id,
+//                         categoryName: selectedCategory.name,
+
+//                         // Mock data
+//                         condition: DeviceCondition.GOOD,
+//                         weight: 1,
+//                         description: 'Mock device',
+//                         images: [],
+//                         id: '',
+//                         estimatedValue: 0,
+//                         estimatedPrice: 0
+//                       });
+//                     }}>
+//                       Agregar al Carrito
+//                     </Button>
+//                   </div>
+//                 </div>
+//               </div>
+//             </motion.div>
+//           )}
+//         </AnimatePresence>
+//       </div>
+
+//       {/* Cart Sidebar */}
+//       <AnimatePresence>
+//         {showCart && (
+//           <>
+//             {/* Overlay */}
+//             <motion.div
+//               initial={{ opacity: 0 }}
+//               animate={{ opacity: 1 }}
+//               exit={{ opacity: 0 }}
+//               className="fixed inset-0 bg-black bg-opacity-50 z-50"
+//               onClick={handleCartToggle}
+//             />
+            
+//             {/* Cart Panel */}
+//             <motion.div
+//               initial={{ x: '100%' }}
+//               animate={{ x: 0 }}
+//               exit={{ x: '100%' }}
+//               transition={{ type: 'tween', duration: 0.3 }}
+//               className="fixed right-0 top-0 h-full w-96 bg-white shadow-xl z-50 overflow-y-auto"
+//             >
+//               <div className="p-6">
+//                 <div className="flex items-center justify-between mb-6">
+//                   <h2 className="text-xl font-bold">Carrito de Compras</h2>
+//                   <Button variant="ghost" size="sm" onClick={handleCartToggle}>
+//                     ×
+//                   </Button>
+//                 </div>
+                
+//                 {cartItems.length === 0 ? (
+//                   <div className="text-center text-gray-500 py-8">
+//                     <ShoppingCartIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+//                     <p>Tu carrito está vacío</p>
+//                   </div>
+//                 ) : (
+//                   <>
+//                     {/* Cart Items */}
+//                     <div className="space-y-4 mb-6">
+//                       {cartItems.map((item, index) => (
+//                         <div key={index} className="border rounded-lg p-4">
+//                           <h3 className="font-semibold">{item.categoryName}</h3>
+//                           <p className="text-sm text-gray-600">{item.description}</p>
+//                           <p className="text-lg font-bold text-primary-600">
+//                             ${item.estimatedPrice}
+//                           </p>
+//                         </div>
+//                       ))}
+//                     </div>
+                    
+//                     {/* Cart Total */}
+//                     <div className="border-t pt-4 mb-6">
+//                       <div className="flex justify-between text-xl font-bold">
+//                         <span>Total:</span>
+//                         <span className="text-primary-600">${cartTotal}</span>
+//                       </div>
+//                     </div>
+                    
+//                     {/* Cart Actions */}
+//                     <div className="space-y-3">
+//                       <Button onClick={handleCartReview} className="w-full">
+//                         Revisar Orden
+//                       </Button>
+//                       <Button variant="outline" className="w-full">
+//                         <PlusIcon className="h-4 w-4 mr-2" />
+//                         Agregar más dispositivos
+//                       </Button>
+//                     </div>
+//                   </>
+//                 )}
+//               </div>
+//             </motion.div>
+//           </>
+//         )}
+//       </AnimatePresence>
+//     </div>
+//   );
+// };
+
+// export default SellPage;
+
+
+
+
+// src/pages/CategorySelectionPage.tsx - PÁGINA COMPLETA
+import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
+  ArrowRightIcon, 
   ArrowLeftIcon,
-  ShoppingCartIcon,
-  PlusIcon
+  CheckCircleIcon,
+  InformationCircleIcon 
 } from '@heroicons/react/24/outline';
+import { Category } from '@/types/categories';
+import CategorySelector from '@/components/categories/CategorySelector';
+import DeviceTypeSelector from '@/components/categories/DeviceTypeSelector';
+import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { CategorySelector } from '@/components/categories/CategorySelector';
-import { CategoryDetails } from '@/components/categories/CategoryDetails';
-import { useCategories } from '@/hooks/useCategories';
-import { Category, CartItemData, DeviceCondition, CategoryType } from '@/types/categories';
+import { Alert } from '@/components/ui/Alert';
+import { PageHeader } from '@/components/layout/PageHeader';
 
-type SellStep = 'category-selection' | 'category-details' | 'device-form' | 'cart-review';
+type DeviceType = 'COMPLETE_DEVICES' | 'DISMANTLED_DEVICES';
+type SelectionStep = 'type' | 'category';
 
-export const SellPage: React.FC = () => {
-  // 🔧 FIX: Usar el hook corregido
-  const categories = useCategories();
+const SellPage: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   
-  const [currentStep, setCurrentStep] = useState<SellStep>('category-selection');
+  // Estado de la selección
+  const [currentStep, setCurrentStep] = useState<SelectionStep>('type');
+  const [selectedDeviceType, setSelectedDeviceType] = useState<DeviceType | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-  const [cartItems, setCartItems] = useState<CartItemData[]>([]);
-  const [showCart, setShowCart] = useState(false);
+  const [selectedPath, setSelectedPath] = useState<Category[]>([]);
+  
+  // Datos que pueden venir de la navegación anterior
+  const orderData = location.state?.orderData || {};
 
-  // 🔧 FIX: Memoized handlers para evitar re-renders
-  const handleCategorySelect = useCallback((category: Category) => {
-    console.log('🎯 Category selected:', category.name);
-    setSelectedCategory(category);
-    setCurrentStep('category-details');
-  }, []);
-
-  const handleCategoryConfirm = useCallback((category: Category) => {
-    console.log('✅ Category confirmed:', category.name);
-    setSelectedCategory(category);
-    setCurrentStep('device-form');
-  }, []);
-
-  const handleDeviceAdd = useCallback((deviceData: Omit<CartItemData, 'addedAt'>) => {
-    const newItem: CartItemData = {
-      ...deviceData,
-      addedAt: new Date().toISOString()
-    };
+  // Manejar selección de tipo de dispositivo
+  const handleDeviceTypeSelect = (type: DeviceType) => {
+    setSelectedDeviceType(type);
     
-    console.log('➕ Device added to cart:', newItem);
-    setCartItems(prev => [...prev, newItem]);
-    
-    // Volver a selección de categorías para agregar más items
-    setCurrentStep('category-selection');
-    setSelectedCategory(null);
-  }, []);
-
-  const handleBackStep = useCallback(() => {
-    switch (currentStep) {
-      case 'category-details':
-        setCurrentStep('category-selection');
-        setSelectedCategory(null);
-        break;
-      case 'device-form':
-        setCurrentStep('category-details');
-        break;
-      case 'cart-review':
-        setCurrentStep('category-selection');
-        break;
-      default:
-        setCurrentStep('category-selection');
+    // Limpiar selección anterior si cambió el tipo
+    if (selectedCategory && selectedCategory.type !== type) {
+      setSelectedCategory(null);
+      setSelectedPath([]);
     }
-  }, [currentStep]);
+  };
 
-  const handleCartToggle = useCallback(() => {
-    setShowCart(prev => !prev);
-  }, []);
+  // Continuar a selección de categorías
+  const handleContinueToCategories = () => {
+    if (!selectedDeviceType) return;
+    setCurrentStep('category');
+  };
 
-  const handleCartReview = useCallback(() => {
-    setCurrentStep('cart-review');
-    setShowCart(false);
-  }, []);
+  // Volver a selección de tipo
+  const handleBackToType = () => {
+    setCurrentStep('type');
+  };
 
-  // 🔧 FIX: Memoizar valores computados
-  const cartTotal = useMemo(() => {
-    return cartItems.reduce((total, item) => total + (item.estimatedPrice || 0), 0);
-  }, [cartItems]);
+  // Manejar selección de categoría
+  const handleCategorySelect = (category: Category) => {
+    console.log('Categoría seleccionada:', category);
+    setSelectedCategory(category);
+  };
 
-  const cartItemCount = useMemo(() => {
-    return cartItems.length;
-  }, [cartItems]);
+  // Manejar cambios en el path
+  const handlePathChange = (path: Category[]) => {
+    setSelectedPath(path);
+  };
 
-  // 🔧 FIX: Error boundary para mostrar errores
-  if (categories.error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center p-8 max-w-md">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Error al cargar categorías
-          </h2>
-          <p className="text-gray-600 mb-4">
-            {categories.error}
-          </p>
-          <Button 
-            onClick={categories.refresh}
-            loading={categories.loading}
-          >
-            Reintentar
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  // Continuar al siguiente paso
+  const handleContinue = () => {
+    if (!selectedCategory || !selectedDeviceType) return;
 
-  // 🔧 FIX: Loading state mejorado
-  if (categories.loading && categories.types.length === 0) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Cargando categorías...</p>
-        </div>
-      </div>
-    );
-  }
+    // Navegar al siguiente paso con los datos
+    navigate('/create-order/details', {
+      state: {
+        orderData: {
+          ...orderData,
+          deviceType: selectedDeviceType,
+          category: selectedCategory,
+          categoryPath: selectedPath
+        }
+      }
+    });
+  };
+
+  // Volver al paso anterior
+  const handleGoBack = () => {
+    if (currentStep === 'category') {
+      setCurrentStep('type');
+    } else {
+      navigate(-1);
+    }
+  };
+
+  // Calcular valor estimado basado en peso
+  const calculateEstimatedValue = (weight: number): number => {
+    if (!selectedCategory?.pricePerKg) return 0;
+    return selectedCategory.pricePerKg * weight;
+  };
+
+  // Obtener título dinámico según el paso
+  const getPageTitle = () => {
+    switch (currentStep) {
+      case 'type':
+        return 'Tipo de Dispositivo';
+      case 'category':
+        return selectedDeviceType === 'COMPLETE_DEVICES' 
+          ? 'Selecciona tu Dispositivo' 
+          : 'Selecciona los Componentes';
+      default:
+        return 'Selección de Categoría';
+    }
+  };
+
+  // Obtener subtitle dinámico
+  const getPageSubtitle = () => {
+    switch (currentStep) {
+      case 'type':
+        return 'Primero, dinos si tienes un dispositivo completo o componentes por separado';
+      case 'category':
+        return selectedDeviceType === 'COMPLETE_DEVICES'
+          ? 'Encuentra tu dispositivo específico en nuestro catálogo'
+          : 'Navega por las categorías hasta encontrar la más específica para tus componentes';
+      default:
+        return '';
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Fixed Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              {/* Back Button */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleBackStep}
-                className="text-gray-600 hover:text-gray-900"
-              >
-                <ArrowLeftIcon className="h-5 w-5 mr-2" />
-                Atrás
-              </Button>
+      {/* Header */}
+      <PageHeader
+        title={getPageTitle()}
+      />
 
-              {/* Steps Indicator */}
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
-                <span className={currentStep === 'category-selection' ? 'font-medium text-primary-600' : ''}>
-                  1. Seleccionar Categoría
-                </span>
-                <span>→</span>
-                <span className={currentStep === 'category-details' ? 'font-medium text-primary-600' : ''}>
-                  2. Detalles
-                </span>
-                <span>→</span>
-                <span className={currentStep === 'device-form' ? 'font-medium text-primary-600' : ''}>
-                  3. Información del Dispositivo
-                </span>
-              </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* Progress Indicator */}
+        <div className="mb-8">
+          <div className="flex items-center justify-center space-x-4">
+            <div className={`flex items-center space-x-2 px-3 py-1 rounded-full text-sm ${
+              currentStep === 'type' 
+                ? 'bg-blue-100 text-blue-800' 
+                : 'bg-green-100 text-green-800'
+            }`}>
+              <span className="font-medium">1</span>
+              <span>Tipo de dispositivo</span>
+              {currentStep !== 'type' && <CheckCircleIcon className="w-4 h-4" />}
             </div>
-
-            {/* Cart Button */}
-            <Button
-              variant="outline"
-              onClick={handleCartToggle}
-              className="relative"
-            >
-              <ShoppingCartIcon className="h-5 w-5 mr-2" />
-              Carrito
-              {cartItemCount > 0 && (
-                <Badge 
-                  variant="danger" 
-                  className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center text-xs"
-                >
-                  {cartItemCount}
-                </Badge>
-              )}
-            </Button>
+            
+            <div className={`w-8 h-0.5 ${
+              currentStep === 'category' ? 'bg-blue-500' : 'bg-gray-300'
+            }`} />
+            
+            <div className={`flex items-center space-x-2 px-3 py-1 rounded-full text-sm ${
+              currentStep === 'category' 
+                ? 'bg-blue-100 text-blue-800' 
+                : 'bg-gray-100 text-gray-600'
+            }`}>
+              <span className="font-medium">2</span>
+              <span>Categoría específica</span>
+              {selectedCategory && <CheckCircleIcon className="w-4 h-4 text-green-600" />}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <AnimatePresence mode="wait">
-          {/* Step 1: Category Selection */}
-          {currentStep === 'category-selection' && (
-            <motion.div
-              key="category-selection"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="mb-6">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                  Convertir tu chatarra electrónica en dinero de forma rápida y segura
-                </h1>
-                <p className="text-gray-600">
-                  Selecciona la categoría de tu dispositivo para comenzar
-                </p>
-              </div>
-              
-              <CategorySelector
-                types={categories.types}
-                categories={categories.currentCategories}
-                selectedType={categories.selectedType}
-                onTypeSelect={categories.selectType}
-                onCategorySelect={handleCategorySelect}
-                loading={categories.loading}
-              />
-            </motion.div>
-          )}
-
-          {/* Step 2: Category Details */}
-          {currentStep === 'category-details' && selectedCategory && (
-            <motion.div
-              key="category-details"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <CategoryDetails
-                category={selectedCategory}
-                onBack={handleBackStep} onConfirm={function (category: Category): void {
-                  throw new Error('Function not implemented.');
-                } }              />
-            </motion.div>
-          )}
-
-          {/* Step 3: Device Form */}
-          {currentStep === 'device-form' && selectedCategory && (
-            <motion.div
-              key="device-form"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              {/* DeviceForm component will be implemented */}
-              <div className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-2xl font-bold mb-4">
-                  Información del dispositivo: {selectedCategory.name}
-                </h2>
-                <p className="text-gray-600 mb-4">
-                  Proporciona los detalles de tu dispositivo para obtener una cotización precisa.
-                </p>
-                
-                {/* Placeholder for DeviceForm */}
-                <div className="space-y-4">
-                  <div className="p-4 bg-gray-100 rounded-lg">
-                    <p className="text-sm text-gray-600">
-                      DeviceForm component será implementado aquí
-                    </p>
-                  </div>
-                  
-                  <div className="flex space-x-4">
-                    <Button variant="outline" onClick={handleBackStep}>
-                      Atrás
-                    </Button>
-                    <Button onClick={() => {
-                      // Mock device data for now
-                      handleDeviceAdd({
-                        categoryId: selectedCategory.id,
-                        categoryName: selectedCategory.name,
-
-                        // Mock data
-                        condition: DeviceCondition.GOOD,
-                        weight: 1,
-                        description: 'Mock device',
-                        images: [],
-                        id: '',
-                        estimatedValue: 0,
-                        estimatedPrice: 0
-                      });
-                    }}>
-                      Agregar al Carrito
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Cart Sidebar */}
-      <AnimatePresence>
-        {showCart && (
-          <>
-            {/* Overlay */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black bg-opacity-50 z-50"
-              onClick={handleCartToggle}
+        {/* Step 1: Device Type Selection */}
+        {currentStep === 'type' && (
+          <div className="space-y-8">
+            <DeviceTypeSelector
+              onTypeSelect={handleDeviceTypeSelect}
+              selectedType={selectedDeviceType || undefined}
             />
-            
-            {/* Cart Panel */}
-            <motion.div
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'tween', duration: 0.3 }}
-              className="fixed right-0 top-0 h-full w-96 bg-white shadow-xl z-50 overflow-y-auto"
-            >
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold">Carrito de Compras</h2>
-                  <Button variant="ghost" size="sm" onClick={handleCartToggle}>
-                    ×
-                  </Button>
-                </div>
-                
-                {cartItems.length === 0 ? (
-                  <div className="text-center text-gray-500 py-8">
-                    <ShoppingCartIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p>Tu carrito está vacío</p>
-                  </div>
-                ) : (
-                  <>
-                    {/* Cart Items */}
-                    <div className="space-y-4 mb-6">
-                      {cartItems.map((item, index) => (
-                        <div key={index} className="border rounded-lg p-4">
-                          <h3 className="font-semibold">{item.categoryName}</h3>
-                          <p className="text-sm text-gray-600">{item.description}</p>
-                          <p className="text-lg font-bold text-primary-600">
-                            ${item.estimatedPrice}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                    
-                    {/* Cart Total */}
-                    <div className="border-t pt-4 mb-6">
-                      <div className="flex justify-between text-xl font-bold">
-                        <span>Total:</span>
-                        <span className="text-primary-600">${cartTotal}</span>
-                      </div>
-                    </div>
-                    
-                    {/* Cart Actions */}
-                    <div className="space-y-3">
-                      <Button onClick={handleCartReview} className="w-full">
-                        Revisar Orden
-                      </Button>
-                      <Button variant="outline" className="w-full">
-                        <PlusIcon className="h-4 w-4 mr-2" />
-                        Agregar más dispositivos
-                      </Button>
-                    </div>
-                  </>
-                )}
-              </div>
-            </motion.div>
-          </>
+          </div>
         )}
-      </AnimatePresence>
+
+        {/* Step 2: Category Selection */}
+        {currentStep === 'category' && selectedDeviceType && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            {/* Columna principal - Selector */}
+            <div className="lg:col-span-2">
+              <CategorySelector
+                type={selectedDeviceType}
+                onCategorySelect={handleCategorySelect}
+                onPathChange={handlePathChange}
+                selectedCategoryId={selectedCategory?.id}
+              />
+            </div>
+
+            {/* Sidebar - Resumen y acciones */}
+            <div className="space-y-6">
+              
+              {/* Tipo seleccionado */}
+              <Card className="border-blue-200 bg-blue-50">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center space-x-2">
+                    <CheckCircleIcon className="h-5 w-5 text-blue-600" />
+                    <h3 className="font-semibold text-blue-800">Tipo Seleccionado</h3>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-gray-900">
+                      {selectedDeviceType === 'COMPLETE_DEVICES' 
+                        ? 'Dispositivos Completos' 
+                        : 'Dispositivos Desarmables'}
+                    </h4>
+                    <p className="text-sm text-gray-600">
+                      {selectedDeviceType === 'COMPLETE_DEVICES'
+                        ? 'Evaluación de dispositivos completos y funcionales'
+                        : 'Evaluación de componentes y materiales reciclables'
+                      }
+                    </p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleBackToType}
+                      className="text-blue-600 hover:text-blue-700 p-0 h-auto"
+                    >
+                      Cambiar tipo →
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Resumen de selección */}
+              {selectedCategory && (
+                <Card className="border-green-200 bg-green-50">
+                  <CardHeader>
+                    <div className="flex items-center space-x-2">
+                      <CheckCircleIcon className="h-5 w-5 text-green-600" />
+                      <h3 className="font-semibold text-green-800">
+                        Categoría Seleccionada
+                      </h3>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {/* Nombre y path */}
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-1">
+                          {selectedCategory.name}
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          {selectedPath.map(cat => cat.name).join(' > ')}
+                        </p>
+                      </div>
+
+                      {/* Información de precio */}
+                      {selectedCategory.pricePerKg && (
+                        <div className="bg-white rounded-lg p-4 border border-green-200">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium text-gray-700">
+                              {selectedDeviceType === 'COMPLETE_DEVICES' 
+                                ? 'Valor de referencia:' 
+                                : 'Precio por kg:'}
+                            </span>
+                            <Badge variant="secondary" className="bg-green-100 text-green-800">
+                              ${selectedCategory.pricePerKg}/kg
+                            </Badge>
+                          </div>
+                          
+                          {/* Calculadora rápida */}
+                          <div className="space-y-2">
+                            <p className="text-xs text-gray-600">
+                              {selectedDeviceType === 'COMPLETE_DEVICES'
+                                ? 'Estimación por peso del dispositivo:'
+                                : 'Ejemplos de valor estimado:'
+                              }
+                            </p>
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                              <div className="flex justify-between">
+                                <span>{selectedDeviceType === 'COMPLETE_DEVICES' ? '1.5 kg:' : '1 kg:'}</span>
+                                <span className="font-medium">
+                                  ${calculateEstimatedValue(selectedDeviceType === 'COMPLETE_DEVICES' ? 1.5 : 1).toFixed(2)}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>{selectedDeviceType === 'COMPLETE_DEVICES' ? '2.5 kg:' : '5 kg:'}</span>
+                                <span className="font-medium">
+                                  ${calculateEstimatedValue(selectedDeviceType === 'COMPLETE_DEVICES' ? 2.5 : 5).toFixed(2)}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Información adicional */}
+              <Alert>
+                <InformationCircleIcon className="h-4 w-4" />
+                <div>
+                  <h4 className="text-sm font-medium">¿No encuentras tu categoría?</h4>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Si no puedes encontrar la categoría exacta, selecciona la más similar. 
+                    Nuestro equipo técnico realizará la clasificación final durante la verificación.
+                  </p>
+                </div>
+              </Alert>
+            </div>
+          </div>
+        )}
+
+        {/* Acciones */}
+        <div className="mt-8 flex items-center justify-between">
+          <Button
+            variant="outline"
+            onClick={handleGoBack}
+            className="flex items-center space-x-2"
+          >
+            <ArrowLeftIcon className="h-4 w-4" />
+            <span>
+              {currentStep === 'type' ? 'Volver' : 'Cambiar tipo'}
+            </span>
+          </Button>
+
+          {currentStep === 'type' ? (
+            <Button
+              onClick={handleContinueToCategories}
+              disabled={!selectedDeviceType}
+              className="flex items-center space-x-2"
+            >
+              <span>
+                {selectedDeviceType ? 'Seleccionar categoría' : 'Selecciona un tipo'}
+              </span>
+              <ArrowRightIcon className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button
+              onClick={handleContinue}
+              disabled={!selectedCategory}
+              className="flex items-center space-x-2"
+            >
+              <span>
+                {selectedCategory ? 'Continuar con los detalles' : 'Selecciona una categoría'}
+              </span>
+              <ArrowRightIcon className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
