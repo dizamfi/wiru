@@ -1,281 +1,445 @@
-// src/components/sell/SellCartModal.tsx - Modal del carrito estilo Amazon
-import React, { useState } from 'react';
-import { 
-  XMarkIcon,
-  TrashIcon,
-  PlusIcon,
-  MinusIcon,
-  ShoppingBagIcon,
-  CreditCardIcon,
-  TruckIcon,
-  InformationCircleIcon
-} from '@heroicons/react/24/outline';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { Card } from '@/components/ui/Card';
+// // src/components/sell/SellCartModal.tsx
+// import React from 'react';
+// import { XMarkIcon, TrashIcon, ShoppingBagIcon } from '@heroicons/react/24/outline';
+// import { CartItem } from '@/types/categories';
+// import { Button } from '@/components/ui/Button';
+// import { Card } from '@/components/ui/Card';
+// import { Badge } from '@/components/ui/Badge';
 
-interface CartItem {
-  id: string;
-  categoryId: string;
-  categoryName: string;
-  estimatedPrice: number;
-  weight: number;
-  quantity: number;
-  condition: string;
-  images: string[];
-  pricePerKg?: number;
-  description?: string;
-}
+// interface SellCartModalProps {
+//   cart: CartItem[];
+//   onClose: () => void;
+//   onRemoveItem: (index: number) => void;
+//   onCheckout: () => void;
+// }
+
+// const SellCartModal: React.FC<SellCartModalProps> = ({
+//   cart,
+//   onClose,
+//   onRemoveItem,
+//   onCheckout
+// }) => {
+//   const totalEstimated = cart.reduce((sum, item) => sum + item.estimatedValue, 0);
+//   const totalWeight = cart.reduce((sum, item) => sum + (item.weight * item.quantity), 0);
+
+//   return (
+//     <div className="fixed inset-0 z-50 overflow-y-auto">
+//       {/* Overlay */}
+//       <div 
+//         className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+//         onClick={onClose}
+//       />
+
+//       {/* Modal */}
+//       <div className="flex min-h-full items-center justify-center p-4">
+//         <div 
+//           className="relative bg-white rounded-2xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+//           onClick={(e) => e.stopPropagation()}
+//         >
+//           {/* Header */}
+//           <div className="bg-white border-b px-6 py-4 flex items-center justify-between">
+//             <div className="flex items-center space-x-3">
+//               <ShoppingBagIcon className="w-6 h-6 text-[#D0FF5B]" />
+//               <div>
+//                 <h2 className="text-xl font-bold text-gray-900">Mi Venta</h2>
+//                 <p className="text-sm text-gray-500">{cart.length} item(s) en el carrito</p>
+//               </div>
+//             </div>
+//             <button
+//               onClick={onClose}
+//               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+//             >
+//               <XMarkIcon className="w-6 h-6" />
+//             </button>
+//           </div>
+
+//           {/* Content */}
+//           <div className="flex-1 overflow-y-auto p-6">
+//             {cart.length === 0 ? (
+//               <div className="text-center py-12">
+//                 <ShoppingBagIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+//                 <p className="text-gray-500 mb-2">Tu carrito está vacío</p>
+//                 <p className="text-sm text-gray-400">Agrega categorías para comenzar tu venta</p>
+//               </div>
+//             ) : (
+//               <div className="space-y-4">
+//                 {cart.map((item, index) => (
+//                   <Card key={item.id} className="p-4">
+//                     <div className="flex items-start space-x-4">
+//                       {/* Imagen preview */}
+//                       <div className="w-20 h-20 rounded-lg bg-gray-100 flex-shrink-0 overflow-hidden">
+//                         {item.images.length > 0 ? (
+//                           <img 
+//                             src={URL.createObjectURL(item.images[0])} 
+//                             alt={item.categoryName}
+//                             className="w-full h-full object-cover"
+//                           />
+//                         ) : (
+//                           <div className="w-full h-full flex items-center justify-center text-gray-400">
+//                             📦
+//                           </div>
+//                         )}
+//                       </div>
+
+//                       {/* Info */}
+//                       <div className="flex-1">
+//                         <h3 className="font-semibold text-gray-900 mb-1">
+//                           {item.categoryName}
+//                         </h3>
+//                         <p className="text-xs text-gray-500 mb-2">{item.categoryPath}</p>
+                        
+//                         <div className="flex items-center space-x-4 text-sm">
+//                           <span className="text-gray-600">
+//                             {item.weight} kg × {item.quantity}
+//                           </span>
+//                           <span className="text-gray-400">•</span>
+//                           <span className="text-gray-600">
+//                             ${item.pricePerKg}/kg
+//                           </span>
+//                           <span className="text-gray-400">•</span>
+//                           <span className="font-semibold text-green-600">
+//                             ${item.estimatedValue.toFixed(2)}
+//                           </span>
+//                         </div>
+
+//                         {item.notes && (
+//                           <p className="text-xs text-gray-500 mt-2 line-clamp-1">
+//                             📝 {item.notes}
+//                           </p>
+//                         )}
+//                       </div>
+
+//                       {/* Acciones */}
+//                       <button
+//                         onClick={() => onRemoveItem(index)}
+//                         className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+//                       >
+//                         <TrashIcon className="w-5 h-5" />
+//                       </button>
+//                     </div>
+//                   </Card>
+//                 ))}
+//               </div>
+//             )}
+//           </div>
+
+//           {/* Footer */}
+//           {cart.length > 0 && (
+//             <div className="border-t bg-gray-50 px-6 py-4 space-y-4">
+//               {/* Resumen */}
+//               <div className="space-y-2">
+//                 <div className="flex justify-between text-sm">
+//                   <span className="text-gray-600">Peso total:</span>
+//                   <span className="font-medium">{totalWeight.toFixed(2)} kg</span>
+//                 </div>
+//                 <div className="flex justify-between text-sm">
+//                   <span className="text-gray-600">Items:</span>
+//                   <span className="font-medium">{cart.length}</span>
+//                 </div>
+//                 <div className="flex justify-between items-center pt-2 border-t">
+//                   <div>
+//                     <span className="text-gray-600">Valor estimado:</span>
+//                     <Badge className="ml-2 bg-yellow-100 text-yellow-800 text-xs">
+//                       Pendiente verificación
+//                     </Badge>
+//                   </div>
+//                   <span className="text-2xl font-bold text-green-600">
+//                     ${totalEstimated.toFixed(2)}
+//                   </span>
+//                 </div>
+//               </div>
+
+//               {/* Botones */}
+//               <div className="flex space-x-3">
+//                 <Button
+//                   variant="outline"
+//                   onClick={onClose}
+//                   className="flex-1"
+//                 >
+//                   Continuar Comprando
+//                 </Button>
+//                 <Button
+//                   onClick={onCheckout}
+//                   className="flex-1 bg-[#D0FF5B] text-black hover:bg-[#D0FF5B]/90"
+//                 >
+//                   Proceder al Checkout
+//                 </Button>
+//               </div>
+//             </div>
+//           )}
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default SellCartModal;
+
+
+
+
+// src/components/sell/SellCartModal.tsx
+import React from 'react';
+import { XMarkIcon, TrashIcon, ShoppingBagIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+import { CartItem } from '@/types/categories';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
+import { cn } from '@/utils/cn';
 
 interface SellCartModalProps {
-  isOpen: boolean;
+  cart: CartItem[];
   onClose: () => void;
-  items: CartItem[];
-  onUpdateQuantity: (itemId: string, quantity: number) => void;
-  onRemoveItem: (itemId: string) => void;
+  onRemoveItem: (index: number) => void;
   onCheckout: () => void;
 }
 
 const SellCartModal: React.FC<SellCartModalProps> = ({
-  isOpen,
+  cart,
   onClose,
-  items,
-  onUpdateQuantity,
   onRemoveItem,
   onCheckout
 }) => {
-  const [selectedDelivery, setSelectedDelivery] = useState<'pickup' | 'home'>('pickup');
-
-  if (!isOpen) return null;
-
-  // Cálculos
-  const subtotal = items.reduce((sum, item) => sum + (item.estimatedPrice * item.quantity), 0);
-  const deliveryFee = selectedDelivery === 'home' ? 15 : 0;
-  const processingFee = Math.max(subtotal * 0.03, 5); // 3% o mínimo $5
-  const total = subtotal - processingFee - deliveryFee; // En venta, restamos fees
+  const totalEstimated = cart.reduce((sum, item) => sum + item.estimatedValue, 0);
+  const totalWeight = cart.reduce((sum, item) => sum + (item.weight * item.quantity), 0);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
-        
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
-          <div className="flex items-center space-x-3">
-            <ShoppingBagIcon className="h-6 w-6 text-orange-500" />
-            <div>
-              <h2 className="text-xl font-semibold">Tu Venta</h2>
-              <p className="text-sm text-gray-600">{items.length} artículo{items.length !== 1 ? 's' : ''}</p>
-            </div>
-          </div>
-          
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <XMarkIcon className="h-5 w-5" />
-          </Button>
-        </div>
+    <div className="fixed inset-0 z-50 overflow-hidden">
+      {/* Overlay */}
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity duration-300"
+        onClick={onClose}
+      />
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto max-h-[60vh]">
-          
-          {/* Items List */}
-          <div className="p-6 space-y-4">
-            {items.length === 0 ? (
-              <div className="text-center py-12">
-                <ShoppingBagIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">Tu carrito está vacío</p>
-                <p className="text-sm text-gray-400">Agrega dispositivos para comenzar a vender</p>
-              </div>
-            ) : (
-              items.map((item) => (
-                <Card key={item.id} className="p-4">
-                  <div className="flex space-x-4">
-                    
-                    {/* Image */}
-                    <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-                      {item.images?.[0] ? (
-                        <img 
-                          src={item.images[0]} 
-                          alt={item.categoryName}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="text-2xl">📱</div>
-                      )}
-                    </div>
-
-                    {/* Details */}
-                    <div className="flex-1">
-                      <h3 className="font-medium text-gray-900">{item.categoryName}</h3>
-                      {item.description && (
-                        <p className="text-sm text-gray-600 mt-1">{item.description}</p>
-                      )}
-                      
-                      <div className="flex items-center space-x-4 mt-2">
-                        <Badge variant="secondary" className="text-xs">
-                          {item.condition}
-                        </Badge>
-                        
-                        {item.pricePerKg && (
-                          <span className="text-xs text-gray-500">
-                            ${item.pricePerKg}/kg
-                          </span>
-                        )}
-                        
-                        <span className="text-xs text-gray-500">
-                          {item.weight}kg
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Price and Controls */}
-                    <div className="text-right">
-                      <div className="text-lg font-semibold text-green-600">
-                        ${(item.estimatedPrice * item.quantity).toFixed(2)}
-                      </div>
-                      
-                      {/* Quantity Controls */}
-                      <div className="flex items-center space-x-2 mt-2">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => onUpdateQuantity(item.id, Math.max(1, item.quantity - 1))}
-                          className="h-6 w-6 p-0"
-                        >
-                          <MinusIcon className="h-3 w-3" />
-                        </Button>
-                        
-                        <span className="text-sm font-medium w-8 text-center">
-                          {item.quantity}
-                        </span>
-                        
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
-                          className="h-6 w-6 p-0"
-                        >
-                          <PlusIcon className="h-3 w-3" />
-                        </Button>
-                        
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => onRemoveItem(item.id)}
-                          className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
-                        >
-                          <TrashIcon className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              ))
-            )}
-          </div>
-
-          {/* Delivery Options */}
-          {items.length > 0 && (
-            <div className="px-6 pb-4">
-              <h3 className="font-medium mb-3 flex items-center">
-                <TruckIcon className="h-4 w-4 mr-2" />
-                Método de Entrega
-              </h3>
-              
-              <div className="space-y-2">
-                <label className="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                  <input
-                    type="radio"
-                    name="delivery"
-                    value="pickup"
-                    checked={selectedDelivery === 'pickup'}
-                    onChange={(e) => setSelectedDelivery(e.target.value as 'pickup')}
-                    className="text-blue-600"
-                  />
-                  <div className="flex-1">
-                    <div className="font-medium">Punto Servientrega</div>
-                    <div className="text-sm text-gray-600">Gratis - Entregar en oficina más cercana</div>
-                  </div>
-                  <Badge variant="secondary" className="text-green-600">GRATIS</Badge>
-                </label>
-                
-                <label className="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                  <input
-                    type="radio"
-                    name="delivery"
-                    value="home"
-                    checked={selectedDelivery === 'home'}
-                    onChange={(e) => setSelectedDelivery(e.target.value as 'home')}
-                    className="text-blue-600"
-                  />
-                  <div className="flex-1">
-                    <div className="font-medium">Recolección a Domicilio</div>
-                    <div className="text-sm text-gray-600">Recogemos en tu dirección - $15</div>
-                  </div>
-                  <span className="font-medium">$15.00</span>
-                </label>
-              </div>
-            </div>
+      {/* Drawer/Sidebar desde la derecha */}
+      <div className="fixed inset-y-0 right-0 flex max-w-full">
+        <div 
+          className={cn(
+            "relative w-screen max-w-md transform transition-transform duration-300 ease-in-out",
+            "translate-x-0"
           )}
-        </div>
-
-        {/* Footer - Summary and Checkout */}
-        {items.length > 0 && (
-          <div className="border-t bg-gray-50 p-6">
-            
-            {/* Price Breakdown */}
-            <div className="space-y-2 mb-4">
-              <div className="flex justify-between text-sm">
-                <span>Subtotal ({items.length} artículos)</span>
-                <span className="font-medium">${subtotal.toFixed(2)}</span>
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="h-full flex flex-col bg-white shadow-xl">
+            {/* Header fijo */}
+            <div className="bg-gradient-to-r from-[#a8c241] to-[#719428] px-6 py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3 text-white">
+                  <ShoppingBagIcon className="w-6 h-6" />
+                  <div>
+                    <h2 className="text-xl font-bold">Mi Venta</h2>
+                    <p className="text-sm opacity-90">
+                      {cart.length} {cart.length === 1 ? 'item' : 'items'} agregado{cart.length !== 1 ? 's' : ''}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={onClose}
+                  className="p-2 hover:bg-white/20 rounded-lg transition-colors text-white"
+                >
+                  <XMarkIcon className="w-6 h-6" />
+                </button>
               </div>
-              
-              {deliveryFee > 0 && (
-                <div className="flex justify-between text-sm text-red-600">
-                  <span>Costo de recolección</span>
-                  <span>-${deliveryFee.toFixed(2)}</span>
+
+              {/* Resumen rápido en el header */}
+              {cart.length > 0 && (
+                <div className="mt-4 bg-white/20 backdrop-blur rounded-lg p-3">
+                  <div className="flex items-center justify-between text-white">
+                    <div>
+                      <p className="text-xs opacity-80">Valor estimado total</p>
+                      <p className="text-2xl font-bold">${totalEstimated.toFixed(2)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs opacity-80">Peso total</p>
+                      <p className="text-lg font-semibold">{totalWeight.toFixed(2)} kg</p>
+                    </div>
+                  </div>
                 </div>
               )}
-              
-              <div className="flex justify-between text-sm text-red-600">
-                <span className="flex items-center">
-                  Tarifa de procesamiento
-                  <InformationCircleIcon className="h-3 w-3 ml-1" />
-                </span>
-                <span>-${processingFee.toFixed(2)}</span>
-              </div>
-              
-              <div className="flex justify-between text-lg font-semibold text-green-600 pt-2 border-t">
-                <span>Recibirás</span>
-                <span>${total.toFixed(2)}</span>
-              </div>
             </div>
 
-            {/* Checkout Button */}
-            <Button 
-              onClick={onCheckout}
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white"
-              size="lg"
-            >
-              <CreditCardIcon className="h-4 w-4 mr-2" />
-              Proceder con la Venta
-            </Button>
+            {/* Contenido scrolleable */}
+            <div className="flex-1 overflow-y-auto">
+              {cart.length === 0 ? (
+                /* Estado vacío */
+                <div className="h-full flex flex-col items-center justify-center text-center px-6 py-12">
+                  <div className="bg-gray-100 rounded-full p-6 mb-4">
+                    <ShoppingBagIcon className="w-16 h-16 text-gray-400" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    Tu carrito está vacío
+                  </h3>
+                  <p className="text-gray-500 mb-6">
+                    Agrega categorías para comenzar tu venta
+                  </p>
+                  <Button 
+                    onClick={onClose}
+                    className="bg-[#D0FF5B] text-black hover:bg-[#D0FF5B]/90"
+                  >
+                    Explorar Categorías
+                  </Button>
+                </div>
+              ) : (
+                /* Lista de items */
+                <div className="p-6 space-y-4">
+                  {cart.map((item, index) => (
+                    <Card key={item.id} className="p-4 hover:shadow-md transition-shadow">
+                      <div className="flex items-start space-x-3">
+                        {/* Imagen preview */}
+                        <div className="w-20 h-20 rounded-lg bg-gray-100 flex-shrink-0 overflow-hidden">
+                          {item.images.length > 0 ? (
+                            <img 
+                              src={URL.createObjectURL(item.images[0])} 
+                              alt={item.categoryName}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-2xl">
+                              📦
+                            </div>
+                          )}
+                          {/* Badge de cantidad de fotos */}
+                          {item.images.length > 1 && (
+                            <div className="absolute bottom-1 right-1 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded">
+                              +{item.images.length - 1}
+                            </div>
+                          )}
+                        </div>
 
-            {/* Trust Indicators */}
-            <div className="flex items-center justify-center space-x-6 mt-4 text-xs text-gray-500">
-              <div className="flex items-center">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                Pago en 24h
-              </div>
-              <div className="flex items-center">
-                <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
-                Evaluación gratuita
-              </div>
-              <div className="flex items-center">
-                <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
-                Seguro incluido
-              </div>
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-gray-900 mb-1 truncate">
+                            {item.categoryName}
+                          </h4>
+                          <p className="text-xs text-gray-500 mb-2 truncate">
+                            {item.categoryPath}
+                          </p>
+                          
+                          {/* Detalles en grid */}
+                          <div className="grid grid-cols-2 gap-2 text-xs mb-2">
+                            <div>
+                              <span className="text-gray-500">Peso:</span>
+                              <span className="ml-1 font-medium">{item.weight} kg</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-500">Cantidad:</span>
+                              <span className="ml-1 font-medium">×{item.quantity}</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-500">Precio/kg:</span>
+                              <span className="ml-1 font-medium">${item.pricePerKg.toFixed(2)}</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-500">Total:</span>
+                              <span className="ml-1 font-semibold text-green-600">
+                                ${(item.weight * item.quantity * item.pricePerKg).toFixed(2)}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Notas si existen */}
+                          {item.notes && (
+                            <div className="bg-gray-50 rounded p-2 text-xs text-gray-600 line-clamp-2">
+                              📝 {item.notes}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Botón eliminar */}
+                        <button
+                          onClick={() => onRemoveItem(index)}
+                          className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                          title="Eliminar del carrito"
+                        >
+                          <TrashIcon className="w-5 h-5" />
+                        </button>
+                      </div>
+
+                      {/* Estimado badge */}
+                      <div className="mt-3 flex items-center justify-between pt-3 border-t">
+                        <span className="text-xs text-gray-500">Valor estimado del item</span>
+                        <div className="flex items-center space-x-2">
+                          <Badge className="bg-yellow-100 text-yellow-800 text-xs">
+                            Estimado
+                          </Badge>
+                          <span className="font-bold text-green-600">
+                            ${item.estimatedValue.toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+
+                  {/* Información adicional */}
+                  <Card className="p-4 bg-blue-50 border-blue-200">
+                    <p className="text-xs text-blue-800">
+                      <strong>💡 Recuerda:</strong> Los valores mostrados son estimados. 
+                      El monto final se determinará después de la verificación física en nuestra bodega.
+                    </p>
+                  </Card>
+                </div>
+              )}
             </div>
+
+            {/* Footer fijo con acciones */}
+            {cart.length > 0 && (
+              <div className="border-t bg-white px-6 py-4 space-y-4">
+                {/* Resumen detallado */}
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Subtotal ({cart.length} items):</span>
+                    <span className="font-medium text-gray-900">
+                      ${totalEstimated.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Peso total:</span>
+                    <span className="font-medium text-gray-900">
+                      {totalWeight.toFixed(2)} kg
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Fotos adjuntas:</span>
+                    <span className="font-medium text-gray-900">
+                      {cart.reduce((sum, item) => sum + item.images.length, 0)} imágenes
+                    </span>
+                  </div>
+                  
+                  {/* Total */}
+                  <div className="flex justify-between items-center pt-3 border-t">
+                    <div>
+                      <span className="text-sm text-gray-600">Total estimado:</span>
+                      <Badge className="ml-2 bg-yellow-100 text-yellow-800 text-xs">
+                        Pendiente verificación
+                      </Badge>
+                    </div>
+                    <span className="text-2xl font-bold text-green-600">
+                      ${totalEstimated.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Botones de acción */}
+                <div className="space-y-2">
+                  <Button
+                    onClick={onCheckout}
+                    className="w-full bg-[#D0FF5B] text-black hover:bg-[#D0FF5B]/90 font-semibold py-3 flex items-center justify-center space-x-2"
+                  >
+                    <span>Proceder al Checkout</span>
+                    <ArrowRightIcon className="w-5 h-5" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={onClose}
+                    className="w-full"
+                  >
+                    Continuar Comprando
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

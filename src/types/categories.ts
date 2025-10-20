@@ -698,3 +698,17 @@ export interface DeviceTypeSelectorProps {
   selectedType?: 'COMPLETE_DEVICES' | 'DISMANTLED_DEVICES';
   className?: string;
 }
+
+export interface CartItem {
+  id: string;
+  categoryId: string;
+  categoryName: string;
+  categoryPath: string;
+  weight: number; // peso individual
+  quantity: number;
+  pricePerKg: number;
+  estimatedValue: number; // peso * quantity * pricePerKg
+  images: File[];
+  notes?: string;
+  createdAt: string;
+}

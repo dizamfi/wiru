@@ -2027,78 +2027,4073 @@
 
 
 
-// src/pages/dashboard/SellPage.tsx - Estilo Amazon/Shopify Inverso
-import React, { useState, useEffect } from 'react';
+// // src/pages/dashboard/SellPage.tsx
+// import React, { useState } from 'react';
+// import { useNavigate } from 'react-router-dom';
+// import {
+//   MagnifyingGlassIcon,
+//   FunnelIcon,
+//   ShoppingCartIcon,
+//   ArrowLeftIcon,
+//   ChevronRightIcon,
+//   SparklesIcon,
+//   TrophyIcon,
+//   ClockIcon,
+// } from '@heroicons/react/24/outline';
+// import { Category, CartItem } from '@/types/categories';
+
+// import { Card } from '@/components/ui/Card';
+// import { Button } from '@/components/ui/Button';
+// import { Badge } from '@/components/ui/Badge';
+// import categoryService from '@/services/categoryService';
+// import { cn } from '@/utils/cn';
+// import { ValidationUtils } from '@/utils/validation.utils';
+// import SellCartModal from '@/components/sell/SellCartModal';
+// import CategoryDetailModal from '@/components/sell/CategoryDetailModal';
+
+// // IDs de las categorías raíz - Reemplaza con los IDs reales de tu BD
+// const COMPLETE_DEVICES_ROOT_ID = 'cmfr2mc1z00010py8ljs9os94';
+// const DISMANTLED_DEVICES_ROOT_ID = 'cmfr2mcac001t0py8bs6j3uy0';
+
+// const SellPage: React.FC = () => {
+//   const navigate = useNavigate();
+  
+//   // Estados principales
+//   const [currentView, setCurrentView] = useState<'marketplace' | 'category-browse'>('marketplace');
+//   const [selectedDeviceType, setSelectedDeviceType] = useState<'COMPLETE_DEVICES' | 'DISMANTLED_DEVICES' | null>(null);
+//   const [categories, setCategories] = useState<Category[]>([]);
+//   const [breadcrumb, setBreadcrumb] = useState<Category[]>([]);
+//   const [loading, setLoading] = useState(false);
+//   const [searchQuery, setSearchQuery] = useState('');
+//   const [cart, setCart] = useState<CartItem[]>([]);
+//   const [showFilters, setShowFilters] = useState(false);
+//   const [showCartModal, setShowCartModal] = useState(false);
+//   const [showCategoryModal, setShowCategoryModal] = useState(false);
+//   const [selectedCategoryForModal, setSelectedCategoryForModal] = useState<Category | null>(null);
+//   const [error, setError] = useState<string | null>(null);
+
+//   // Filtros
+//   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
+//   const [sortBy, setSortBy] = useState<'price-desc' | 'price-asc' | 'name' | 'popular'>('price-desc');
+
+//   // Mock data para demostración
+//   const mockPopularCategories = [
+//     { id: '1', name: 'iPhone 13 - 15 Series', pricePerKg: 850, icon: '📱', estimatedReturn: '$340-$680', condition: 'Excelente estado' },
+//     { id: '2', name: 'MacBook Pro 2019+', pricePerKg: 1200, icon: '💻', estimatedReturn: '$480-$960', condition: 'Funcional' },
+//     { id: '3', name: 'Motherboards Alto Grado', pricePerKg: 45, icon: '🔧', estimatedReturn: '$18-$36/kg', condition: 'Con componentes' },
+//     { id: '4', name: 'Samsung Galaxy S20+', pricePerKg: 650, icon: '📱', estimatedReturn: '$260-$520', condition: 'Buen estado' },
+//   ];
+
+//   const mockRecentSales = [
+//     { device: 'iPhone 14 Pro', soldFor: '$580', timeAgo: '2 mins ago', seller: 'Maria G.' },
+//     { device: 'MacBook Air M2', soldFor: '$720', timeAgo: '5 mins ago', seller: 'Carlos R.' },
+//     { device: 'PlayStation 5', soldFor: '$420', timeAgo: '8 mins ago', seller: 'Ana L.' },
+//   ];
+
+//   // Manejar selección de tipo de dispositivo
+//   const handleDeviceTypeSelect = async (type: 'COMPLETE_DEVICES' | 'DISMANTLED_DEVICES') => {
+//     console.log('🎬 [handleDeviceTypeSelect] Starting with type:', type);
+    
+//     setSelectedDeviceType(type);
+//     setCurrentView('category-browse');
+//     setLoading(true);
+//     setError(null);
+
+//     try {
+//       const rootId = type === 'COMPLETE_DEVICES' 
+//         ? COMPLETE_DEVICES_ROOT_ID 
+//         : DISMANTLED_DEVICES_ROOT_ID;
+      
+//       console.log(`🔄 [handleDeviceTypeSelect] Loading children for rootId: ${rootId}`);
+      
+//       // Obtener las categorías hijas
+//       const children = await categoryService.getCategoryChildren(rootId);
+      
+//       console.log('🎯 [handleDeviceTypeSelect] Children received:', {
+//         type: typeof children,
+//         isArray: Array.isArray(children),
+//         length: Array.isArray(children) ? children.length : 'N/A',
+//         sample: Array.isArray(children) && children.length > 0 ? children[0] : null
+//       });
+      
+//       // Validar y limpiar las categorías
+//       const validCategories = ValidationUtils.cleanCategoryArray(children);
+      
+//       console.log('✅ [handleDeviceTypeSelect] Valid categories:', validCategories.length);
+      
+//       if (validCategories.length === 0) {
+//         setError('No se encontraron categorías disponibles para este tipo de dispositivo');
+//       }
+      
+//       setCategories(validCategories);
+      
+//       // Crear breadcrumb inicial
+//       setBreadcrumb([{
+//         id: rootId,
+//         name: type === 'COMPLETE_DEVICES' ? 'Dispositivos Completos' : 'Componentes & Partes',
+//         slug: type.toLowerCase(),
+//         type: type,
+//         status: 'ACTIVE',
+//         level: 0,
+//         path: [],
+//         fullPath: '',
+//         isLeaf: false,
+//         sortOrder: 0,
+//         images: [],
+//         createdAt: new Date().toISOString(),
+//         updatedAt: new Date().toISOString()
+//       }]);
+      
+//       console.log('🎉 [handleDeviceTypeSelect] Success! Categories set:', validCategories.length);
+      
+//     } catch (error) {
+//       console.error('❌ [handleDeviceTypeSelect] Error:', error);
+//       setError(ValidationUtils.getErrorMessage(error));
+//       setCategories([]);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // Navegar por subcategorías
+//   const handleCategoryClick = async (category: Category) => {
+//     console.log('🔍 [handleCategoryClick] Category clicked:', category);
+    
+//     if (category.isLeaf) {
+//       // Es categoría final - abrir modal de detalles
+//       console.log('🍃 [handleCategoryClick] Leaf category, opening modal');
+//       setSelectedCategoryForModal(category);
+//       setShowCategoryModal(true);
+//       return;
+//     }
+
+//     setLoading(true);
+//     setError(null);
+    
+//     try {
+//       console.log(`🔄 [handleCategoryClick] Loading children for: ${category.id}`);
+//       const children = await categoryService.getCategoryChildren(category.id);
+//       const validCategories = ValidationUtils.cleanCategoryArray(children);
+      
+//       console.log('✅ [handleCategoryClick] Loaded children:', validCategories.length);
+      
+//       if (validCategories.length === 0) {
+//         setError('No se encontraron subcategorías disponibles');
+//       }
+      
+//       setCategories(validCategories);
+//       setBreadcrumb(prev => [...prev, category]);
+      
+//     } catch (error) {
+//       console.error('❌ [handleCategoryClick] Error loading subcategories:', error);
+//       setError(ValidationUtils.getErrorMessage(error));
+//       setCategories([]);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // Navegar hacia atrás en el breadcrumb
+//   const handleBreadcrumbClick = async (index: number) => {
+//     console.log('🔙 [handleBreadcrumbClick] Navigating to index:', index);
+    
+//     if (index === breadcrumb.length - 1) return; // Ya estamos aquí
+    
+//     const targetCategory = breadcrumb[index];
+//     setLoading(true);
+//     setError(null);
+    
+//     try {
+//       const children = await categoryService.getCategoryChildren(targetCategory.id);
+//       const validCategories = ValidationUtils.cleanCategoryArray(children);
+      
+//       setCategories(validCategories);
+//       setBreadcrumb(prev => prev.slice(0, index + 1));
+      
+//     } catch (error) {
+//       console.error('❌ [handleBreadcrumbClick] Error:', error);
+//       setError(ValidationUtils.getErrorMessage(error));
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // Volver al marketplace
+//   const handleBackToMarketplace = () => {
+//     console.log('🏠 [handleBackToMarketplace] Returning to marketplace');
+//     setCurrentView('marketplace');
+//     setSelectedDeviceType(null);
+//     setCategories([]);
+//     setBreadcrumb([]);
+//     setError(null);
+//   };
+
+//   // Agregar al carrito
+//   const handleAddToCart = (item: CartItem) => {
+//     // Asegurarse de que todos los campos requeridos estén presentes
+//     const cartItem: CartItem = {
+//       ...item,
+//       estimatedValue: item.estimatedValue ?? item.estimatedPrice ?? 0,
+//       pricePerKg: item.pricePerKg ?? 0,
+//       categoryPath: item.categoryPath ?? '',
+//       createdAt: item.createdAt ?? new Date().toISOString(),
+//     };
+//     console.log('🛒 [handleAddToCart] Adding item to cart:', cartItem);
+//     setCart(prev => [...prev, cartItem]);
+//     setShowCategoryModal(false);
+//   };
+
+//   // Búsqueda
+//   const handleSearch = async (e: React.FormEvent) => {
+//     e.preventDefault();
+//     if (!searchQuery.trim()) return;
+    
+//     console.log('🔍 [handleSearch] Searching for:', searchQuery);
+//     setLoading(true);
+    
+//     try {
+//       const results = await categoryService.searchCategories(searchQuery, {
+//         type: selectedDeviceType || undefined,
+//         leafOnly: true
+//       });
+      
+//       setCategories(results);
+//     } catch (error) {
+//       console.error('❌ [handleSearch] Error:', error);
+//       setError(ValidationUtils.getErrorMessage(error));
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // Categorías filtradas y ordenadas
+//   const filteredCategories = React.useMemo(() => {
+//     let filtered = [...categories];
+
+//     // Filtrar por rango de precio
+//     if (priceRange[0] > 0 || priceRange[1] < 1000) {
+//       filtered = filtered.filter(cat => {
+//         if (!cat.pricePerKg) return true;
+//         const price = parseFloat(cat.pricePerKg.toString());
+//         return price >= priceRange[0] && price <= priceRange[1];
+//       });
+//     }
+
+//     // Ordenar
+//     filtered.sort((a, b) => {
+//       switch (sortBy) {
+//         case 'price-desc':
+//           return (parseFloat(b.pricePerKg?.toString() || '0')) - (parseFloat(a.pricePerKg?.toString() || '0'));
+//         case 'price-asc':
+//           return (parseFloat(a.pricePerKg?.toString() || '0')) - (parseFloat(b.pricePerKg?.toString() || '0'));
+//         case 'name':
+//           return a.name.localeCompare(b.name);
+//         case 'popular':
+//           return b.sortOrder - a.sortOrder;
+//         default:
+//           return 0;
+//       }
+//     });
+
+//     return filtered;
+//   }, [categories, priceRange, sortBy]);
+
+//   return (
+//     <div className="min-h-screen bg-white">
+//       {/* Header */}
+//       <div className="bg-white border-b sticky top-0 z-10">
+//         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+//           <div className="flex items-center justify-between">
+//             <div className="flex items-center space-x-4">
+//               {currentView === 'category-browse' && (
+//                 <Button
+//                   variant="ghost"
+//                   size="sm"
+//                   onClick={handleBackToMarketplace}
+//                   className="flex items-center space-x-2"
+//                 >
+//                   <ArrowLeftIcon className="w-4 h-4" />
+//                   <span>Volver</span>
+//                 </Button>
+//               )}
+//               <div>
+//                 <h1 className="text-2xl font-bold text-gray-900">Vender</h1>
+//                 <p className="text-sm text-gray-500">
+//                   {currentView === 'marketplace' 
+//                     ? 'Elige qué quieres vender'
+//                     : 'Selecciona la categoría de tu dispositivo'}
+//                 </p>
+//               </div>
+//             </div>
+
+//             <div className="flex items-center space-x-3">
+//               {/* Carrito */}
+//               <Button
+//                 variant="outline"
+//                 size="sm"
+//                 onClick={() => setShowCartModal(true)}
+//                 className="relative"
+//               >
+//                 <ShoppingCartIcon className="w-5 h-5" />
+//                 {cart.length > 0 && (
+//                   <Badge className="absolute -top-2 -right-2 bg-[#D0FF5B] text-black">
+//                     {cart.length}
+//                   </Badge>
+//                 )}
+//                 <span className="ml-2">Mi Venta ({cart.length})</span>
+//               </Button>
+
+//               {/* Estimación total */}
+//               {cart.length > 0 && (
+//                 <div className="text-right">
+//                   <p className="text-xs text-gray-500">Estimación total</p>
+//                   <p className="text-lg font-bold text-green-600">
+//                     ${cart.reduce((sum, item) => sum + item.estimatedValue, 0).toFixed(2)}
+//                   </p>
+//                 </div>
+//               )}
+//             </div>
+//           </div>
+
+//           {/* Breadcrumb */}
+//           {currentView === 'category-browse' && breadcrumb.length > 0 && (
+//             <div className="flex items-center space-x-2 mt-4 text-sm">
+//               {breadcrumb.map((crumb, index) => (
+//                 <React.Fragment key={crumb.id}>
+//                   <button
+//                     onClick={() => handleBreadcrumbClick(index)}
+//                     className={cn(
+//                       'hover:text-[#D0FF5B] transition-colors',
+//                       index === breadcrumb.length - 1 
+//                         ? 'text-gray-900 font-medium' 
+//                         : 'text-gray-500'
+//                     )}
+//                   >
+//                     {crumb.name}
+//                   </button>
+//                   {index < breadcrumb.length - 1 && (
+//                     <ChevronRightIcon className="w-4 h-4 text-gray-400" />
+//                   )}
+//                 </React.Fragment>
+//               ))}
+//             </div>
+//           )}
+//         </div>
+//       </div>
+
+//       {/* Contenido principal */}
+//       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+//         {currentView === 'marketplace' ? (
+//           /* ===== VISTA MARKETPLACE ===== */
+//           <div className="space-y-8">
+//             {/* Hero Section */}
+//             <div className="bg-gradient-to-r from-[#a8c241] to-[#719428] rounded-2xl p-8 text-white">
+//               <div className="max-w-3xl">
+//                 <h2 className="text-3xl font-bold mb-4">
+//                   Convierte tu electrónica en efectivo 💰
+//                 </h2>
+//                 <p className="text-lg opacity-90 mb-6">
+//                   Proceso simple, precios justos y pago inmediato. Vende tus dispositivos o componentes electrónicos de forma rápida y segura.
+//                 </p>
+//                 <div className="grid grid-cols-3 gap-4">
+//                   <div className="bg-white/10 backdrop-blur rounded-lg p-4">
+//                     <div className="text-2xl font-bold">24h</div>
+//                     <div className="text-sm opacity-80">Pago rápido</div>
+//                   </div>
+//                   <div className="bg-white/10 backdrop-blur rounded-lg p-4">
+//                     <div className="text-2xl font-bold">100%</div>
+//                     <div className="text-sm opacity-80">Seguro</div>
+//                   </div>
+//                   <div className="bg-white/10 backdrop-blur rounded-lg p-4">
+//                     <div className="text-2xl font-bold">+5k</div>
+//                     <div className="text-sm opacity-80">Ventas</div>
+//                   </div>
+//                 </div>
+//               </div>
+//             </div>
+
+//             {/* Tipos de dispositivos */}
+//             <div>
+//               <h3 className="text-xl font-bold mb-4">¿Qué quieres vender?</h3>
+//               <div className="grid md:grid-cols-2 gap-6">
+//                 {/* Dispositivos Completos */}
+//                 <Card 
+//                   className="cursor-pointer hover:shadow-lg transition-all duration-200 border-2 hover:border-blue-500 p-6"
+//                   onClick={() => handleDeviceTypeSelect('COMPLETE_DEVICES')}
+//                 >
+//                   <div className="flex items-start space-x-4">
+//                     <div className="bg-blue-100 p-3 rounded-lg">
+//                       <div className="text-3xl">💻</div>
+//                     </div>
+//                     <div className="flex-1">
+//                       <h3 className="text-xl font-semibold mb-2">Dispositivos Completos</h3>
+//                       <p className="text-gray-600 mb-4">
+//                         iPhones, laptops, tablets, consolas y más dispositivos funcionales
+//                       </p>
+                      
+//                       {/* Precios destacados */}
+//                       <div className="space-y-2 mb-4">
+//                         <div className="flex justify-between items-center">
+//                           <span className="text-sm">iPhone 13-15</span>
+//                           <span className="font-semibold text-green-600">$340-$680</span>
+//                         </div>
+//                         <div className="flex justify-between items-center">
+//                           <span className="text-sm">MacBook Pro</span>
+//                           <span className="font-semibold text-green-600">$480-$960</span>
+//                         </div>
+//                       </div>
+
+//                       <div className="flex items-center justify-between">
+//                         <Badge variant="secondary" className="text-blue-700">
+//                           💰 Mayores valores
+//                         </Badge>
+//                         <ChevronRightIcon className="h-5 w-5 text-gray-400" />
+//                       </div>
+//                     </div>
+//                   </div>
+//                 </Card>
+
+//                 {/* Componentes y Partes */}
+//                 <Card 
+//                   className="cursor-pointer hover:shadow-lg transition-all duration-200 border-2 hover:border-green-500 p-6"
+//                   onClick={() => handleDeviceTypeSelect('DISMANTLED_DEVICES')}
+//                 >
+//                   <div className="flex items-start space-x-4">
+//                     <div className="bg-green-100 p-3 rounded-lg">
+//                       <div className="text-3xl">🔧</div>
+//                     </div>
+//                     <div className="flex-1">
+//                       <h3 className="text-xl font-semibold mb-2">Componentes & Partes</h3>
+//                       <p className="text-gray-600 mb-4">
+//                         Motherboards, procesadores, chips y componentes individuales
+//                       </p>
+                      
+//                       {/* Precios destacados */}
+//                       <div className="space-y-2 mb-4">
+//                         <div className="flex justify-between items-center">
+//                           <span className="text-sm">Alto Grado</span>
+//                           <span className="font-semibold text-green-600">$45/kg</span>
+//                         </div>
+//                         <div className="flex justify-between items-center">
+//                           <span className="text-sm">Bajo Grado</span>
+//                           <span className="font-semibold text-green-600">$2.50-$3/kg</span>
+//                         </div>
+//                       </div>
+
+//                       <div className="flex items-center justify-between">
+//                         <Badge variant="secondary" className="text-green-700">
+//                           ♻️ Reciclaje valorado
+//                         </Badge>
+//                         <ChevronRightIcon className="h-5 w-5 text-gray-400" />
+//                       </div>
+//                     </div>
+//                   </div>
+//                 </Card>
+//               </div>
+//             </div>
+
+//             {/* Categorías populares */}
+//             <div>
+//               <div className="flex items-center justify-between mb-4">
+//                 <h3 className="text-xl font-bold flex items-center space-x-2">
+//                   <SparklesIcon className="w-6 h-6 text-yellow-500" />
+//                   <span>Categorías Populares</span>
+//                 </h3>
+//               </div>
+//               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+//                 {mockPopularCategories.map((category) => (
+//                   <Card key={category.id} className="p-4 hover:shadow-md transition-shadow cursor-pointer">
+//                     <div className="text-3xl mb-3">{category.icon}</div>
+//                     <h4 className="font-semibold mb-2">{category.name}</h4>
+//                     <div className="space-y-1 text-sm">
+//                       <div className="flex justify-between">
+//                         <span className="text-gray-600">Estimado:</span>
+//                         <span className="font-semibold text-green-600">{category.estimatedReturn}</span>
+//                       </div>
+//                       <div className="text-xs text-gray-500">{category.condition}</div>
+//                     </div>
+//                   </Card>
+//                 ))}
+//               </div>
+//             </div>
+
+//             {/* Ventas recientes */}
+//             <div>
+//               <div className="flex items-center justify-between mb-4">
+//                 <h3 className="text-xl font-bold flex items-center space-x-2">
+//                   <TrophyIcon className="w-6 h-6 text-green-500" />
+//                   <span>Ventas Recientes</span>
+//                 </h3>
+//               </div>
+//               <Card className="divide-y">
+//                 {mockRecentSales.map((sale, index) => (
+//                   <div key={index} className="p-4 flex items-center justify-between">
+//                     <div>
+//                       <p className="font-medium">{sale.device}</p>
+//                       <p className="text-sm text-gray-500">{sale.seller}</p>
+//                     </div>
+//                     <div className="text-right">
+//                       <p className="font-semibold text-green-600">{sale.soldFor}</p>
+//                       <div className="flex items-center text-xs text-gray-500">
+//                         <ClockIcon className="w-3 h-3 mr-1" />
+//                         {sale.timeAgo}
+//                       </div>
+//                     </div>
+//                   </div>
+//                 ))}
+//               </Card>
+//             </div>
+//           </div>
+//         ) : (
+//           /* ===== VISTA CATEGORÍAS ===== */
+//           <div className="space-y-6">
+//             {/* Barra de búsqueda y filtros */}
+//             <div className="flex items-center space-x-4">
+//               <form onSubmit={handleSearch} className="flex-1">
+//                 <div className="relative">
+//                   <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+//                   <input
+//                     type="text"
+//                     value={searchQuery}
+//                     onChange={(e) => setSearchQuery(e.target.value)}
+//                     placeholder="Buscar categorías..."
+//                     className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#D0FF5B] focus:border-transparent"
+//                   />
+//                 </div>
+//               </form>
+//               <Button
+//                 variant="outline"
+//                 size="sm"
+//                 onClick={() => setShowFilters(!showFilters)}
+//                 className="flex items-center space-x-2"
+//               >
+//                 <FunnelIcon className="w-4 h-4" />
+//                 <span>Filtros</span>
+//               </Button>
+//             </div>
+
+//             {/* Panel de filtros */}
+//             {showFilters && (
+//               <Card className="p-4">
+//                 <div className="grid md:grid-cols-2 gap-4">
+//                   <div>
+//                     <label className="text-sm font-medium mb-2 block">Ordenar por</label>
+//                     <select
+//                       value={sortBy}
+//                       onChange={(e) => setSortBy(e.target.value as any)}
+//                       className="w-full border rounded-lg px-3 py-2"
+//                     >
+//                       <option value="price-desc">Mayor precio</option>
+//                       <option value="price-asc">Menor precio</option>
+//                       <option value="name">Nombre A-Z</option>
+//                       <option value="popular">Más popular</option>
+//                     </select>
+//                   </div>
+//                 </div>
+//               </Card>
+//             )}
+
+//             {/* Loading state */}
+//             {loading && (
+//               <div className="text-center py-12">
+//                 <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#D0FF5B]"></div>
+//                 <p className="mt-4 text-gray-600">Cargando categorías...</p>
+//               </div>
+//             )}
+
+//             {/* Error state */}
+//             {error && !loading && (
+//               <Card className="p-8 text-center">
+//                 <div className="text-yellow-500 text-5xl mb-4">⚠️</div>
+//                 <h3 className="text-xl font-semibold mb-2">Error al cargar categorías</h3>
+//                 <p className="text-gray-600 mb-4">{error}</p>
+//                 <Button onClick={() => handleDeviceTypeSelect(selectedDeviceType!)}>
+//                   Reintentar
+//                 </Button>
+//               </Card>
+//             )}
+
+//             {/* Empty state */}
+//             {!loading && !error && filteredCategories.length === 0 && (
+//               <Card className="p-12 text-center">
+//                 <div className="text-6xl mb-4">📦</div>
+//                 <h3 className="text-xl font-semibold mb-2">No hay categorías disponibles</h3>
+//                 <p className="text-gray-600">
+//                   No se encontraron categorías para este tipo de dispositivo.
+//                 </p>
+//               </Card>
+//             )}
+
+//             {/* Grid de categorías */}
+//             {!loading && !error && filteredCategories.length > 0 && (
+//               <div>
+//                 <div className="flex items-center justify-between mb-4">
+//                   <p className="text-sm text-gray-600">
+//                     {filteredCategories.length} categorías disponibles
+//                   </p>
+//                 </div>
+//                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+//                   {filteredCategories.map((category) => (
+//                     <Card
+//                       key={category.id}
+//                       className="p-6 cursor-pointer hover:shadow-lg transition-all duration-200 border-2 hover:border-[#D0FF5B]"
+//                       onClick={() => handleCategoryClick(category)}
+//                     >
+//                       {/* Thumbnail */}
+//                       {category.thumbnailImage && (
+//                         <div className="w-full h-40 mb-4 rounded-lg overflow-hidden bg-gray-100">
+//                           <img
+//                             src={category.thumbnailImage}
+//                             alt={category.name}
+//                             className="w-full h-full object-cover"
+//                           />
+//                         </div>
+//                       )}
+
+//                       {/* Contenido */}
+//                       <div>
+//                         <div className="flex items-start justify-between mb-2">
+//                           <h3 className="font-semibold text-lg">{category.name}</h3>
+//                           {category.isLeaf && (
+//                             <Badge variant="secondary" className="bg-green-100 text-green-700">
+//                               Seleccionable
+//                             </Badge>
+//                           )}
+//                         </div>
+
+//                         {category.description && (
+//                           <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+//                             {category.description}
+//                           </p>
+//                         )}
+
+//                         {/* Precio */}
+//                         {category.pricePerKg && (
+//                           <div className="bg-green-50 rounded-lg p-3 mb-3">
+//                             <div className="text-xs text-gray-600 mb-1">Precio por kg</div>
+//                             <div className="text-xl font-bold text-green-600">
+//                               ${parseFloat(category.pricePerKg.toString()).toFixed(2)}
+//                             </div>
+//                           </div>
+//                         )}
+
+//                         {/* Footer */}
+//                         <div className="flex items-center justify-between text-sm">
+//                           <span className="text-gray-500">
+//                             {category.isLeaf ? 'Listo para vender' : 'Ver subcategorías'}
+//                           </span>
+//                           <ChevronRightIcon className="w-5 h-5 text-gray-400" />
+//                         </div>
+//                       </div>
+//                     </Card>
+//                   ))}
+//                 </div>
+//               </div>
+//             )}
+//           </div>
+//         )}
+//       </div>
+
+//       {/* Modales */}
+//       {showCartModal && (
+//         <SellCartModal
+//           cart={cart}
+//           onClose={() => setShowCartModal(false)}
+//           onRemoveItem={(index) => setCart(prev => prev.filter((_, i) => i !== Number(index)))}
+//           onCheckout={() => {
+//             setShowCartModal(false);
+//             navigate('/sell/checkout');
+//           }}
+//         />
+//       )}
+
+//       {showCategoryModal && selectedCategoryForModal && (
+//         <CategoryDetailModal
+//           category={selectedCategoryForModal}
+//           onClose={() => {
+//             setShowCategoryModal(false);
+//             setSelectedCategoryForModal(null);
+//           } }
+//           onAddToCart={handleAddToCart}        />
+//       )}
+//     </div>
+//   );
+// };
+
+// export default SellPage;
+
+
+
+
+
+
+
+
+
+// // src/pages/dashboard/SellPage.tsx
+// import React, { useState } from 'react';
+// import { useNavigate } from 'react-router-dom';
+// import {
+//   MagnifyingGlassIcon,
+//   FunnelIcon,
+//   ShoppingCartIcon,
+//   ArrowLeftIcon,
+//   ChevronRightIcon,
+//   SparklesIcon,
+//   TrophyIcon,
+//   ClockIcon,
+// } from '@heroicons/react/24/outline';
+// import { Category, CartItem } from '@/types/categories';
+// import { Card } from '@/components/ui/Card';
+// import { Button } from '@/components/ui/Button';
+// import { Badge } from '@/components/ui/Badge';
+// import categoryService from '@/services/categoryService';
+// import { cn } from '@/utils/cn';
+// import { ValidationUtils } from '@/utils/validation.utils';
+// import SellCartModal from '@/components/sell/SellCartModal';
+// import CategoryDetailView from '@/components/sell/CategoryDetailView';
+
+// // IDs de las categorías raíz
+// const COMPLETE_DEVICES_ROOT_ID = 'cmfr2mc1z00010py8ljs9os94';
+// const DISMANTLED_DEVICES_ROOT_ID = 'cmfr2mcac001t0py8bs6j3uy0';
+
+// const SellPage: React.FC = () => {
+//   const navigate = useNavigate();
+  
+//   // Estados principales
+//   const [currentView, setCurrentView] = useState<'marketplace' | 'category-browse' | 'category-detail'>('marketplace');
+//   const [selectedDeviceType, setSelectedDeviceType] = useState<'COMPLETE_DEVICES' | 'DISMANTLED_DEVICES' | null>(null);
+//   const [categories, setCategories] = useState<Category[]>([]);
+//   const [breadcrumb, setBreadcrumb] = useState<Category[]>([]);
+//   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+//   const [loading, setLoading] = useState(false);
+//   const [searchQuery, setSearchQuery] = useState('');
+//   const [cart, setCart] = useState<CartItem[]>([]);
+//   const [showFilters, setShowFilters] = useState(false);
+//   const [showCartModal, setShowCartModal] = useState(false);
+//   const [error, setError] = useState<string | null>(null);
+
+//   // Filtros
+//   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
+//   const [sortBy, setSortBy] = useState<'price-desc' | 'price-asc' | 'name' | 'popular'>('price-desc');
+
+//   // Mock data para demostración
+//   const mockPopularCategories = [
+//     { id: '1', name: 'iPhone 13 - 15 Series', pricePerKg: 850, icon: '📱', estimatedReturn: '$340-$680', condition: 'Excelente estado' },
+//     { id: '2', name: 'MacBook Pro 2019+', pricePerKg: 1200, icon: '💻', estimatedReturn: '$480-$960', condition: 'Funcional' },
+//     { id: '3', name: 'Motherboards Alto Grado', pricePerKg: 45, icon: '🔧', estimatedReturn: '$18-$36/kg', condition: 'Con componentes' },
+//     { id: '4', name: 'Samsung Galaxy S20+', pricePerKg: 650, icon: '📱', estimatedReturn: '$260-$520', condition: 'Buen estado' },
+//   ];
+
+//   const mockRecentSales = [
+//     { device: 'iPhone 14 Pro', soldFor: '$580', timeAgo: '2 mins ago', seller: 'Maria G.' },
+//     { device: 'MacBook Air M2', soldFor: '$720', timeAgo: '5 mins ago', seller: 'Carlos R.' },
+//     { device: 'PlayStation 5', soldFor: '$420', timeAgo: '8 mins ago', seller: 'Ana L.' },
+//   ];
+
+//   // Manejar selección de tipo de dispositivo
+//   const handleDeviceTypeSelect = async (type: 'COMPLETE_DEVICES' | 'DISMANTLED_DEVICES') => {
+//     console.log('🎬 [handleDeviceTypeSelect] Starting with type:', type);
+    
+//     setSelectedDeviceType(type);
+//     setCurrentView('category-browse');
+//     setLoading(true);
+//     setError(null);
+
+//     try {
+//       const rootId = type === 'COMPLETE_DEVICES' 
+//         ? COMPLETE_DEVICES_ROOT_ID 
+//         : DISMANTLED_DEVICES_ROOT_ID;
+      
+//       console.log(`🔄 [handleDeviceTypeSelect] Loading children for rootId: ${rootId}`);
+      
+//       const children = await categoryService.getCategoryChildren(rootId);
+//       const validCategories = ValidationUtils.cleanCategoryArray(children);
+      
+//       console.log('✅ [handleDeviceTypeSelect] Valid categories:', validCategories.length);
+      
+//       if (validCategories.length === 0) {
+//         setError('No se encontraron categorías disponibles para este tipo de dispositivo');
+//       }
+      
+//       setCategories(validCategories);
+      
+//       setBreadcrumb([{
+//         id: rootId,
+//         name: type === 'COMPLETE_DEVICES' ? 'Dispositivos Completos' : 'Componentes & Partes',
+//         slug: type.toLowerCase(),
+//         type: type,
+//         status: 'ACTIVE',
+//         level: 0,
+//         path: [],
+//         fullPath: '',
+//         isLeaf: false,
+//         sortOrder: 0,
+//         images: [],
+//         createdAt: new Date().toISOString(),
+//         updatedAt: new Date().toISOString()
+//       }]);
+      
+//       console.log('🎉 [handleDeviceTypeSelect] Success! Categories set:', validCategories.length);
+      
+//     } catch (error) {
+//       console.error('❌ [handleDeviceTypeSelect] Error:', error);
+//       setError(ValidationUtils.getErrorMessage(error));
+//       setCategories([]);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // Navegar por subcategorías
+//   const handleCategoryClick = async (category: Category) => {
+//     console.log('🔍 [handleCategoryClick] Category clicked:', category);
+    
+//     if (category.isLeaf) {
+//       // Es categoría final - mostrar vista de detalle
+//       console.log('🍃 [handleCategoryClick] Leaf category, showing detail view');
+//       setSelectedCategory(category);
+//       setCurrentView('category-detail');
+//       return;
+//     }
+
+//     setLoading(true);
+//     setError(null);
+    
+//     try {
+//       console.log(`🔄 [handleCategoryClick] Loading children for: ${category.id}`);
+//       const children = await categoryService.getCategoryChildren(category.id);
+//       const validCategories = ValidationUtils.cleanCategoryArray(children);
+      
+//       console.log('✅ [handleCategoryClick] Loaded children:', validCategories.length);
+      
+//       if (validCategories.length === 0) {
+//         setError('No se encontraron subcategorías disponibles');
+//       }
+      
+//       setCategories(validCategories);
+//       setBreadcrumb(prev => [...prev, category]);
+      
+//     } catch (error) {
+//       console.error('❌ [handleCategoryClick] Error loading subcategories:', error);
+//       setError(ValidationUtils.getErrorMessage(error));
+//       setCategories([]);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // Navegar hacia atrás en el breadcrumb
+//   const handleBreadcrumbClick = async (index: number) => {
+//     console.log('🔙 [handleBreadcrumbClick] Navigating to index:', index);
+    
+//     if (index === breadcrumb.length - 1) return;
+    
+//     const targetCategory = breadcrumb[index];
+//     setLoading(true);
+//     setError(null);
+    
+//     try {
+//       const children = await categoryService.getCategoryChildren(targetCategory.id);
+//       const validCategories = ValidationUtils.cleanCategoryArray(children);
+      
+//       setCategories(validCategories);
+//       setBreadcrumb(prev => prev.slice(0, index + 1));
+//       setCurrentView('category-browse');
+      
+//     } catch (error) {
+//       console.error('❌ [handleBreadcrumbClick] Error:', error);
+//       setError(ValidationUtils.getErrorMessage(error));
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // Volver al marketplace
+//   const handleBackToMarketplace = () => {
+//     console.log('🏠 [handleBackToMarketplace] Returning to marketplace');
+//     setCurrentView('marketplace');
+//     setSelectedDeviceType(null);
+//     setCategories([]);
+//     setBreadcrumb([]);
+//     setSelectedCategory(null);
+//     setError(null);
+//   };
+
+//   // Volver a categorías desde detalle
+//   const handleBackToCategories = () => {
+//     console.log('🔙 [handleBackToCategories] Returning to category browse');
+//     setCurrentView('category-browse');
+//     setSelectedCategory(null);
+//   };
+
+//   // Agregar al carrito
+//   const handleAddToCart = (item: CartItem) => {
+//     console.log('🛒 [handleAddToCart] Adding item to cart:', item);
+//     setCart(prev => [...prev, item]);
+//     // Volver a la vista de categorías después de agregar
+//     setCurrentView('category-browse');
+//     setSelectedCategory(null);
+//   };
+
+//   // Eliminar del carrito
+//   const handleRemoveFromCart = (index: number) => {
+//     console.log('🗑️ [handleRemoveFromCart] Removing item at index:', index);
+//     setCart(prev => prev.filter((_, i) => i !== index));
+//   };
+
+//   // Proceder al checkout
+//   const handleCheckout = () => {
+//     console.log('💳 [handleCheckout] Proceeding to checkout with cart:', cart);
+//     setShowCartModal(false);
+//     navigate('/sell/checkout', { state: { cart } });
+//   };
+
+//   // Búsqueda
+//   const handleSearch = async (e: React.FormEvent) => {
+//     e.preventDefault();
+//     if (!searchQuery.trim()) return;
+    
+//     console.log('🔍 [handleSearch] Searching for:', searchQuery);
+//     setLoading(true);
+    
+//     try {
+//       const results = await categoryService.searchCategories(searchQuery, {
+//         type: selectedDeviceType || undefined,
+//         leafOnly: true
+//       });
+      
+//       setCategories(results);
+//     } catch (error) {
+//       console.error('❌ [handleSearch] Error:', error);
+//       setError(ValidationUtils.getErrorMessage(error));
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // Categorías filtradas y ordenadas
+//   const filteredCategories = React.useMemo(() => {
+//     let filtered = [...categories];
+
+//     if (priceRange[0] > 0 || priceRange[1] < 1000) {
+//       filtered = filtered.filter(cat => {
+//         if (!cat.pricePerKg) return true;
+//         const price = parseFloat(cat.pricePerKg.toString());
+//         return price >= priceRange[0] && price <= priceRange[1];
+//       });
+//     }
+
+//     filtered.sort((a, b) => {
+//       switch (sortBy) {
+//         case 'price-desc':
+//           return (parseFloat(b.pricePerKg?.toString() || '0')) - (parseFloat(a.pricePerKg?.toString() || '0'));
+//         case 'price-asc':
+//           return (parseFloat(a.pricePerKg?.toString() || '0')) - (parseFloat(b.pricePerKg?.toString() || '0'));
+//         case 'name':
+//           return a.name.localeCompare(b.name);
+//         case 'popular':
+//           return b.sortOrder - a.sortOrder;
+//         default:
+//           return 0;
+//       }
+//     });
+
+//     return filtered;
+//   }, [categories, priceRange, sortBy]);
+
+//   return (
+//     <div className="min-h-screen bg-gray-50">
+//       {/* Header */}
+//       <div className="bg-white border-b sticky top-0 z-10">
+//         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+//           <div className="flex items-center justify-between">
+//             <div className="flex items-center space-x-4">
+//               {(currentView === 'category-browse' || currentView === 'category-detail') && (
+//                 <Button
+//                   variant="ghost"
+//                   size="sm"
+//                   onClick={currentView === 'category-detail' ? handleBackToCategories : handleBackToMarketplace}
+//                   className="flex items-center space-x-2"
+//                 >
+//                   <ArrowLeftIcon className="w-4 h-4" />
+//                   <span>Volver</span>
+//                 </Button>
+//               )}
+//               <div>
+//                 <h1 className="text-2xl font-bold text-gray-900">Vender</h1>
+//                 <p className="text-sm text-gray-500">
+//                   {currentView === 'marketplace' && 'Elige qué quieres vender'}
+//                   {currentView === 'category-browse' && 'Selecciona la categoría de tu dispositivo'}
+//                   {currentView === 'category-detail' && 'Completa los detalles de tu venta'}
+//                 </p>
+//               </div>
+//             </div>
+
+//             <div className="flex items-center space-x-3">
+//               <Button
+//                 variant="outline"
+//                 size="sm"
+//                 onClick={() => setShowCartModal(true)}
+//                 className="relative"
+//               >
+//                 <ShoppingCartIcon className="w-5 h-5" />
+//                 {cart.length > 0 && (
+//                   <Badge className="absolute -top-2 -right-2 bg-[#D0FF5B] text-black">
+//                     {cart.length}
+//                   </Badge>
+//                 )}
+//                 <span className="ml-2">Mi Venta ({cart.length})</span>
+//               </Button>
+
+//               {cart.length > 0 && (
+//                 <div className="text-right">
+//                   <p className="text-xs text-gray-500">Estimación total</p>
+//                   <p className="text-lg font-bold text-green-600">
+//                     ${cart.reduce((sum, item) => sum + item.estimatedValue, 0).toFixed(2)}
+//                   </p>
+//                 </div>
+//               )}
+//             </div>
+//           </div>
+
+//           {/* Breadcrumb */}
+//           {(currentView === 'category-browse' || currentView === 'category-detail') && breadcrumb.length > 0 && (
+//             <div className="flex items-center space-x-2 mt-4 text-sm">
+//               {breadcrumb.map((crumb, index) => (
+//                 <React.Fragment key={crumb.id}>
+//                   <button
+//                     onClick={() => handleBreadcrumbClick(index)}
+//                     className={cn(
+//                       'hover:text-[#D0FF5B] transition-colors',
+//                       index === breadcrumb.length - 1 
+//                         ? 'text-gray-900 font-medium' 
+//                         : 'text-gray-500'
+//                     )}
+//                   >
+//                     {crumb.name}
+//                   </button>
+//                   {index < breadcrumb.length - 1 && (
+//                     <ChevronRightIcon className="w-4 h-4 text-gray-400" />
+//                   )}
+//                 </React.Fragment>
+//               ))}
+//               {currentView === 'category-detail' && selectedCategory && (
+//                 <>
+//                   <ChevronRightIcon className="w-4 h-4 text-gray-400" />
+//                   <span className="text-gray-900 font-medium">{selectedCategory.name}</span>
+//                 </>
+//               )}
+//             </div>
+//           )}
+//         </div>
+//       </div>
+
+//       {/* Contenido principal */}
+//       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+//         {currentView === 'marketplace' ? (
+//           /* ===== VISTA MARKETPLACE ===== */
+//           <div className="space-y-8">
+//             {/* Hero Section */}
+//             <div className="bg-gradient-to-r from-[#a8c241] to-[#719428] rounded-2xl p-8 text-white">
+//               <div className="max-w-3xl">
+//                 <h2 className="text-3xl font-bold mb-4">
+//                   Convierte tu electrónica en efectivo 💰
+//                 </h2>
+//                 <p className="text-lg opacity-90 mb-6">
+//                   Proceso simple, precios justos y pago inmediato. Vende tus dispositivos o componentes electrónicos de forma rápida y segura.
+//                 </p>
+//                 <div className="grid grid-cols-3 gap-4">
+//                   <div className="bg-white/10 backdrop-blur rounded-lg p-4">
+//                     <div className="text-2xl font-bold">24h</div>
+//                     <div className="text-sm opacity-80">Pago rápido</div>
+//                   </div>
+//                   <div className="bg-white/10 backdrop-blur rounded-lg p-4">
+//                     <div className="text-2xl font-bold">100%</div>
+//                     <div className="text-sm opacity-80">Seguro</div>
+//                   </div>
+//                   <div className="bg-white/10 backdrop-blur rounded-lg p-4">
+//                     <div className="text-2xl font-bold">+5k</div>
+//                     <div className="text-sm opacity-80">Ventas</div>
+//                   </div>
+//                 </div>
+//               </div>
+//             </div>
+
+//             {/* Tipos de dispositivos */}
+//             <div>
+//               <h3 className="text-xl font-bold mb-4">¿Qué quieres vender?</h3>
+//               <div className="grid md:grid-cols-2 gap-6">
+//                 <Card 
+//                   className="cursor-pointer hover:shadow-lg transition-all duration-200 border-2 hover:border-blue-500 p-6"
+//                   onClick={() => handleDeviceTypeSelect('COMPLETE_DEVICES')}
+//                 >
+//                   <div className="flex items-start space-x-4">
+//                     <div className="bg-blue-100 p-3 rounded-lg">
+//                       <div className="text-3xl">💻</div>
+//                     </div>
+//                     <div className="flex-1">
+//                       <h3 className="text-xl font-semibold mb-2">Dispositivos Completos</h3>
+//                       <p className="text-gray-600 mb-4">
+//                         iPhones, laptops, tablets, consolas y más dispositivos funcionales
+//                       </p>
+                      
+//                       <div className="space-y-2 mb-4">
+//                         <div className="flex justify-between items-center">
+//                           <span className="text-sm">iPhone 13-15</span>
+//                           <span className="font-semibold text-green-600">$340-$680</span>
+//                         </div>
+//                         <div className="flex justify-between items-center">
+//                           <span className="text-sm">MacBook Pro</span>
+//                           <span className="font-semibold text-green-600">$480-$960</span>
+//                         </div>
+//                       </div>
+
+//                       <div className="flex items-center justify-between">
+//                         <Badge variant="secondary" className="text-blue-700">
+//                           💰 Mayores valores
+//                         </Badge>
+//                         <ChevronRightIcon className="h-5 w-5 text-gray-400" />
+//                       </div>
+//                     </div>
+//                   </div>
+//                 </Card>
+
+//                 <Card 
+//                   className="cursor-pointer hover:shadow-lg transition-all duration-200 border-2 hover:border-green-500 p-6"
+//                   onClick={() => handleDeviceTypeSelect('DISMANTLED_DEVICES')}
+//                 >
+//                   <div className="flex items-start space-x-4">
+//                     <div className="bg-green-100 p-3 rounded-lg">
+//                       <div className="text-3xl">🔧</div>
+//                     </div>
+//                     <div className="flex-1">
+//                       <h3 className="text-xl font-semibold mb-2">Componentes & Partes</h3>
+//                       <p className="text-gray-600 mb-4">
+//                         Motherboards, procesadores, chips y componentes individuales
+//                       </p>
+                      
+//                       <div className="space-y-2 mb-4">
+//                         <div className="flex justify-between items-center">
+//                           <span className="text-sm">Alto Grado</span>
+//                           <span className="font-semibold text-green-600">$45/kg</span>
+//                         </div>
+//                         <div className="flex justify-between items-center">
+//                           <span className="text-sm">Bajo Grado</span>
+//                           <span className="font-semibold text-green-600">$2.50-$3/kg</span>
+//                         </div>
+//                       </div>
+
+//                       <div className="flex items-center justify-between">
+//                         <Badge variant="secondary" className="text-green-700">
+//                           ♻️ Reciclaje valorado
+//                         </Badge>
+//                         <ChevronRightIcon className="h-5 w-5 text-gray-400" />
+//                       </div>
+//                     </div>
+//                   </div>
+//                 </Card>
+//               </div>
+//             </div>
+
+//             {/* Categorías populares */}
+//             <div>
+//               <div className="flex items-center justify-between mb-4">
+//                 <h3 className="text-xl font-bold flex items-center space-x-2">
+//                   <SparklesIcon className="w-6 h-6 text-yellow-500" />
+//                   <span>Categorías Populares</span>
+//                 </h3>
+//               </div>
+//               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+//                 {mockPopularCategories.map((category) => (
+//                   <Card key={category.id} className="p-4 hover:shadow-md transition-shadow cursor-pointer">
+//                     <div className="text-3xl mb-3">{category.icon}</div>
+//                     <h4 className="font-semibold mb-2">{category.name}</h4>
+//                     <div className="space-y-1 text-sm">
+//                       <div className="flex justify-between">
+//                         <span className="text-gray-600">Estimado:</span>
+//                         <span className="font-semibold text-green-600">{category.estimatedReturn}</span>
+//                       </div>
+//                       <div className="text-xs text-gray-500">{category.condition}</div>
+//                     </div>
+//                   </Card>
+//                 ))}
+//               </div>
+//             </div>
+
+//             {/* Ventas recientes */}
+//             <div>
+//               <div className="flex items-center justify-between mb-4">
+//                 <h3 className="text-xl font-bold flex items-center space-x-2">
+//                   <TrophyIcon className="w-6 h-6 text-green-500" />
+//                   <span>Ventas Recientes</span>
+//                 </h3>
+//               </div>
+//               <Card className="divide-y">
+//                 {mockRecentSales.map((sale, index) => (
+//                   <div key={index} className="p-4 flex items-center justify-between">
+//                     <div>
+//                       <p className="font-medium">{sale.device}</p>
+//                       <p className="text-sm text-gray-500">{sale.seller}</p>
+//                     </div>
+//                     <div className="text-right">
+//                       <p className="font-semibold text-green-600">{sale.soldFor}</p>
+//                       <div className="flex items-center text-xs text-gray-500">
+//                         <ClockIcon className="w-3 h-3 mr-1" />
+//                         {sale.timeAgo}
+//                       </div>
+//                     </div>
+//                   </div>
+//                 ))}
+//               </Card>
+//             </div>
+//           </div>
+//         ) : currentView === 'category-detail' && selectedCategory ? (
+//           /* ===== VISTA DETALLE DE CATEGORÍA ===== */
+//           <CategoryDetailView
+//             category={selectedCategory}
+//             onAddToCart={handleAddToCart}
+//             onBack={handleBackToCategories}
+//           />
+//         ) : (
+//           /* ===== VISTA CATEGORÍAS ===== */
+//           <div className="space-y-6">
+//             {/* Barra de búsqueda y filtros */}
+//             <div className="flex items-center space-x-4">
+//               <form onSubmit={handleSearch} className="flex-1">
+//                 <div className="relative">
+//                   <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+//                   <input
+//                     type="text"
+//                     value={searchQuery}
+//                     onChange={(e) => setSearchQuery(e.target.value)}
+//                     placeholder="Buscar categorías..."
+//                     className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#D0FF5B] focus:border-transparent"
+//                   />
+//                 </div>
+//               </form>
+//               <Button
+//                 variant="outline"
+//                 size="sm"
+//                 onClick={() => setShowFilters(!showFilters)}
+//                 className="flex items-center space-x-2"
+//               >
+//                 <FunnelIcon className="w-4 h-4" />
+//                 <span>Filtros</span>
+//               </Button>
+//             </div>
+
+//             {/* Panel de filtros */}
+//             {showFilters && (
+//               <Card className="p-4">
+//                 <div className="grid md:grid-cols-2 gap-4">
+//                   <div>
+//                     <label className="text-sm font-medium mb-2 block">Ordenar por</label>
+//                     <select
+//                       value={sortBy}
+//                       onChange={(e) => setSortBy(e.target.value as any)}
+//                       className="w-full border rounded-lg px-3 py-2"
+//                     >
+//                       <option value="price-desc">Mayor precio</option>
+//                       <option value="price-asc">Menor precio</option>
+//                       <option value="name">Nombre A-Z</option>
+//                       <option value="popular">Más popular</option>
+//                     </select>
+//                   </div>
+//                 </div>
+//               </Card>
+//             )}
+
+//             {/* Loading state */}
+//             {loading && (
+//               <div className="text-center py-12">
+//                 <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#D0FF5B]"></div>
+//                 <p className="mt-4 text-gray-600">Cargando categorías...</p>
+//               </div>
+//             )}
+
+//             {/* Error state */}
+//             {error && !loading && (
+//               <Card className="p-8 text-center">
+//                 <div className="text-yellow-500 text-5xl mb-4">⚠️</div>
+//                 <h3 className="text-xl font-semibold mb-2">Error al cargar categorías</h3>
+//                 <p className="text-gray-600 mb-4">{error}</p>
+//                 <Button onClick={() => handleDeviceTypeSelect(selectedDeviceType!)}>
+//                   Reintentar
+//                 </Button>
+//               </Card>
+//             )}
+
+//             {/* Empty state */}
+//             {!loading && !error && filteredCategories.length === 0 && (
+//               <Card className="p-12 text-center">
+//                 <div className="text-6xl mb-4">📦</div>
+//                 <h3 className="text-xl font-semibold mb-2">No hay categorías disponibles</h3>
+//                 <p className="text-gray-600">
+//                   No se encontraron categorías para este tipo de dispositivo.
+//                 </p>
+//               </Card>
+//             )}
+
+//             {/* Grid de categorías */}
+//             {!loading && !error && filteredCategories.length > 0 && (
+//               <div>
+//                 <div className="flex items-center justify-between mb-4">
+//                   <p className="text-sm text-gray-600">
+//                     {filteredCategories.length} categorías disponibles
+//                   </p>
+//                 </div>
+//                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+//                   {filteredCategories.map((category) => (
+//                     <Card
+//                       key={category.id}
+//                       className="p-6 cursor-pointer hover:shadow-lg transition-all duration-200 border-2 hover:border-[#D0FF5B]"
+//                       onClick={() => handleCategoryClick(category)}
+//                     >
+//                       {category.thumbnailImage && (
+//                         <div className="w-full h-40 mb-4 rounded-lg overflow-hidden bg-gray-100">
+//                           <img
+//                             src={category.thumbnailImage}
+//                             alt={category.name}
+//                             className="w-full h-full object-cover"
+//                           />
+//                         </div>
+//                       )}
+
+//                       <div>
+//                         <div className="flex items-start justify-between mb-2">
+//                           <h3 className="font-semibold text-lg">{category.name}</h3>
+//                           {category.isLeaf && (
+//                             <Badge variant="secondary" className="bg-green-100 text-green-700">
+//                               Seleccionable
+//                             </Badge>
+//                           )}
+//                         </div>
+
+//                         {category.description && (
+//                           <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+//                             {category.description}
+//                           </p>
+//                         )}
+
+//                         {category.pricePerKg && (
+//                           <div className="bg-green-50 rounded-lg p-3 mb-3">
+//                             <div className="text-xs text-gray-600 mb-1">Precio por kg</div>
+//                             <div className="text-xl font-bold text-green-600">
+//                               ${parseFloat(category.pricePerKg.toString()).toFixed(2)}
+//                             </div>
+//                           </div>
+//                         )}
+
+//                         <div className="flex items-center justify-between text-sm">
+//                           <span className="text-gray-500">
+//                             {category.isLeaf ? 'Listo para vender' : 'Ver subcategorías'}
+//                           </span>
+//                           <ChevronRightIcon className="w-5 h-5 text-gray-400" />
+//                         </div>
+//                       </div>
+//                     </Card>
+//                   ))}
+//                 </div>
+//               </div>
+//             )}
+//           </div>
+//         )}
+//       </div>
+
+//       {/* Drawer del carrito */}
+//       {showCartModal && (
+//         <SellCartModal
+//           cart={cart}
+//           onClose={() => setShowCartModal(false)}
+//           onRemoveItem={handleRemoveFromCart}
+//           onCheckout={handleCheckout}
+//         />
+//       )}
+//     </div>
+//   );
+// };
+
+// export default SellPage;
+
+
+
+
+
+
+
+
+
+// // src/pages/dashboard/SellPage.tsx - DISEÑO PROFESIONAL MINIMALISTA
+// import React, { useState, useMemo } from 'react';
+// import { useNavigate } from 'react-router-dom';
+// import {
+//   MagnifyingGlassIcon,
+//   ChevronRightIcon,
+//   ShoppingCartIcon,
+//   ArrowLeftIcon,
+//   FunnelIcon,
+// } from '@heroicons/react/24/outline';
+// import { Category, CartItem } from '@/types/categories';
+// import { Card } from '@/components/ui/Card';
+// import { Button } from '@/components/ui/Button';
+// import { Badge } from '@/components/ui/Badge';
+// import categoryService from '@/services/categoryService';
+// import { cn } from '@/utils/cn';
+// import { ValidationUtils } from '@/utils/validation.utils';
+// import SellCartModal from '@/components/sell/SellCartModal';
+// import CategoryDetailView from '@/components/sell/CategoryDetailView';
+
+// // IDs de las categorías raíz
+// const COMPLETE_DEVICES_ROOT_ID = 'cmfr2mc1z00010py8ljs9os94';
+// const DISMANTLED_DEVICES_ROOT_ID = 'cmfr2mcac001t0py8bs6j3uy0';
+
+// const SellPage: React.FC = () => {
+//   const navigate = useNavigate();
+  
+//   // Estados principales
+//   const [currentView, setCurrentView] = useState<'marketplace' | 'category-browse' | 'category-detail'>('marketplace');
+//   const [selectedDeviceType, setSelectedDeviceType] = useState<'COMPLETE_DEVICES' | 'DISMANTLED_DEVICES' | null>(null);
+//   const [categories, setCategories] = useState<Category[]>([]);
+//   const [breadcrumb, setBreadcrumb] = useState<Category[]>([]);
+//   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+//   const [loading, setLoading] = useState(false);
+//   const [searchQuery, setSearchQuery] = useState('');
+//   const [cart, setCart] = useState<CartItem[]>([]);
+//   const [showFilters, setShowFilters] = useState(false);
+//   const [showCartModal, setShowCartModal] = useState(false);
+//   const [error, setError] = useState<string | null>(null);
+
+//   // Filtros
+//   const [sortBy, setSortBy] = useState<'price-desc' | 'price-asc' | 'name' | 'popular'>('popular');
+
+//   // Manejar selección de tipo de dispositivo
+//   const handleDeviceTypeSelect = async (type: 'COMPLETE_DEVICES' | 'DISMANTLED_DEVICES') => {
+//     setSelectedDeviceType(type);
+//     setCurrentView('category-browse');
+//     setLoading(true);
+//     setError(null);
+
+//     try {
+//       const rootId = type === 'COMPLETE_DEVICES' ? COMPLETE_DEVICES_ROOT_ID : DISMANTLED_DEVICES_ROOT_ID;
+//       const children = await categoryService.getCategoryChildren(rootId);
+//       const validCategories = ValidationUtils.cleanCategoryArray(children);
+      
+//       if (validCategories.length === 0) {
+//         setError('No se encontraron categorías disponibles');
+//       }
+      
+//       setCategories(validCategories);
+//       setBreadcrumb([{
+//         id: rootId,
+//         name: type === 'COMPLETE_DEVICES' ? 'Dispositivos Completos' : 'Componentes & Partes',
+//         slug: type.toLowerCase(),
+//         type: type,
+//         status: 'ACTIVE',
+//         level: 0,
+//         path: [],
+//         fullPath: '',
+//         isLeaf: false,
+//         sortOrder: 0,
+//         images: [],
+//         createdAt: new Date().toISOString(),
+//         updatedAt: new Date().toISOString()
+//       }]);
+//     } catch (error) {
+//       setError(ValidationUtils.getErrorMessage(error));
+//       setCategories([]);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // Navegar por subcategorías
+//   const handleCategoryClick = async (category: Category) => {
+//     if (category.isLeaf) {
+//       setSelectedCategory(category);
+//       setCurrentView('category-detail');
+//       return;
+//     }
+
+//     setLoading(true);
+//     setError(null);
+    
+//     try {
+//       const children = await categoryService.getCategoryChildren(category.id);
+//       const validCategories = ValidationUtils.cleanCategoryArray(children);
+      
+//       if (validCategories.length === 0) {
+//         setError('No se encontraron subcategorías disponibles');
+//       }
+      
+//       setCategories(validCategories);
+//       setBreadcrumb(prev => [...prev, category]);
+//     } catch (error) {
+//       setError(ValidationUtils.getErrorMessage(error));
+//       setCategories([]);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // Navegar hacia atrás en el breadcrumb
+//   const handleBreadcrumbClick = async (index: number) => {
+//     if (index === breadcrumb.length - 1) return;
+    
+//     const targetCategory = breadcrumb[index];
+//     setLoading(true);
+//     setError(null);
+    
+//     try {
+//       const children = await categoryService.getCategoryChildren(targetCategory.id);
+//       const validCategories = ValidationUtils.cleanCategoryArray(children);
+      
+//       setCategories(validCategories);
+//       setBreadcrumb(prev => prev.slice(0, index + 1));
+//       setCurrentView('category-browse');
+//     } catch (error) {
+//       setError(ValidationUtils.getErrorMessage(error));
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const handleBackToMarketplace = () => {
+//     setCurrentView('marketplace');
+//     setSelectedDeviceType(null);
+//     setCategories([]);
+//     setBreadcrumb([]);
+//     setSelectedCategory(null);
+//     setError(null);
+//   };
+
+//   const handleBackToCategories = () => {
+//     setCurrentView('category-browse');
+//     setSelectedCategory(null);
+//   };
+
+//   const handleAddToCart = (item: CartItem) => {
+//     setCart(prev => [...prev, item]);
+//     setCurrentView('category-browse');
+//     setSelectedCategory(null);
+//   };
+
+//   const handleRemoveFromCart = (index: number) => {
+//     setCart(prev => prev.filter((_, i) => i !== index));
+//   };
+
+//   const handleCheckout = () => {
+//     setShowCartModal(false);
+//     navigate('/sell/checkout', { state: { cart } });
+//   };
+
+//   // Categorías filtradas y ordenadas
+//   const filteredCategories = useMemo(() => {
+//     let filtered = [...categories];
+
+//     filtered.sort((a, b) => {
+//       switch (sortBy) {
+//         case 'price-desc':
+//           return (parseFloat(b.pricePerKg?.toString() || '0')) - (parseFloat(a.pricePerKg?.toString() || '0'));
+//         case 'price-asc':
+//           return (parseFloat(a.pricePerKg?.toString() || '0')) - (parseFloat(b.pricePerKg?.toString() || '0'));
+//         case 'name':
+//           return a.name.localeCompare(b.name);
+//         case 'popular':
+//           return b.sortOrder - a.sortOrder;
+//         default:
+//           return 0;
+//       }
+//     });
+
+//     return filtered;
+//   }, [categories, sortBy]);
+
+//   return (
+//     <div className="min-h-screen bg-white">
+//       {/* Header de la página - Minimalista y limpio */}
+//       {(currentView === 'category-browse' || currentView === 'category-detail') && (
+//         <div className="bg-white border-b border-gray-200 mb-6">
+//           <div className="py-4">
+//             {/* Botón volver y título */}
+//             <div className="flex items-center justify-between mb-4">
+//               <div className="flex items-center space-x-4">
+//                 <button
+//                   onClick={currentView === 'category-detail' ? handleBackToCategories : handleBackToMarketplace}
+//                   className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+//                 >
+//                   <ArrowLeftIcon className="w-5 h-5 mr-2" />
+//                   <span className="text-sm font-medium">Volver</span>
+//                 </button>
+//                 <div className="h-6 w-px bg-gray-300" />
+//                 <h1 className="text-2xl font-bold text-gray-900">Vender</h1>
+//               </div>
+
+//               {/* Botón carrito minimalista */}
+//               <button
+//                 onClick={() => setShowCartModal(true)}
+//                 className="relative flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+//               >
+//                 <ShoppingCartIcon className="w-5 h-5 text-gray-700" />
+//                 <span className="text-sm font-medium text-gray-700">
+//                   Mi Venta ({cart.length})
+//                 </span>
+//                 {cart.length > 0 && (
+//                   <span className="absolute -top-2 -right-2 bg-[#a8c241] text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+//                     {cart.length}
+//                   </span>
+//                 )}
+//               </button>
+//             </div>
+
+//             {/* Breadcrumb minimalista */}
+//             {breadcrumb.length > 0 && (
+//               <div className="flex items-center space-x-2 text-sm">
+//                 {breadcrumb.map((crumb, index) => (
+//                   <React.Fragment key={crumb.id}>
+//                     <button
+//                       onClick={() => handleBreadcrumbClick(index)}
+//                       className={cn(
+//                         'hover:text-[#a8c241] transition-colors',
+//                         index === breadcrumb.length - 1 
+//                           ? 'text-gray-900 font-medium' 
+//                           : 'text-gray-500'
+//                       )}
+//                     >
+//                       {crumb.name}
+//                     </button>
+//                     {index < breadcrumb.length - 1 && (
+//                       <ChevronRightIcon className="w-4 h-4 text-gray-400" />
+//                     )}
+//                   </React.Fragment>
+//                 ))}
+//                 {currentView === 'category-detail' && selectedCategory && (
+//                   <>
+//                     <ChevronRightIcon className="w-4 h-4 text-gray-400" />
+//                     <span className="text-gray-900 font-medium">{selectedCategory.name}</span>
+//                   </>
+//                 )}
+//               </div>
+//             )}
+//           </div>
+//         </div>
+//       )}
+
+//       {/* Contenido principal */}
+//       {currentView === 'marketplace' ? (
+//         /* ===== MARKETPLACE - ESTILO MINIMALISTA ===== */
+//         <div className="space-y-12 py-8">
+//           {/* Hero minimalista */}
+//           <div className="text-center max-w-3xl mx-auto">
+//             <h1 className="text-4xl font-bold text-gray-900 mb-4">
+//               ¿Qué quieres vender?
+//             </h1>
+//             <p className="text-lg text-gray-600">
+//               Selecciona el tipo de material que deseas reciclar
+//             </p>
+//           </div>
+
+//           {/* Cards de selección - Estilo minimalista */}
+//           <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+//             {/* Dispositivos Completos */}
+//             <button
+//               onClick={() => handleDeviceTypeSelect('COMPLETE_DEVICES')}
+//               className="group relative bg-white border-2 border-gray-200 rounded-2xl p-8 hover:border-[#a8c241] hover:shadow-lg transition-all duration-300 text-left"
+//             >
+//               <div className="flex items-start justify-between mb-4">
+//                 <div className="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center group-hover:bg-blue-100 transition-colors">
+//                   <span className="text-3xl">💻</span>
+//                 </div>
+//                 <ChevronRightIcon className="w-6 h-6 text-gray-400 group-hover:text-[#a8c241] transition-colors" />
+//               </div>
+              
+//               <h3 className="text-xl font-bold text-gray-900 mb-2">
+//                 Dispositivos Completos
+//               </h3>
+//               <p className="text-gray-600 text-sm mb-4">
+//                 Laptops, celulares, tablets y más equipos funcionales
+//               </p>
+              
+//               <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+//                 <span className="text-sm text-gray-500">Valores estimados</span>
+//                 <span className="text-lg font-bold text-[#719428]">$340 - $1,200</span>
+//               </div>
+//             </button>
+
+//             {/* Componentes y Partes */}
+//             <button
+//               onClick={() => handleDeviceTypeSelect('DISMANTLED_DEVICES')}
+//               className="group relative bg-white border-2 border-gray-200 rounded-2xl p-8 hover:border-[#a8c241] hover:shadow-lg transition-all duration-300 text-left"
+//             >
+//               <div className="flex items-start justify-between mb-4">
+//                 <div className="w-14 h-14 bg-green-50 rounded-xl flex items-center justify-center group-hover:bg-green-100 transition-colors">
+//                   <span className="text-3xl">🔧</span>
+//                 </div>
+//                 <ChevronRightIcon className="w-6 h-6 text-gray-400 group-hover:text-[#a8c241] transition-colors" />
+//               </div>
+              
+//               <h3 className="text-xl font-bold text-gray-900 mb-2">
+//                 Componentes & Partes
+//               </h3>
+//               <p className="text-gray-600 text-sm mb-4">
+//                 Motherboards, procesadores, chips y componentes individuales
+//               </p>
+              
+//               <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+//                 <span className="text-sm text-gray-500">Precio por kg</span>
+//                 <span className="text-lg font-bold text-[#719428]">$2.50 - $45</span>
+//               </div>
+//             </button>
+//           </div>
+
+//           {/* Stats minimalistas */}
+//           <div className="grid grid-cols-3 gap-8 max-w-4xl mx-auto pt-12 border-t border-gray-200">
+//             <div className="text-center">
+//               <div className="text-3xl font-bold text-gray-900 mb-1">24h</div>
+//               <div className="text-sm text-gray-600">Pago rápido</div>
+//             </div>
+//             <div className="text-center">
+//               <div className="text-3xl font-bold text-gray-900 mb-1">100%</div>
+//               <div className="text-sm text-gray-600">Seguro y confiable</div>
+//             </div>
+//             <div className="text-center">
+//               <div className="text-3xl font-bold text-gray-900 mb-1">+5k</div>
+//               <div className="text-sm text-gray-600">Ventas realizadas</div>
+//             </div>
+//           </div>
+//         </div>
+//       ) : currentView === 'category-detail' && selectedCategory ? (
+//         /* ===== VISTA DETALLE ===== */
+//         <CategoryDetailView
+//           category={selectedCategory}
+//           onAddToCart={handleAddToCart}
+//           onBack={handleBackToCategories}
+//         />
+//       ) : (
+//         /* ===== VISTA CATEGORÍAS - ESTILO MINIMALISTA ===== */
+//         <div className="space-y-6">
+//           {/* Barra de acciones minimalista */}
+//           <div className="flex items-center justify-between">
+//             <p className="text-sm text-gray-600">
+//               {filteredCategories.length} {filteredCategories.length === 1 ? 'categoría' : 'categorías'} disponibles
+//             </p>
+            
+//             <div className="flex items-center space-x-3">
+//               {/* Ordenar */}
+//               <select
+//                 value={sortBy}
+//                 onChange={(e) => setSortBy(e.target.value as any)}
+//                 className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#a8c241] focus:border-transparent"
+//               >
+//                 <option value="popular">Más populares</option>
+//                 <option value="price-desc">Mayor precio</option>
+//                 <option value="price-asc">Menor precio</option>
+//                 <option value="name">Nombre A-Z</option>
+//               </select>
+//             </div>
+//           </div>
+
+//           {/* Loading state minimalista */}
+//           {loading && (
+//             <div className="text-center py-20">
+//               <div className="inline-block animate-spin rounded-full h-10 w-10 border-4 border-gray-200 border-t-[#a8c241]"></div>
+//               <p className="mt-4 text-sm text-gray-600">Cargando categorías...</p>
+//             </div>
+//           )}
+
+//           {/* Error state minimalista */}
+//           {error && !loading && (
+//             <div className="text-center py-20">
+//               <div className="text-5xl mb-4">⚠️</div>
+//               <h3 className="text-lg font-semibold text-gray-900 mb-2">Error al cargar categorías</h3>
+//               <p className="text-gray-600 mb-6">{error}</p>
+//               <Button 
+//                 onClick={() => handleDeviceTypeSelect(selectedDeviceType!)}
+//                 className="bg-[#a8c241] hover:bg-[#719428] text-white"
+//               >
+//                 Reintentar
+//               </Button>
+//             </div>
+//           )}
+
+//           {/* Empty state minimalista */}
+//           {!loading && !error && filteredCategories.length === 0 && (
+//             <div className="text-center py-20">
+//               <div className="text-6xl mb-4">📦</div>
+//               <h3 className="text-lg font-semibold text-gray-900 mb-2">No hay categorías disponibles</h3>
+//               <p className="text-gray-600">Intenta con otro tipo de dispositivo</p>
+//             </div>
+//           )}
+
+//           {/* Grid de categorías - Estilo minimalista */}
+//           {!loading && !error && filteredCategories.length > 0 && (
+//             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+//               {filteredCategories.map((category) => (
+//                 <button
+//                   key={category.id}
+//                   onClick={() => handleCategoryClick(category)}
+//                   className="group bg-white border border-gray-200 rounded-xl p-5 hover:border-[#a8c241] hover:shadow-md transition-all duration-200 text-left"
+//                 >
+//                   {/* Imagen */}
+//                   {category.thumbnailImage && (
+//                     <div className="w-full aspect-square rounded-lg overflow-hidden bg-gray-50 mb-4">
+//                       <img
+//                         src={category.thumbnailImage}
+//                         alt={category.name}
+//                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+//                       />
+//                     </div>
+//                   )}
+
+//                   {/* Contenido */}
+//                   <div>
+//                     <div className="flex items-start justify-between mb-2">
+//                       <h3 className="font-semibold text-gray-900 group-hover:text-[#719428] transition-colors">
+//                         {category.name}
+//                       </h3>
+//                       {category.isLeaf && (
+//                         <Badge className="bg-green-50 text-green-700 border-green-200 text-xs">
+//                           Seleccionable
+//                         </Badge>
+//                       )}
+//                     </div>
+
+//                     {category.description && (
+//                       <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+//                         {category.description}
+//                       </p>
+//                     )}
+
+//                     {/* Precio */}
+//                     {category.pricePerKg ? (
+//                       <div className="flex items-baseline space-x-2 pt-3 border-t border-gray-100">
+//                         <span className="text-2xl font-bold text-[#719428]">
+//                           ${parseFloat(category.pricePerKg.toString()).toFixed(2)}
+//                         </span>
+//                         <span className="text-sm text-gray-500">/kg</span>
+//                       </div>
+//                     ) : (
+//                       <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+//                         <span className="text-sm text-gray-600">Ver subcategorías</span>
+//                         <ChevronRightIcon className="w-5 h-5 text-gray-400 group-hover:text-[#a8c241] transition-colors" />
+//                       </div>
+//                     )}
+//                   </div>
+//                 </button>
+//               ))}
+//             </div>
+//           )}
+//         </div>
+//       )}
+
+//       {/* Drawer del carrito */}
+//       {showCartModal && (
+//         <SellCartModal
+//           cart={cart}
+//           onClose={() => setShowCartModal(false)}
+//           onRemoveItem={handleRemoveFromCart}
+//           onCheckout={handleCheckout}
+//         />
+//       )}
+//     </div>
+//   );
+// };
+
+// export default SellPage;
+
+
+
+
+
+// // src/pages/dashboard/SellPage.tsx - CON HEADER ESTILO "MIS ÓRDENES"
+// import React, { useState, useMemo } from 'react';
+// import { useNavigate } from 'react-router-dom';
+// import {
+//   ChevronRightIcon,
+//   ShoppingCartIcon,
+//   HomeIcon,
+// } from '@heroicons/react/24/outline';
+// import { Category, CartItem } from '@/types/categories';
+// import { Button } from '@/components/ui/Button';
+// import { Badge } from '@/components/ui/Badge';
+// import categoryService from '@/services/categoryService';
+// import { cn } from '@/utils/cn';
+// import { ValidationUtils } from '@/utils/validation.utils';
+// import SellCartModal from '@/components/sell/SellCartModal';
+// import CategoryDetailView from '@/components/sell/CategoryDetailView';
+
+// // IDs de las categorías raíz
+// const COMPLETE_DEVICES_ROOT_ID = 'cmfr2mc1z00010py8ljs9os94';
+// const DISMANTLED_DEVICES_ROOT_ID = 'cmfr2mcac001t0py8bs6j3uy0';
+
+// const SellPage: React.FC = () => {
+//   const navigate = useNavigate();
+  
+//   // Estados principales
+//   const [currentView, setCurrentView] = useState<'marketplace' | 'category-browse' | 'category-detail'>('marketplace');
+//   const [selectedDeviceType, setSelectedDeviceType] = useState<'COMPLETE_DEVICES' | 'DISMANTLED_DEVICES' | null>(null);
+//   const [categories, setCategories] = useState<Category[]>([]);
+//   const [breadcrumb, setBreadcrumb] = useState<Category[]>([]);
+//   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+//   const [loading, setLoading] = useState(false);
+//   const [cart, setCart] = useState<CartItem[]>([]);
+//   const [showCartModal, setShowCartModal] = useState(false);
+//   const [error, setError] = useState<string | null>(null);
+//   const [sortBy, setSortBy] = useState<'price-desc' | 'price-asc' | 'name' | 'popular'>('popular');
+
+//   // Manejar selección de tipo de dispositivo
+//   const handleDeviceTypeSelect = async (type: 'COMPLETE_DEVICES' | 'DISMANTLED_DEVICES') => {
+//     setSelectedDeviceType(type);
+//     setCurrentView('category-browse');
+//     setLoading(true);
+//     setError(null);
+
+//     try {
+//       const rootId = type === 'COMPLETE_DEVICES' ? COMPLETE_DEVICES_ROOT_ID : DISMANTLED_DEVICES_ROOT_ID;
+//       const children = await categoryService.getCategoryChildren(rootId);
+//       const validCategories = ValidationUtils.cleanCategoryArray(children);
+      
+//       if (validCategories.length === 0) {
+//         setError('No se encontraron categorías disponibles');
+//       }
+      
+//       setCategories(validCategories);
+//       setBreadcrumb([{
+//         id: rootId,
+//         name: type === 'COMPLETE_DEVICES' ? 'Dispositivos Completos' : 'Componentes & Partes',
+//         slug: type.toLowerCase(),
+//         type: type,
+//         status: 'ACTIVE',
+//         level: 0,
+//         path: [],
+//         fullPath: '',
+//         isLeaf: false,
+//         sortOrder: 0,
+//         images: [],
+//         createdAt: new Date().toISOString(),
+//         updatedAt: new Date().toISOString()
+//       }]);
+//     } catch (error) {
+//       setError(ValidationUtils.getErrorMessage(error));
+//       setCategories([]);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // Navegar por subcategorías
+//   const handleCategoryClick = async (category: Category) => {
+//     if (category.isLeaf) {
+//       setSelectedCategory(category);
+//       setCurrentView('category-detail');
+//       return;
+//     }
+
+//     setLoading(true);
+//     setError(null);
+    
+//     try {
+//       const children = await categoryService.getCategoryChildren(category.id);
+//       const validCategories = ValidationUtils.cleanCategoryArray(children);
+      
+//       if (validCategories.length === 0) {
+//         setError('No se encontraron subcategorías disponibles');
+//       }
+      
+//       setCategories(validCategories);
+//       setBreadcrumb(prev => [...prev, category]);
+//     } catch (error) {
+//       setError(ValidationUtils.getErrorMessage(error));
+//       setCategories([]);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const handleBreadcrumbClick = async (index: number) => {
+//     if (index === breadcrumb.length - 1) return;
+    
+//     const targetCategory = breadcrumb[index];
+//     setLoading(true);
+//     setError(null);
+    
+//     try {
+//       const children = await categoryService.getCategoryChildren(targetCategory.id);
+//       const validCategories = ValidationUtils.cleanCategoryArray(children);
+      
+//       setCategories(validCategories);
+//       setBreadcrumb(prev => prev.slice(0, index + 1));
+//       setCurrentView('category-browse');
+//     } catch (error) {
+//       setError(ValidationUtils.getErrorMessage(error));
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const handleBackToMarketplace = () => {
+//     setCurrentView('marketplace');
+//     setSelectedDeviceType(null);
+//     setCategories([]);
+//     setBreadcrumb([]);
+//     setSelectedCategory(null);
+//     setError(null);
+//   };
+
+//   const handleBackToCategories = () => {
+//     setCurrentView('category-browse');
+//     setSelectedCategory(null);
+//   };
+
+//   const handleAddToCart = (item: CartItem) => {
+//     setCart(prev => [...prev, item]);
+//     setCurrentView('category-browse');
+//     setSelectedCategory(null);
+//   };
+
+//   const handleRemoveFromCart = (index: number) => {
+//     setCart(prev => prev.filter((_, i) => i !== index));
+//   };
+
+//   const handleCheckout = () => {
+//     setShowCartModal(false);
+//     navigate('/sell/checkout', { state: { cart } });
+//   };
+
+//   const filteredCategories = useMemo(() => {
+//     let filtered = [...categories];
+//     filtered.sort((a, b) => {
+//       switch (sortBy) {
+//         case 'price-desc':
+//           return (parseFloat(b.pricePerKg?.toString() || '0')) - (parseFloat(a.pricePerKg?.toString() || '0'));
+//         case 'price-asc':
+//           return (parseFloat(a.pricePerKg?.toString() || '0')) - (parseFloat(b.pricePerKg?.toString() || '0'));
+//         case 'name':
+//           return a.name.localeCompare(b.name);
+//         default:
+//           return 0;
+//       }
+//     });
+//     return filtered;
+//   }, [categories, sortBy]);
+
+//   // Función para obtener el título según la vista
+//   const getPageTitle = () => {
+//     if (currentView === 'marketplace') return 'Vender';
+//     if (currentView === 'category-detail' && selectedCategory) return selectedCategory.name;
+//     if (breadcrumb.length > 0) return breadcrumb[breadcrumb.length - 1].name;
+//     return 'Vender';
+//   };
+
+//   // Función para obtener la descripción según la vista
+//   const getPageDescription = () => {
+//     if (currentView === 'marketplace') return 'Selecciona el tipo de material que deseas reciclar';
+//     if (currentView === 'category-detail' && selectedCategory) return 'Completa los detalles de tu venta';
+//     return 'Selecciona la categoría de tu dispositivo';
+//   };
+
+//   return (
+//     <div className="min-h-screen bg-white">
+//       {/* Header estilo "Mis Órdenes" */}
+//       <div className="mb-8">
+//         {/* Breadcrumb minimalista */}
+//         <div className="flex items-center space-x-2 text-sm text-gray-500 mb-4">
+//           <button 
+//             onClick={() => navigate('/dashboard')}
+//             className="hover:text-gray-700 transition-colors"
+//           >
+//             <HomeIcon className="w-4 h-4" />
+//           </button>
+//           <ChevronRightIcon className="w-4 h-4" />
+//           <button 
+//             onClick={handleBackToMarketplace}
+//             className={cn(
+//               "hover:text-gray-700 transition-colors",
+//               currentView === 'marketplace' && "text-gray-900 font-medium"
+//             )}
+//           >
+//             Vender
+//           </button>
+          
+//           {breadcrumb.map((crumb, index) => (
+//             <React.Fragment key={crumb.id}>
+//               <ChevronRightIcon className="w-4 h-4" />
+//               <button
+//                 onClick={() => handleBreadcrumbClick(index)}
+//                 className={cn(
+//                   "hover:text-gray-700 transition-colors",
+//                   index === breadcrumb.length - 1 && currentView === 'category-browse' && "text-gray-900 font-medium"
+//                 )}
+//               >
+//                 {crumb.name}
+//               </button>
+//             </React.Fragment>
+//           ))}
+
+//           {currentView === 'category-detail' && selectedCategory && (
+//             <>
+//               <ChevronRightIcon className="w-4 h-4" />
+//               <span className="text-gray-900 font-medium">{selectedCategory.name}</span>
+//             </>
+//           )}
+//         </div>
+
+//         {/* Título y descripción */}
+//         <div className="flex items-start justify-between">
+//           <div>
+//             <h1 className="text-3xl font-bold text-gray-900 mb-2">
+//               {getPageTitle()}
+//             </h1>
+//             <p className="text-gray-600">
+//               {getPageDescription()}
+//             </p>
+//           </div>
+
+//           {/* Botón carrito - Solo en vistas de categorías */}
+//           {(currentView === 'category-browse' || currentView === 'category-detail') && (
+//             <button
+//               onClick={() => setShowCartModal(true)}
+//               className="relative flex items-center space-x-2 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+//             >
+//               <ShoppingCartIcon className="w-5 h-5 text-gray-700" />
+//               <span className="text-sm font-medium text-gray-700">
+//                 Mi Venta ({cart.length})
+//               </span>
+//               {cart.length > 0 && (
+//                 <span className="absolute -top-2 -right-2 bg-[#a8c241] text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+//                   {cart.length}
+//                 </span>
+//               )}
+//             </button>
+//           )}
+//         </div>
+//       </div>
+
+//       {/* Contenido principal */}
+//       {currentView === 'marketplace' ? (
+//         /* ===== MARKETPLACE ===== */
+//         <div className="space-y-12">
+//           {/* Cards de selección */}
+//           <div className="grid md:grid-cols-2 gap-6 max-w-4xl">
+//             {/* Dispositivos Completos */}
+//             <button
+//               onClick={() => handleDeviceTypeSelect('COMPLETE_DEVICES')}
+//               className="group relative bg-white border-2 border-gray-200 rounded-xl p-8 hover:border-[#a8c241] hover:shadow-lg transition-all duration-300 text-left"
+//             >
+//               <div className="flex items-start justify-between mb-4">
+//                 <div className="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center group-hover:bg-blue-100 transition-colors">
+//                   <span className="text-3xl">💻</span>
+//                 </div>
+//                 <ChevronRightIcon className="w-6 h-6 text-gray-400 group-hover:text-[#a8c241] transition-colors" />
+//               </div>
+              
+//               <h3 className="text-xl font-bold text-gray-900 mb-2">
+//                 Dispositivos Completos
+//               </h3>
+//               <p className="text-gray-600 text-sm mb-4">
+//                 Laptops, celulares, tablets y más equipos funcionales
+//               </p>
+              
+//               <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+//                 <span className="text-sm text-gray-500">Valores estimados</span>
+//                 <span className="text-lg font-bold text-[#719428]">$340 - $1,200</span>
+//               </div>
+//             </button>
+
+//             {/* Componentes y Partes */}
+//             <button
+//               onClick={() => handleDeviceTypeSelect('DISMANTLED_DEVICES')}
+//               className="group relative bg-white border-2 border-gray-200 rounded-xl p-8 hover:border-[#a8c241] hover:shadow-lg transition-all duration-300 text-left"
+//             >
+//               <div className="flex items-start justify-between mb-4">
+//                 <div className="w-14 h-14 bg-green-50 rounded-xl flex items-center justify-center group-hover:bg-green-100 transition-colors">
+//                   <span className="text-3xl">🔧</span>
+//                 </div>
+//                 <ChevronRightIcon className="w-6 h-6 text-gray-400 group-hover:text-[#a8c241] transition-colors" />
+//               </div>
+              
+//               <h3 className="text-xl font-bold text-gray-900 mb-2">
+//                 Componentes & Partes
+//               </h3>
+//               <p className="text-gray-600 text-sm mb-4">
+//                 Motherboards, procesadores, chips y componentes individuales
+//               </p>
+              
+//               <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+//                 <span className="text-sm text-gray-500">Precio por kg</span>
+//                 <span className="text-lg font-bold text-[#719428]">$2.50 - $45</span>
+//               </div>
+//             </button>
+//           </div>
+
+         
+//         </div>
+//       ) : currentView === 'category-detail' && selectedCategory ? (
+//         /* ===== VISTA DETALLE ===== */
+//         <CategoryDetailView
+//           category={selectedCategory}
+//           onAddToCart={handleAddToCart}
+//           onBack={handleBackToCategories}
+//         />
+//       ) : (
+//         /* ===== VISTA CATEGORÍAS ===== */
+//         <div className="space-y-6">
+//           {/* Barra de acciones */}
+//           <div className="flex items-center justify-between pb-4 border-b border-gray-200">
+//             <p className="text-sm text-gray-600">
+//               {filteredCategories.length} {filteredCategories.length === 1 ? 'categoría disponible' : 'categorías disponibles'}
+//             </p>
+            
+//             <select
+//               value={sortBy}
+//               onChange={(e) => setSortBy(e.target.value as any)}
+//               className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#a8c241] focus:border-transparent outline-none"
+//             >
+//               <option value="popular">Más populares</option>
+//               <option value="price-desc">Mayor precio</option>
+//               <option value="price-asc">Menor precio</option>
+//               <option value="name">Nombre A-Z</option>
+//             </select>
+//           </div>
+
+//           {/* Loading */}
+//           {loading && (
+//             <div className="text-center py-20">
+//               <div className="inline-block animate-spin rounded-full h-10 w-10 border-4 border-gray-200 border-t-[#a8c241]"></div>
+//               <p className="mt-4 text-sm text-gray-600">Cargando categorías...</p>
+//             </div>
+//           )}
+
+//           {/* Error */}
+//           {error && !loading && (
+//             <div className="text-center py-20">
+//               <div className="text-5xl mb-4">⚠️</div>
+//               <h3 className="text-lg font-semibold text-gray-900 mb-2">Error al cargar categorías</h3>
+//               <p className="text-gray-600 mb-6">{error}</p>
+//               <Button 
+//                 onClick={() => handleDeviceTypeSelect(selectedDeviceType!)}
+//                 className="bg-[#a8c241] hover:bg-[#719428] text-white"
+//               >
+//                 Reintentar
+//               </Button>
+//             </div>
+//           )}
+
+//           {/* Empty */}
+//           {!loading && !error && filteredCategories.length === 0 && (
+//             <div className="text-center py-20">
+//               <div className="text-6xl mb-4">📦</div>
+//               <h3 className="text-lg font-semibold text-gray-900 mb-2">No hay categorías disponibles</h3>
+//               <p className="text-gray-600">Intenta con otro tipo de dispositivo</p>
+//             </div>
+//           )}
+
+//           {/* Grid de categorías */}
+//           {!loading && !error && filteredCategories.length > 0 && (
+//             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+//               {filteredCategories.map((category) => (
+//                 <button
+//                   key={category.id}
+//                   onClick={() => handleCategoryClick(category)}
+//                   className="group bg-white border border-gray-200 rounded-xl p-5 hover:border-[#a8c241] hover:shadow-md transition-all duration-200 text-left"
+//                 >
+//                   {category.thumbnailImage && (
+//                     <div className="w-full aspect-square rounded-lg overflow-hidden bg-gray-50 mb-4">
+//                       <img
+//                         src={category.thumbnailImage}
+//                         alt={category.name}
+//                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+//                       />
+//                     </div>
+//                   )}
+
+//                   <div>
+//                     <div className="flex items-start justify-between mb-2">
+//                       <h3 className="font-semibold text-gray-900 group-hover:text-[#719428] transition-colors">
+//                         {category.name}
+//                       </h3>
+//                       {category.isLeaf && (
+//                         <Badge className="bg-green-50 text-green-700 border-green-200 text-xs">
+//                           Seleccionable
+//                         </Badge>
+//                       )}
+//                     </div>
+
+//                     {category.description && (
+//                       <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+//                         {category.description}
+//                       </p>
+//                     )}
+
+//                     {category.pricePerKg ? (
+//                       <div className="flex items-baseline space-x-2 pt-3 border-t border-gray-100">
+//                         <span className="text-2xl font-bold text-[#719428]">
+//                           ${parseFloat(category.pricePerKg.toString()).toFixed(2)}
+//                         </span>
+//                         <span className="text-sm text-gray-500">/kg</span>
+//                       </div>
+//                     ) : (
+//                       <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+//                         <span className="text-sm text-gray-600">Ver subcategorías</span>
+//                         <ChevronRightIcon className="w-5 h-5 text-gray-400 group-hover:text-[#a8c241] transition-colors" />
+//                       </div>
+//                     )}
+//                   </div>
+//                 </button>
+//               ))}
+//             </div>
+//           )}
+//         </div>
+//       )}
+
+//       {/* Drawer del carrito */}
+//       {showCartModal && (
+//         <SellCartModal
+//           cart={cart}
+//           onClose={() => setShowCartModal(false)}
+//           onRemoveItem={handleRemoveFromCart}
+//           onCheckout={handleCheckout}
+//         />
+//       )}
+//     </div>
+//   );
+// };
+
+// export default SellPage;
+
+
+
+// // src/pages/dashboard/SellPage.tsx - DISEÑO ESPECTACULAR CON IMÁGENES Y ANIMACIONES
+// import React, { useState, useMemo } from 'react';
+// import { useNavigate } from 'react-router-dom';
+// import {
+//   ChevronRightIcon,
+//   ShoppingCartIcon,
+//   HomeIcon,
+//   SparklesIcon,
+//   CheckCircleIcon,
+// } from '@heroicons/react/24/outline';
+// import { Category, CartItem } from '@/types/categories';
+// import { Button } from '@/components/ui/Button';
+// import { Badge } from '@/components/ui/Badge';
+// import categoryService from '@/services/categoryService';
+// import { cn } from '@/utils/cn';
+// import { ValidationUtils } from '@/utils/validation.utils';
+// import SellCartModal from '@/components/sell/SellCartModal';
+// import CategoryDetailView from '@/components/sell/CategoryDetailView';
+
+// // IDs de las categorías raíz
+// const COMPLETE_DEVICES_ROOT_ID = 'cmfr2mc1z00010py8ljs9os94';
+// const DISMANTLED_DEVICES_ROOT_ID = 'cmfr2mcac001t0py8bs6j3uy0';
+
+// const SellPage: React.FC = () => {
+//   const navigate = useNavigate();
+  
+//   // Estados principales
+//   const [currentView, setCurrentView] = useState<'marketplace' | 'category-browse' | 'category-detail'>('marketplace');
+//   const [selectedDeviceType, setSelectedDeviceType] = useState<'COMPLETE_DEVICES' | 'DISMANTLED_DEVICES' | null>(null);
+//   const [categories, setCategories] = useState<Category[]>([]);
+//   const [breadcrumb, setBreadcrumb] = useState<Category[]>([]);
+//   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+//   const [loading, setLoading] = useState(false);
+//   const [cart, setCart] = useState<CartItem[]>([]);
+//   const [showCartModal, setShowCartModal] = useState(false);
+//   const [error, setError] = useState<string | null>(null);
+//   const [sortBy, setSortBy] = useState<'price-desc' | 'price-asc' | 'name' | 'popular'>('popular');
+//   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+
+//   // Manejar selección de tipo de dispositivo
+//   const handleDeviceTypeSelect = async (type: 'COMPLETE_DEVICES' | 'DISMANTLED_DEVICES') => {
+//     setSelectedDeviceType(type);
+//     setCurrentView('category-browse');
+//     setLoading(true);
+//     setError(null);
+
+//     try {
+//       const rootId = type === 'COMPLETE_DEVICES' ? COMPLETE_DEVICES_ROOT_ID : DISMANTLED_DEVICES_ROOT_ID;
+//       const children = await categoryService.getCategoryChildren(rootId);
+//       const validCategories = ValidationUtils.cleanCategoryArray(children);
+      
+//       if (validCategories.length === 0) {
+//         setError('No se encontraron categorías disponibles');
+//       }
+      
+//       setCategories(validCategories);
+//       setBreadcrumb([{
+//         id: rootId,
+//         name: type === 'COMPLETE_DEVICES' ? 'Dispositivos Completos' : 'Componentes & Partes',
+//         slug: type.toLowerCase(),
+//         type: type,
+//         status: 'ACTIVE',
+//         level: 0,
+//         path: [],
+//         fullPath: '',
+//         isLeaf: false,
+//         sortOrder: 0,
+//         images: [],
+//         createdAt: new Date().toISOString(),
+//         updatedAt: new Date().toISOString()
+//       }]);
+//     } catch (error) {
+//       setError(ValidationUtils.getErrorMessage(error));
+//       setCategories([]);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // Navegar por subcategorías
+//   const handleCategoryClick = async (category: Category) => {
+//     if (category.isLeaf) {
+//       setSelectedCategory(category);
+//       setCurrentView('category-detail');
+//       return;
+//     }
+
+//     setLoading(true);
+//     setError(null);
+    
+//     try {
+//       const children = await categoryService.getCategoryChildren(category.id);
+//       const validCategories = ValidationUtils.cleanCategoryArray(children);
+      
+//       if (validCategories.length === 0) {
+//         setError('No se encontraron subcategorías disponibles');
+//       }
+      
+//       setCategories(validCategories);
+//       setBreadcrumb(prev => [...prev, category]);
+//     } catch (error) {
+//       setError(ValidationUtils.getErrorMessage(error));
+//       setCategories([]);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const handleBreadcrumbClick = async (index: number) => {
+//     if (index === breadcrumb.length - 1) return;
+    
+//     const targetCategory = breadcrumb[index];
+//     setLoading(true);
+//     setError(null);
+    
+//     try {
+//       const children = await categoryService.getCategoryChildren(targetCategory.id);
+//       const validCategories = ValidationUtils.cleanCategoryArray(children);
+      
+//       setCategories(validCategories);
+//       setBreadcrumb(prev => prev.slice(0, index + 1));
+//       setCurrentView('category-browse');
+//     } catch (error) {
+//       setError(ValidationUtils.getErrorMessage(error));
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const handleBackToMarketplace = () => {
+//     setCurrentView('marketplace');
+//     setSelectedDeviceType(null);
+//     setCategories([]);
+//     setBreadcrumb([]);
+//     setSelectedCategory(null);
+//     setError(null);
+//   };
+
+//   const handleBackToCategories = () => {
+//     setCurrentView('category-browse');
+//     setSelectedCategory(null);
+//   };
+
+//   const handleAddToCart = (item: CartItem) => {
+//     setCart(prev => [...prev, item]);
+//     setCurrentView('category-browse');
+//     setSelectedCategory(null);
+//   };
+
+//   const handleRemoveFromCart = (index: number) => {
+//     setCart(prev => prev.filter((_, i) => i !== index));
+//   };
+
+//   const handleCheckout = () => {
+//     setShowCartModal(false);
+//     navigate('/sell/checkout', { state: { cart } });
+//   };
+
+//   const filteredCategories = useMemo(() => {
+//     let filtered = [...categories];
+//     filtered.sort((a, b) => {
+//       switch (sortBy) {
+//         case 'price-desc':
+//           return (parseFloat(b.pricePerKg?.toString() || '0')) - (parseFloat(a.pricePerKg?.toString() || '0'));
+//         case 'price-asc':
+//           return (parseFloat(a.pricePerKg?.toString() || '0')) - (parseFloat(b.pricePerKg?.toString() || '0'));
+//         case 'name':
+//           return a.name.localeCompare(b.name);
+//         default:
+//           return 0;
+//       }
+//     });
+//     return filtered;
+//   }, [categories, sortBy]);
+
+//   const getPageTitle = () => {
+//     if (currentView === 'marketplace') return 'Vender';
+//     if (currentView === 'category-detail' && selectedCategory) return selectedCategory.name;
+//     if (breadcrumb.length > 0) return breadcrumb[breadcrumb.length - 1].name;
+//     return 'Vender';
+//   };
+
+//   const getPageDescription = () => {
+//     if (currentView === 'marketplace') return 'Selecciona el tipo de material que deseas reciclar';
+//     if (currentView === 'category-detail' && selectedCategory) return 'Completa los detalles de tu venta';
+//     return 'Selecciona la categoría de tu dispositivo';
+//   };
+
+//   return (
+//     <div className="min-h-screen bg-white">
+//       {/* Header */}
+//       <div className="mb-8">
+//         {/* Breadcrumb */}
+//         <div className="flex items-center space-x-2 text-sm text-gray-500 mb-4">
+//           <button 
+//             onClick={() => navigate('/dashboard')}
+//             className="hover:text-gray-700 transition-colors"
+//           >
+//             <HomeIcon className="w-4 h-4" />
+//           </button>
+//           <ChevronRightIcon className="w-4 h-4" />
+//           <button 
+//             onClick={handleBackToMarketplace}
+//             className={cn(
+//               "hover:text-gray-700 transition-colors",
+//               currentView === 'marketplace' && "text-gray-900 font-medium"
+//             )}
+//           >
+//             Vender
+//           </button>
+          
+//           {breadcrumb.map((crumb, index) => (
+//             <React.Fragment key={crumb.id}>
+//               <ChevronRightIcon className="w-4 h-4" />
+//               <button
+//                 onClick={() => handleBreadcrumbClick(index)}
+//                 className={cn(
+//                   "hover:text-gray-700 transition-colors",
+//                   index === breadcrumb.length - 1 && currentView === 'category-browse' && "text-gray-900 font-medium"
+//                 )}
+//               >
+//                 {crumb.name}
+//               </button>
+//             </React.Fragment>
+//           ))}
+
+//           {currentView === 'category-detail' && selectedCategory && (
+//             <>
+//               <ChevronRightIcon className="w-4 h-4" />
+//               <span className="text-gray-900 font-medium">{selectedCategory.name}</span>
+//             </>
+//           )}
+//         </div>
+
+//         {/* Título y descripción */}
+//         <div className="flex items-start justify-between">
+//           <div>
+//             <h1 className="text-3xl font-bold text-gray-900 mb-2">
+//               {getPageTitle()}
+//             </h1>
+//             <p className="text-gray-600">
+//               {getPageDescription()}
+//             </p>
+//           </div>
+
+//           {(currentView === 'category-browse' || currentView === 'category-detail') && (
+//             <button
+//               onClick={() => setShowCartModal(true)}
+//               className="relative flex items-center space-x-2 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+//             >
+//               <ShoppingCartIcon className="w-5 h-5 text-gray-700" />
+//               <span className="text-sm font-medium text-gray-700">
+//                 Mi Venta ({cart.length})
+//               </span>
+//               {cart.length > 0 && (
+//                 <span className="absolute -top-2 -right-2 bg-[#a8c241] text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+//                   {cart.length}
+//                 </span>
+//               )}
+//             </button>
+//           )}
+//         </div>
+//       </div>
+
+//       {/* Contenido principal */}
+//       {currentView === 'marketplace' ? (
+//         /* ===== MARKETPLACE CON IMÁGENES ESPECTACULARES ===== */
+//         <div className="space-y-8">
+//           <div className="grid md:grid-cols-2 gap-6 max-w-5xl">
+//             {/* Dispositivos Completos - CON IMAGEN */}
+//             <button
+//               onClick={() => handleDeviceTypeSelect('COMPLETE_DEVICES')}
+//               onMouseEnter={() => setHoveredCard('complete')}
+//               onMouseLeave={() => setHoveredCard(null)}
+//               className="group relative bg-white rounded-2xl overflow-hidden border-2 border-gray-200 hover:border-[#a8c241] transition-all duration-500 hover:shadow-2xl text-left"
+//             >
+//               {/* Imagen de fondo con overlay */}
+//               <div className="relative h-64 overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100">
+//                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-10" />
+//                 <img
+//                   src="https://images.unsplash.com/photo-1468495244123-6c6c332eeece?w=800&auto=format&fit=crop"
+//                   alt="Dispositivos Completos"
+//                   className={cn(
+//                     "w-full h-full object-cover transition-transform duration-700",
+//                     hoveredCard === 'complete' ? "scale-110" : "scale-100"
+//                   )}
+//                 />
+                
+//                 {/* Badge flotante animado */}
+//                 <div className={cn(
+//                   "absolute top-4 right-4 z-20 transition-all duration-500",
+//                   hoveredCard === 'complete' ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"
+//                 )}>
+//                   <div className="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center space-x-2">
+//                     <SparklesIcon className="w-4 h-4 text-blue-600" />
+//                     <span className="text-xs font-semibold text-blue-600">Valores más altos</span>
+//                   </div>
+//                 </div>
+
+//                 {/* Icono grande en el centro */}
+//                 <div className={cn(
+//                   "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 transition-all duration-500",
+//                   hoveredCard === 'complete' ? "scale-110 rotate-3" : "scale-100 rotate-0"
+//                 )}>
+//                   <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/30">
+//                     <span className="text-5xl">💻</span>
+//                   </div>
+//                 </div>
+//               </div>
+
+//               {/* Contenido */}
+//               <div className="p-6 relative">
+//                 <div className="flex items-start justify-between mb-3">
+//                   <h3 className="text-2xl font-bold text-gray-900 group-hover:text-[#719428] transition-colors">
+//                     Dispositivos Completos
+//                   </h3>
+//                   <ChevronRightIcon className={cn(
+//                     "w-6 h-6 text-gray-400 transition-all duration-300",
+//                     hoveredCard === 'complete' && "text-[#a8c241] translate-x-1"
+//                   )} />
+//                 </div>
+                
+//                 <p className="text-gray-600 mb-4 leading-relaxed">
+//                   Laptops, celulares, tablets y más equipos funcionales
+//                 </p>
+
+//                 {/* Features con checkmarks */}
+//                 <div className="space-y-2 mb-4">
+//                   <div className="flex items-center text-sm text-gray-700">
+//                     <CheckCircleIcon className="w-4 h-4 text-[#a8c241] mr-2 flex-shrink-0" />
+//                     <span>Evaluación completa del dispositivo</span>
+//                   </div>
+//                   <div className="flex items-center text-sm text-gray-700">
+//                     <CheckCircleIcon className="w-4 h-4 text-[#a8c241] mr-2 flex-shrink-0" />
+//                     <span>Incluye accesorios y componentes</span>
+//                   </div>
+//                 </div>
+                
+//                 {/* Footer con precio */}
+//                 <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+//                   <span className="text-sm font-medium text-gray-500">Valores estimados</span>
+//                   <div className="flex items-baseline space-x-1">
+//                     <span className="text-2xl font-bold text-[#719428]">$340</span>
+//                     <span className="text-gray-500">-</span>
+//                     <span className="text-2xl font-bold text-[#719428]">$1,200</span>
+//                   </div>
+//                 </div>
+//               </div>
+
+//               {/* Efecto de brillo al hover */}
+//               <div className={cn(
+//                 "absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full transition-transform duration-1000",
+//                 hoveredCard === 'complete' && "translate-x-full"
+//               )} />
+//             </button>
+
+//             {/* Componentes y Partes - CON IMAGEN */}
+//             <button
+//               onClick={() => handleDeviceTypeSelect('DISMANTLED_DEVICES')}
+//               onMouseEnter={() => setHoveredCard('dismantled')}
+//               onMouseLeave={() => setHoveredCard(null)}
+//               className="group relative bg-white rounded-2xl overflow-hidden border-2 border-gray-200 hover:border-[#a8c241] transition-all duration-500 hover:shadow-2xl text-left"
+//             >
+//               {/* Imagen de fondo con overlay */}
+//               <div className="relative h-64 overflow-hidden bg-gradient-to-br from-green-50 to-emerald-100">
+//                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-10" />
+//                 <img
+//                   src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&auto=format&fit=crop"
+//                   alt="Componentes y Partes"
+//                   className={cn(
+//                     "w-full h-full object-cover transition-transform duration-700",
+//                     hoveredCard === 'dismantled' ? "scale-110" : "scale-100"
+//                   )}
+//                 />
+                
+//                 {/* Badge flotante animado */}
+//                 <div className={cn(
+//                   "absolute top-4 right-4 z-20 transition-all duration-500",
+//                   hoveredCard === 'dismantled' ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"
+//                 )}>
+//                   <div className="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center space-x-2">
+//                     <SparklesIcon className="w-4 h-4 text-green-600" />
+//                     <span className="text-xs font-semibold text-green-600">Reciclaje premium</span>
+//                   </div>
+//                 </div>
+
+//                 {/* Icono grande en el centro */}
+//                 <div className={cn(
+//                   "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 transition-all duration-500",
+//                   hoveredCard === 'dismantled' ? "scale-110 -rotate-3" : "scale-100 rotate-0"
+//                 )}>
+//                   <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/30">
+//                     <span className="text-5xl">🔧</span>
+//                   </div>
+//                 </div>
+//               </div>
+
+//               {/* Contenido */}
+//               <div className="p-6 relative">
+//                 <div className="flex items-start justify-between mb-3">
+//                   <h3 className="text-2xl font-bold text-gray-900 group-hover:text-[#719428] transition-colors">
+//                     Componentes & Partes
+//                   </h3>
+//                   <ChevronRightIcon className={cn(
+//                     "w-6 h-6 text-gray-400 transition-all duration-300",
+//                     hoveredCard === 'dismantled' && "text-[#a8c241] translate-x-1"
+//                   )} />
+//                 </div>
+                
+//                 <p className="text-gray-600 mb-4 leading-relaxed">
+//                   Motherboards, procesadores, chips y componentes individuales
+//                 </p>
+
+//                 {/* Features con checkmarks */}
+//                 <div className="space-y-2 mb-4">
+//                   <div className="flex items-center text-sm text-gray-700">
+//                     <CheckCircleIcon className="w-4 h-4 text-[#a8c241] mr-2 flex-shrink-0" />
+//                     <span>Clasificación por materiales</span>
+//                   </div>
+//                   <div className="flex items-center text-sm text-gray-700">
+//                     <CheckCircleIcon className="w-4 h-4 text-[#a8c241] mr-2 flex-shrink-0" />
+//                     <span>Recuperación de metales preciosos</span>
+//                   </div>
+//                 </div>
+                
+//                 {/* Footer con precio */}
+//                 <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+//                   <span className="text-sm font-medium text-gray-500">Precio por kg</span>
+//                   <div className="flex items-baseline space-x-1">
+//                     <span className="text-2xl font-bold text-[#719428]">$2.50</span>
+//                     <span className="text-gray-500">-</span>
+//                     <span className="text-2xl font-bold text-[#719428]">$45</span>
+//                   </div>
+//                 </div>
+//               </div>
+
+//               {/* Efecto de brillo al hover */}
+//               <div className={cn(
+//                 "absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full transition-transform duration-1000",
+//                 hoveredCard === 'dismantled' && "translate-x-full"
+//               )} />
+//             </button>
+//           </div>
+
+//           {/* Stats minimalistas con animación */}
+//           <div className="grid grid-cols-3 gap-8 max-w-5xl pt-12 border-t border-gray-200">
+//             {[
+//               { value: '24h', label: 'Pago rápido', delay: '0ms' },
+//               { value: '100%', label: 'Seguro y confiable', delay: '100ms' },
+//               { value: '+5k', label: 'Ventas realizadas', delay: '200ms' }
+//             ].map((stat, index) => (
+//               <div 
+//                 key={index}
+//                 className="text-center transform transition-all duration-500 hover:scale-110"
+//                 style={{ animationDelay: stat.delay }}
+//               >
+//                 <div className="text-4xl font-bold bg-gradient-to-r from-[#a8c241] to-[#719428] bg-clip-text text-transparent mb-2">
+//                   {stat.value}
+//                 </div>
+//                 <div className="text-sm text-gray-600">{stat.label}</div>
+//               </div>
+//             ))}
+//           </div>
+//         </div>
+//       ) : currentView === 'category-detail' && selectedCategory ? (
+//         /* ===== VISTA DETALLE ===== */
+//         <CategoryDetailView
+//           category={selectedCategory}
+//           onAddToCart={handleAddToCart}
+//           onBack={handleBackToCategories}
+//         />
+//       ) : (
+//         /* ===== VISTA CATEGORÍAS ===== */
+//         <div className="space-y-6">
+//           {/* Barra de acciones */}
+//           <div className="flex items-center justify-between pb-4 border-b border-gray-200">
+//             <p className="text-sm text-gray-600">
+//               {filteredCategories.length} {filteredCategories.length === 1 ? 'categoría disponible' : 'categorías disponibles'}
+//             </p>
+            
+//             <select
+//               value={sortBy}
+//               onChange={(e) => setSortBy(e.target.value as any)}
+//               className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#a8c241] focus:border-transparent outline-none"
+//             >
+//               <option value="popular">Más populares</option>
+//               <option value="price-desc">Mayor precio</option>
+//               <option value="price-asc">Menor precio</option>
+//               <option value="name">Nombre A-Z</option>
+//             </select>
+//           </div>
+
+//           {/* Loading */}
+//           {loading && (
+//             <div className="text-center py-20">
+//               <div className="inline-block animate-spin rounded-full h-10 w-10 border-4 border-gray-200 border-t-[#a8c241]"></div>
+//               <p className="mt-4 text-sm text-gray-600">Cargando categorías...</p>
+//             </div>
+//           )}
+
+//           {/* Error */}
+//           {error && !loading && (
+//             <div className="text-center py-20">
+//               <div className="text-5xl mb-4">⚠️</div>
+//               <h3 className="text-lg font-semibold text-gray-900 mb-2">Error al cargar categorías</h3>
+//               <p className="text-gray-600 mb-6">{error}</p>
+//               <Button 
+//                 onClick={() => handleDeviceTypeSelect(selectedDeviceType!)}
+//                 className="bg-[#a8c241] hover:bg-[#719428] text-white"
+//               >
+//                 Reintentar
+//               </Button>
+//             </div>
+//           )}
+
+//           {/* Empty */}
+//           {!loading && !error && filteredCategories.length === 0 && (
+//             <div className="text-center py-20">
+//               <div className="text-6xl mb-4">📦</div>
+//               <h3 className="text-lg font-semibold text-gray-900 mb-2">No hay categorías disponibles</h3>
+//               <p className="text-gray-600">Intenta con otro tipo de dispositivo</p>
+//             </div>
+//           )}
+
+//           {/* Grid de categorías */}
+//           {!loading && !error && filteredCategories.length > 0 && (
+//             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+//               {filteredCategories.map((category) => (
+//                 <button
+//                   key={category.id}
+//                   onClick={() => handleCategoryClick(category)}
+//                   className="group bg-white border border-gray-200 rounded-xl p-5 hover:border-[#a8c241] hover:shadow-md transition-all duration-200 text-left"
+//                 >
+//                   {category.thumbnailImage && (
+//                     <div className="w-full aspect-square rounded-lg overflow-hidden bg-gray-50 mb-4">
+//                       <img
+//                         src={category.thumbnailImage}
+//                         alt={category.name}
+//                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+//                       />
+//                     </div>
+//                   )}
+
+//                   <div>
+//                     <div className="flex items-start justify-between mb-2">
+//                       <h3 className="font-semibold text-gray-900 group-hover:text-[#719428] transition-colors">
+//                         {category.name}
+//                       </h3>
+//                       {category.isLeaf && (
+//                         <Badge className="bg-green-50 text-green-700 border-green-200 text-xs">
+//                           Seleccionable
+//                         </Badge>
+//                       )}
+//                     </div>
+
+//                     {category.description && (
+//                       <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+//                         {category.description}
+//                       </p>
+//                     )}
+
+//                     {category.pricePerKg ? (
+//                       <div className="flex items-baseline space-x-2 pt-3 border-t border-gray-100">
+//                         <span className="text-2xl font-bold text-[#719428]">
+//                           ${parseFloat(category.pricePerKg.toString()).toFixed(2)}
+//                         </span>
+//                         <span className="text-sm text-gray-500">/kg</span>
+//                       </div>
+//                     ) : (
+//                       <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+//                         <span className="text-sm text-gray-600">Ver subcategorías</span>
+//                         <ChevronRightIcon className="w-5 h-5 text-gray-400 group-hover:text-[#a8c241] transition-colors" />
+//                       </div>
+//                     )}
+//                   </div>
+//                 </button>
+//               ))}
+//             </div>
+//           )}
+//         </div>
+//       )}
+
+//       {/* Drawer del carrito */}
+//       {showCartModal && (
+//         <SellCartModal
+//           cart={cart}
+//           onClose={() => setShowCartModal(false)}
+//           onRemoveItem={handleRemoveFromCart}
+//           onCheckout={handleCheckout}
+//         />
+//       )}
+//     </div>
+//   );
+// };
+
+// export default SellPage;
+
+
+
+
+
+
+
+// // src/pages/dashboard/SellPage.tsx - DISEÑO DE ÚLTIMA GENERACIÓN
+// import React, { useState, useMemo } from 'react';
+// import { useNavigate } from 'react-router-dom';
+// import {
+//   ChevronRightIcon,
+//   ShoppingCartIcon,
+//   HomeIcon,
+//   CheckCircleIcon,
+//   ArrowRightIcon,
+// } from '@heroicons/react/24/outline';
+// import { Category, CartItem } from '@/types/categories';
+// import { Button } from '@/components/ui/Button';
+// import { Badge } from '@/components/ui/Badge';
+// import categoryService from '@/services/categoryService';
+// import { cn } from '@/utils/cn';
+// import { ValidationUtils } from '@/utils/validation.utils';
+// import SellCartModal from '@/components/sell/SellCartModal';
+// import CategoryDetailView from '@/components/sell/CategoryDetailView';
+
+// const COMPLETE_DEVICES_ROOT_ID = 'cmfr2mc1z00010py8ljs9os94';
+// const DISMANTLED_DEVICES_ROOT_ID = 'cmfr2mcac001t0py8bs6j3uy0';
+
+// const SellPage: React.FC = () => {
+//   const navigate = useNavigate();
+  
+//   const [currentView, setCurrentView] = useState<'marketplace' | 'category-browse' | 'category-detail'>('marketplace');
+//   const [selectedDeviceType, setSelectedDeviceType] = useState<'COMPLETE_DEVICES' | 'DISMANTLED_DEVICES' | null>(null);
+//   const [categories, setCategories] = useState<Category[]>([]);
+//   const [breadcrumb, setBreadcrumb] = useState<Category[]>([]);
+//   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+//   const [loading, setLoading] = useState(false);
+//   const [cart, setCart] = useState<CartItem[]>([]);
+//   const [showCartModal, setShowCartModal] = useState(false);
+//   const [error, setError] = useState<string | null>(null);
+//   const [sortBy, setSortBy] = useState<'price-desc' | 'price-asc' | 'name' | 'popular'>('popular');
+//   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+
+//   const handleDeviceTypeSelect = async (type: 'COMPLETE_DEVICES' | 'DISMANTLED_DEVICES') => {
+//     setSelectedDeviceType(type);
+//     setCurrentView('category-browse');
+//     setLoading(true);
+//     setError(null);
+
+//     try {
+//       const rootId = type === 'COMPLETE_DEVICES' ? COMPLETE_DEVICES_ROOT_ID : DISMANTLED_DEVICES_ROOT_ID;
+//       const children = await categoryService.getCategoryChildren(rootId);
+//       const validCategories = ValidationUtils.cleanCategoryArray(children);
+      
+//       if (validCategories.length === 0) {
+//         setError('No se encontraron categorías disponibles');
+//       }
+      
+//       setCategories(validCategories);
+//       setBreadcrumb([{
+//         id: rootId,
+//         name: type === 'COMPLETE_DEVICES' ? 'Dispositivos Completos' : 'Componentes & Partes',
+//         slug: type.toLowerCase(),
+//         type: type,
+//         status: 'ACTIVE',
+//         level: 0,
+//         path: [],
+//         fullPath: '',
+//         isLeaf: false,
+//         sortOrder: 0,
+//         images: [],
+//         createdAt: new Date().toISOString(),
+//         updatedAt: new Date().toISOString()
+//       }]);
+//     } catch (error) {
+//       setError(ValidationUtils.getErrorMessage(error));
+//       setCategories([]);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const handleCategoryClick = async (category: Category) => {
+//     if (category.isLeaf) {
+//       setSelectedCategory(category);
+//       setCurrentView('category-detail');
+//       return;
+//     }
+
+//     setLoading(true);
+//     setError(null);
+    
+//     try {
+//       const children = await categoryService.getCategoryChildren(category.id);
+//       const validCategories = ValidationUtils.cleanCategoryArray(children);
+      
+//       if (validCategories.length === 0) {
+//         setError('No se encontraron subcategorías disponibles');
+//       }
+      
+//       setCategories(validCategories);
+//       setBreadcrumb(prev => [...prev, category]);
+//     } catch (error) {
+//       setError(ValidationUtils.getErrorMessage(error));
+//       setCategories([]);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const handleBreadcrumbClick = async (index: number) => {
+//     if (index === breadcrumb.length - 1) return;
+    
+//     const targetCategory = breadcrumb[index];
+//     setLoading(true);
+//     setError(null);
+    
+//     try {
+//       const children = await categoryService.getCategoryChildren(targetCategory.id);
+//       const validCategories = ValidationUtils.cleanCategoryArray(children);
+      
+//       setCategories(validCategories);
+//       setBreadcrumb(prev => prev.slice(0, index + 1));
+//       setCurrentView('category-browse');
+//     } catch (error) {
+//       setError(ValidationUtils.getErrorMessage(error));
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const handleBackToMarketplace = () => {
+//     setCurrentView('marketplace');
+//     setSelectedDeviceType(null);
+//     setCategories([]);
+//     setBreadcrumb([]);
+//     setSelectedCategory(null);
+//     setError(null);
+//   };
+
+//   const handleBackToCategories = () => {
+//     setCurrentView('category-browse');
+//     setSelectedCategory(null);
+//   };
+
+//   const handleAddToCart = (item: CartItem) => {
+//     setCart(prev => [...prev, item]);
+//     setCurrentView('category-browse');
+//     setSelectedCategory(null);
+//   };
+
+//   const handleRemoveFromCart = (index: number) => {
+//     setCart(prev => prev.filter((_, i) => i !== index));
+//   };
+
+//   const handleCheckout = () => {
+//     setShowCartModal(false);
+//     navigate('/sell/checkout', { state: { cart } });
+//   };
+
+//   const filteredCategories = useMemo(() => {
+//     let filtered = [...categories];
+//     filtered.sort((a, b) => {
+//       switch (sortBy) {
+//         case 'price-desc':
+//           return (parseFloat(b.pricePerKg?.toString() || '0')) - (parseFloat(a.pricePerKg?.toString() || '0'));
+//         case 'price-asc':
+//           return (parseFloat(a.pricePerKg?.toString() || '0')) - (parseFloat(b.pricePerKg?.toString() || '0'));
+//         case 'name':
+//           return a.name.localeCompare(b.name);
+//         default:
+//           return 0;
+//       }
+//     });
+//     return filtered;
+//   }, [categories, sortBy]);
+
+//   const getPageTitle = () => {
+//     if (currentView === 'marketplace') return 'Vender';
+//     if (currentView === 'category-detail' && selectedCategory) return selectedCategory.name;
+//     if (breadcrumb.length > 0) return breadcrumb[breadcrumb.length - 1].name;
+//     return 'Vender';
+//   };
+
+//   const getPageDescription = () => {
+//     if (currentView === 'marketplace') return 'Selecciona el tipo de material que deseas reciclar';
+//     if (currentView === 'category-detail' && selectedCategory) return 'Completa los detalles de tu venta';
+//     return 'Selecciona la categoría de tu dispositivo';
+//   };
+
+//   return (
+//     <div className="min-h-screen bg-white">
+//       {/* Header */}
+//       <div className="mb-8">
+//         {/* Breadcrumb */}
+//         <div className="flex items-center space-x-2 text-sm text-gray-500 mb-4">
+//           <button 
+//             onClick={() => navigate('/dashboard')}
+//             className="hover:text-gray-700 transition-colors"
+//           >
+//             <HomeIcon className="w-4 h-4" />
+//           </button>
+//           <ChevronRightIcon className="w-4 h-4" />
+//           <button 
+//             onClick={handleBackToMarketplace}
+//             className={cn(
+//               "hover:text-gray-700 transition-colors",
+//               currentView === 'marketplace' && "text-gray-900 font-medium"
+//             )}
+//           >
+//             Vender
+//           </button>
+          
+//           {breadcrumb.map((crumb, index) => (
+//             <React.Fragment key={crumb.id}>
+//               <ChevronRightIcon className="w-4 h-4" />
+//               <button
+//                 onClick={() => handleBreadcrumbClick(index)}
+//                 className={cn(
+//                   "hover:text-gray-700 transition-colors",
+//                   index === breadcrumb.length - 1 && currentView === 'category-browse' && "text-gray-900 font-medium"
+//                 )}
+//               >
+//                 {crumb.name}
+//               </button>
+//             </React.Fragment>
+//           ))}
+
+//           {currentView === 'category-detail' && selectedCategory && (
+//             <>
+//               <ChevronRightIcon className="w-4 h-4" />
+//               <span className="text-gray-900 font-medium">{selectedCategory.name}</span>
+//             </>
+//           )}
+//         </div>
+
+//         {/* Título y descripción */}
+//         <div className="flex items-start justify-between">
+//           <div>
+//             <h1 className="text-3xl font-bold text-gray-900 mb-2">
+//               {getPageTitle()}
+//             </h1>
+//             <p className="text-gray-600">
+//               {getPageDescription()}
+//             </p>
+//           </div>
+
+//           {(currentView === 'category-browse' || currentView === 'category-detail') && (
+//             <button
+//               onClick={() => setShowCartModal(true)}
+//               className="relative flex items-center space-x-2 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+//             >
+//               <ShoppingCartIcon className="w-5 h-5 text-gray-700" />
+//               <span className="text-sm font-medium text-gray-700">
+//                 Mi Venta ({cart.length})
+//               </span>
+//               {cart.length > 0 && (
+//                 <span className="absolute -top-2 -right-2 bg-[#a8c241] text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+//                   {cart.length}
+//                 </span>
+//               )}
+//             </button>
+//           )}
+//         </div>
+//       </div>
+
+//       {/* Contenido principal */}
+//       {currentView === 'marketplace' ? (
+//         /* ===== MARKETPLACE - DISEÑO MODERNO FULL WIDTH ===== */
+//         <div className="space-y-8 -mx-4 sm:-mx-6 lg:-mx-8">
+//           <div className="grid lg:grid-cols-2 gap-0">
+//             {/* Dispositivos Completos - Full Width */}
+//             <button
+//               onClick={() => handleDeviceTypeSelect('COMPLETE_DEVICES')}
+//               onMouseEnter={() => setHoveredCard('complete')}
+//               onMouseLeave={() => setHoveredCard(null)}
+//               className="group relative h-[500px] overflow-hidden transition-all duration-700 hover:shadow-2xl"
+//             >
+//               {/* Imagen de fondo */}
+//               <div className="absolute inset-0">
+//                 <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-black/30 to-black/60 z-10 group-hover:from-black/30 group-hover:via-black/20 group-hover:to-black/50 transition-all duration-700" />
+//                 <img
+//                   src="https://images.unsplash.com/photo-1468495244123-6c6c332eeece?w=1200&auto=format&fit=crop&q=80"
+//                   alt="Dispositivos Completos"
+//                   className={cn(
+//                     "w-full h-full object-cover transition-all duration-700",
+//                     hoveredCard === 'complete' ? "scale-105" : "scale-100"
+//                   )}
+//                 />
+//               </div>
+
+//               {/* Contenido */}
+//               <div className="relative z-20 h-full flex flex-col justify-end p-12 text-left">
+//                 {/* Tag flotante */}
+//                 <div className={cn(
+//                   "inline-flex items-center space-x-2 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-full mb-6 transition-all duration-500 w-fit",
+//                   hoveredCard === 'complete' ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+//                 )}>
+//                   <CheckCircleIcon className="w-4 h-4 text-blue-600" />
+//                   <span className="text-sm font-semibold text-blue-600">Evaluación completa</span>
+//                 </div>
+
+//                 <h2 className="text-5xl font-bold text-white mb-4 transform transition-transform duration-500 group-hover:translate-x-2">
+//                   Dispositivos Completos
+//                 </h2>
+                
+//                 <p className="text-xl text-white/90 mb-6 max-w-md leading-relaxed">
+//                   Laptops, celulares, tablets y más equipos funcionales
+//                 </p>
+
+//                 {/* Features */}
+//                 <div className="space-y-3 mb-8">
+//                   <div className="flex items-center text-white/90">
+//                     <div className="w-1.5 h-1.5 rounded-full bg-[#a8c241] mr-3" />
+//                     <span className="text-sm">Incluye accesorios y componentes</span>
+//                   </div>
+//                   <div className="flex items-center text-white/90">
+//                     <div className="w-1.5 h-1.5 rounded-full bg-[#a8c241] mr-3" />
+//                     <span className="text-sm">Valuación individual por dispositivo</span>
+//                   </div>
+//                 </div>
+
+//                 {/* CTA */}
+//                 <div className="flex items-center space-x-3 text-white group-hover:text-[#D0FF5B] transition-colors">
+//                   <span className="text-lg font-semibold">Explorar categorías</span>
+//                   <ArrowRightIcon className={cn(
+//                     "w-6 h-6 transition-transform duration-300",
+//                     hoveredCard === 'complete' && "translate-x-2"
+//                   )} />
+//                 </div>
+//               </div>
+
+//               {/* Efecto de gradiente en hover */}
+//               <div className={cn(
+//                 "absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full transition-transform duration-1000 pointer-events-none",
+//                 hoveredCard === 'complete' && "translate-x-full"
+//               )} />
+//             </button>
+
+//             {/* Componentes y Partes - Full Width */}
+//             <button
+//               onClick={() => handleDeviceTypeSelect('DISMANTLED_DEVICES')}
+//               onMouseEnter={() => setHoveredCard('dismantled')}
+//               onMouseLeave={() => setHoveredCard(null)}
+//               className="group relative h-[500px] overflow-hidden transition-all duration-700 hover:shadow-2xl"
+//             >
+//               {/* Imagen de fondo */}
+//               <div className="absolute inset-0">
+//                 <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-black/30 to-black/60 z-10 group-hover:from-black/30 group-hover:via-black/20 group-hover:to-black/50 transition-all duration-700" />
+//                 <img
+//                   src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&auto=format&fit=crop&q=80"
+//                   alt="Componentes y Partes"
+//                   className={cn(
+//                     "w-full h-full object-cover transition-all duration-700",
+//                     hoveredCard === 'dismantled' ? "scale-105" : "scale-100"
+//                   )}
+//                 />
+//               </div>
+
+//               {/* Contenido */}
+//               <div className="relative z-20 h-full flex flex-col justify-end p-12 text-left">
+//                 {/* Tag flotante */}
+//                 <div className={cn(
+//                   "inline-flex items-center space-x-2 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-full mb-6 transition-all duration-500 w-fit",
+//                   hoveredCard === 'dismantled' ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+//                 )}>
+//                   <CheckCircleIcon className="w-4 h-4 text-green-600" />
+//                   <span className="text-sm font-semibold text-green-600">Clasificación por materiales</span>
+//                 </div>
+
+//                 <h2 className="text-5xl font-bold text-white mb-4 transform transition-transform duration-500 group-hover:translate-x-2">
+//                   Componentes & Partes
+//                 </h2>
+                
+//                 <p className="text-xl text-white/90 mb-6 max-w-md leading-relaxed">
+//                   Motherboards, procesadores, chips y componentes individuales
+//                 </p>
+
+//                 {/* Features */}
+//                 <div className="space-y-3 mb-8">
+//                   <div className="flex items-center text-white/90">
+//                     <div className="w-1.5 h-1.5 rounded-full bg-[#a8c241] mr-3" />
+//                     <span className="text-sm">Recuperación de metales preciosos</span>
+//                   </div>
+//                   <div className="flex items-center text-white/90">
+//                     <div className="w-1.5 h-1.5 rounded-full bg-[#a8c241] mr-3" />
+//                     <span className="text-sm">Valuación por peso y calidad</span>
+//                   </div>
+//                 </div>
+
+//                 {/* CTA */}
+//                 <div className="flex items-center space-x-3 text-white group-hover:text-[#D0FF5B] transition-colors">
+//                   <span className="text-lg font-semibold">Explorar categorías</span>
+//                   <ArrowRightIcon className={cn(
+//                     "w-6 h-6 transition-transform duration-300",
+//                     hoveredCard === 'dismantled' && "translate-x-2"
+//                   )} />
+//                 </div>
+//               </div>
+
+//               {/* Efecto de gradiente en hover */}
+//               <div className={cn(
+//                 "absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full transition-transform duration-1000 pointer-events-none",
+//                 hoveredCard === 'dismantled' && "translate-x-full"
+//               )} />
+//             </button>
+//           </div>
+
+//           {/* Stats */}
+//           <div className="px-4 sm:px-6 lg:px-8">
+//             <div className="grid grid-cols-3 gap-8 max-w-4xl mx-auto pt-12 border-t border-gray-200">
+//               {[
+//                 { value: '24h', label: 'Pago rápido' },
+//                 { value: '100%', label: 'Seguro' },
+//                 { value: '+5k', label: 'Ventas' }
+//               ].map((stat, index) => (
+//                 <div 
+//                   key={index}
+//                   className="text-center transform transition-all duration-500 hover:scale-110"
+//                 >
+//                   <div className="text-4xl font-bold bg-gradient-to-r from-[#a8c241] to-[#719428] bg-clip-text text-transparent mb-2">
+//                     {stat.value}
+//                   </div>
+//                   <div className="text-sm text-gray-600">{stat.label}</div>
+//                 </div>
+//               ))}
+//             </div>
+//           </div>
+//         </div>
+//       ) : currentView === 'category-detail' && selectedCategory ? (
+//         <CategoryDetailView
+//           category={selectedCategory}
+//           onAddToCart={handleAddToCart}
+//           onBack={handleBackToCategories}
+//         />
+//       ) : (
+//         /* ===== VISTA CATEGORÍAS ===== */
+//         <div className="space-y-6">
+//           <div className="flex items-center justify-between pb-4 border-b border-gray-200">
+//             <p className="text-sm text-gray-600">
+//               {filteredCategories.length} {filteredCategories.length === 1 ? 'categoría disponible' : 'categorías disponibles'}
+//             </p>
+            
+//             <select
+//               value={sortBy}
+//               onChange={(e) => setSortBy(e.target.value as any)}
+//               className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#a8c241] focus:border-transparent outline-none"
+//             >
+//               <option value="popular">Más populares</option>
+//               <option value="price-desc">Mayor precio</option>
+//               <option value="price-asc">Menor precio</option>
+//               <option value="name">Nombre A-Z</option>
+//             </select>
+//           </div>
+
+//           {loading && (
+//             <div className="text-center py-20">
+//               <div className="inline-block animate-spin rounded-full h-10 w-10 border-4 border-gray-200 border-t-[#a8c241]"></div>
+//               <p className="mt-4 text-sm text-gray-600">Cargando categorías...</p>
+//             </div>
+//           )}
+
+//           {error && !loading && (
+//             <div className="text-center py-20">
+//               <div className="text-5xl mb-4">⚠️</div>
+//               <h3 className="text-lg font-semibold text-gray-900 mb-2">Error al cargar categorías</h3>
+//               <p className="text-gray-600 mb-6">{error}</p>
+//               <Button 
+//                 onClick={() => handleDeviceTypeSelect(selectedDeviceType!)}
+//                 className="bg-[#a8c241] hover:bg-[#719428] text-white"
+//               >
+//                 Reintentar
+//               </Button>
+//             </div>
+//           )}
+
+//           {!loading && !error && filteredCategories.length === 0 && (
+//             <div className="text-center py-20">
+//               <div className="text-6xl mb-4">📦</div>
+//               <h3 className="text-lg font-semibold text-gray-900 mb-2">No hay categorías disponibles</h3>
+//               <p className="text-gray-600">Intenta con otro tipo de dispositivo</p>
+//             </div>
+//           )}
+
+//           {!loading && !error && filteredCategories.length > 0 && (
+//             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+//               {filteredCategories.map((category) => (
+//                 <button
+//                   key={category.id}
+//                   onClick={() => handleCategoryClick(category)}
+//                   className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-[#a8c241] hover:shadow-md transition-all duration-300 text-left"
+//                 >
+//                   {category.thumbnailImage && (
+//                     <div className="w-full h-48 overflow-hidden bg-gray-50">
+//                       <img
+//                         src={category.thumbnailImage}
+//                         alt={category.name}
+//                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+//                       />
+//                     </div>
+//                   )}
+
+//                   <div className="p-5">
+//                     <div className="flex items-start justify-between mb-2">
+//                       <h3 className="font-semibold text-gray-900 group-hover:text-[#719428] transition-colors flex-1">
+//                         {category.name}
+//                       </h3>
+//                       {category.isLeaf && (
+//                         <Badge className="bg-green-50 text-green-700 border-green-200 text-xs ml-2">
+//                           Seleccionable
+//                         </Badge>
+//                       )}
+//                     </div>
+
+//                     {category.description && (
+//                       <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+//                         {category.description}
+//                       </p>
+//                     )}
+
+//                     <div className="flex items-center text-sm text-gray-500 group-hover:text-[#a8c241] transition-colors">
+//                       <span className="font-medium">
+//                         {category.isLeaf ? 'Ver detalles' : 'Ver subcategorías'}
+//                       </span>
+//                       <ChevronRightIcon className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+//                     </div>
+//                   </div>
+//                 </button>
+//               ))}
+//             </div>
+//           )}
+//         </div>
+//       )}
+
+//       {showCartModal && (
+//         <SellCartModal
+//           cart={cart}
+//           onClose={() => setShowCartModal(false)}
+//           onRemoveItem={handleRemoveFromCart}
+//           onCheckout={handleCheckout}
+//         />
+//       )}
+//     </div>
+//   );
+// };
+
+// export default SellPage;
+
+
+
+// // src/pages/dashboard/SellPage.tsx - DISEÑO MINIMALISTA ELEGANTE
+// import React, { useState, useMemo } from 'react';
+// import { useNavigate } from 'react-router-dom';
+// import {
+//   ChevronRightIcon,
+//   ShoppingCartIcon,
+//   HomeIcon,
+//   ArrowRightIcon,
+// } from '@heroicons/react/24/outline';
+// import { Category, CartItem } from '@/types/categories';
+// import { Button } from '@/components/ui/Button';
+// import { Badge } from '@/components/ui/Badge';
+// import categoryService from '@/services/categoryService';
+// import { cn } from '@/utils/cn';
+// import { ValidationUtils } from '@/utils/validation.utils';
+// import SellCartModal from '@/components/sell/SellCartModal';
+// import CategoryDetailView from '@/components/sell/CategoryDetailView';
+
+// const COMPLETE_DEVICES_ROOT_ID = 'cmfr2mc1z00010py8ljs9os94';
+// const DISMANTLED_DEVICES_ROOT_ID = 'cmfr2mcac001t0py8bs6j3uy0';
+
+// const SellPage: React.FC = () => {
+//   const navigate = useNavigate();
+  
+//   const [currentView, setCurrentView] = useState<'marketplace' | 'category-browse' | 'category-detail'>('marketplace');
+//   const [selectedDeviceType, setSelectedDeviceType] = useState<'COMPLETE_DEVICES' | 'DISMANTLED_DEVICES' | null>(null);
+//   const [categories, setCategories] = useState<Category[]>([]);
+//   const [breadcrumb, setBreadcrumb] = useState<Category[]>([]);
+//   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+//   const [loading, setLoading] = useState(false);
+//   const [cart, setCart] = useState<CartItem[]>([]);
+//   const [showCartModal, setShowCartModal] = useState(false);
+//   const [error, setError] = useState<string | null>(null);
+//   const [sortBy, setSortBy] = useState<'price-desc' | 'price-asc' | 'name' | 'popular'>('popular');
+//   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+
+//   const handleDeviceTypeSelect = async (type: 'COMPLETE_DEVICES' | 'DISMANTLED_DEVICES') => {
+//     setSelectedDeviceType(type);
+//     setCurrentView('category-browse');
+//     setLoading(true);
+//     setError(null);
+
+//     try {
+//       const rootId = type === 'COMPLETE_DEVICES' ? COMPLETE_DEVICES_ROOT_ID : DISMANTLED_DEVICES_ROOT_ID;
+//       const children = await categoryService.getCategoryChildren(rootId);
+//       const validCategories = ValidationUtils.cleanCategoryArray(children);
+      
+//       if (validCategories.length === 0) {
+//         setError('No se encontraron categorías disponibles');
+//       }
+      
+//       setCategories(validCategories);
+//       setBreadcrumb([{
+//         id: rootId,
+//         name: type === 'COMPLETE_DEVICES' ? 'Dispositivos Completos' : 'Componentes & Partes',
+//         slug: type.toLowerCase(),
+//         type: type,
+//         status: 'ACTIVE',
+//         level: 0,
+//         path: [],
+//         fullPath: '',
+//         isLeaf: false,
+//         sortOrder: 0,
+//         images: [],
+//         createdAt: new Date().toISOString(),
+//         updatedAt: new Date().toISOString()
+//       }]);
+//     } catch (error) {
+//       setError(ValidationUtils.getErrorMessage(error));
+//       setCategories([]);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const handleCategoryClick = async (category: Category) => {
+//     if (category.isLeaf) {
+//       setSelectedCategory(category);
+//       setCurrentView('category-detail');
+//       return;
+//     }
+
+//     setLoading(true);
+//     setError(null);
+    
+//     try {
+//       const children = await categoryService.getCategoryChildren(category.id);
+//       const validCategories = ValidationUtils.cleanCategoryArray(children);
+      
+//       if (validCategories.length === 0) {
+//         setError('No se encontraron subcategorías disponibles');
+//       }
+      
+//       setCategories(validCategories);
+//       setBreadcrumb(prev => [...prev, category]);
+//     } catch (error) {
+//       setError(ValidationUtils.getErrorMessage(error));
+//       setCategories([]);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const handleBreadcrumbClick = async (index: number) => {
+//     if (index === breadcrumb.length - 1) return;
+    
+//     const targetCategory = breadcrumb[index];
+//     setLoading(true);
+//     setError(null);
+    
+//     try {
+//       const children = await categoryService.getCategoryChildren(targetCategory.id);
+//       const validCategories = ValidationUtils.cleanCategoryArray(children);
+      
+//       setCategories(validCategories);
+//       setBreadcrumb(prev => prev.slice(0, index + 1));
+//       setCurrentView('category-browse');
+//     } catch (error) {
+//       setError(ValidationUtils.getErrorMessage(error));
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const handleBackToMarketplace = () => {
+//     setCurrentView('marketplace');
+//     setSelectedDeviceType(null);
+//     setCategories([]);
+//     setBreadcrumb([]);
+//     setSelectedCategory(null);
+//     setError(null);
+//   };
+
+//   const handleBackToCategories = () => {
+//     setCurrentView('category-browse');
+//     setSelectedCategory(null);
+//   };
+
+//   const handleAddToCart = (item: CartItem) => {
+//     setCart(prev => [...prev, item]);
+//     setCurrentView('category-browse');
+//     setSelectedCategory(null);
+//   };
+
+//   const handleRemoveFromCart = (index: number) => {
+//     setCart(prev => prev.filter((_, i) => i !== index));
+//   };
+
+//   const handleCheckout = () => {
+//     setShowCartModal(false);
+//     navigate('/sell/checkout', { state: { cart } });
+//   };
+
+//   const filteredCategories = useMemo(() => {
+//     let filtered = [...categories];
+//     filtered.sort((a, b) => {
+//       switch (sortBy) {
+//         case 'price-desc':
+//           return (parseFloat(b.pricePerKg?.toString() || '0')) - (parseFloat(a.pricePerKg?.toString() || '0'));
+//         case 'price-asc':
+//           return (parseFloat(a.pricePerKg?.toString() || '0')) - (parseFloat(b.pricePerKg?.toString() || '0'));
+//         case 'name':
+//           return a.name.localeCompare(b.name);
+//         default:
+//           return 0;
+//       }
+//     });
+//     return filtered;
+//   }, [categories, sortBy]);
+
+//   const getPageTitle = () => {
+//     if (currentView === 'marketplace') return 'Vender';
+//     if (currentView === 'category-detail' && selectedCategory) return selectedCategory.name;
+//     if (breadcrumb.length > 0) return breadcrumb[breadcrumb.length - 1].name;
+//     return 'Vender';
+//   };
+
+//   const getPageDescription = () => {
+//     if (currentView === 'marketplace') return 'Selecciona el tipo de material que deseas reciclar';
+//     if (currentView === 'category-detail' && selectedCategory) return 'Completa los detalles de tu venta';
+//     return 'Selecciona la categoría de tu dispositivo';
+//   };
+
+//   return (
+//     <div className="min-h-screen bg-white">
+//       {/* Header */}
+//       <div className="mb-10">
+//         {/* Breadcrumb */}
+//         <div className="flex items-center space-x-2 text-sm text-gray-500 mb-4">
+//           <button 
+//             onClick={() => navigate('/dashboard')}
+//             className="hover:text-gray-700 transition-colors"
+//           >
+//             <HomeIcon className="w-4 h-4" />
+//           </button>
+//           <ChevronRightIcon className="w-4 h-4" />
+//           <button 
+//             onClick={handleBackToMarketplace}
+//             className={cn(
+//               "hover:text-gray-700 transition-colors",
+//               currentView === 'marketplace' && "text-gray-900 font-medium"
+//             )}
+//           >
+//             Vender
+//           </button>
+          
+//           {breadcrumb.map((crumb, index) => (
+//             <React.Fragment key={crumb.id}>
+//               <ChevronRightIcon className="w-4 h-4" />
+//               <button
+//                 onClick={() => handleBreadcrumbClick(index)}
+//                 className={cn(
+//                   "hover:text-gray-700 transition-colors",
+//                   index === breadcrumb.length - 1 && currentView === 'category-browse' && "text-gray-900 font-medium"
+//                 )}
+//               >
+//                 {crumb.name}
+//               </button>
+//             </React.Fragment>
+//           ))}
+
+//           {currentView === 'category-detail' && selectedCategory && (
+//             <>
+//               <ChevronRightIcon className="w-4 h-4" />
+//               <span className="text-gray-900 font-medium">{selectedCategory.name}</span>
+//             </>
+//           )}
+//         </div>
+
+//         {/* Título y descripción */}
+//         <div className="flex items-start justify-between">
+//           <div>
+//             <h1 className="text-3xl font-bold text-gray-900 mb-2">
+//               {getPageTitle()}
+//             </h1>
+//             <p className="text-gray-600">
+//               {getPageDescription()}
+//             </p>
+//           </div>
+
+//           {(currentView === 'category-browse' || currentView === 'category-detail') && (
+//             <button
+//               onClick={() => setShowCartModal(true)}
+//               className="relative flex items-center space-x-2 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+//             >
+//               <ShoppingCartIcon className="w-5 h-5 text-gray-700" />
+//               <span className="text-sm font-medium text-gray-700">
+//                 Mi Venta ({cart.length})
+//               </span>
+//               {cart.length > 0 && (
+//                 <span className="absolute -top-2 -right-2 bg-[#a8c241] text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+//                   {cart.length}
+//                 </span>
+//               )}
+//             </button>
+//           )}
+//         </div>
+//       </div>
+
+//       {/* Contenido principal */}
+//       {currentView === 'marketplace' ? (
+//         /* ===== MARKETPLACE MINIMALISTA ===== */
+//         <div className="space-y-6">
+//           {/* Grid de tarjetas con espacio blanco elegante */}
+//           <div className="grid md:grid-cols-2 gap-6">
+//             {/* Dispositivos Completos */}
+//             <button
+//               onClick={() => handleDeviceTypeSelect('COMPLETE_DEVICES')}
+//               onMouseEnter={() => setHoveredCard('complete')}
+//               onMouseLeave={() => setHoveredCard(null)}
+//               className="group relative bg-white border border-gray-200 rounded-2xl overflow-hidden hover:border-[#a8c241] transition-all duration-500 hover:shadow-xl text-left"
+//             >
+//               {/* Imagen con aspect ratio controlado */}
+//               <div className="relative h-72 overflow-hidden bg-gray-100">
+//                 <img
+//                   src="/public/assets/completos3.png"
+//                   alt="Dispositivos Completos"
+//                   className={cn(
+//                     "w-full h-full object-cover transition-all duration-700 ease-out",
+//                     hoveredCard === 'complete' ? "scale-110" : "scale-100"
+//                   )}
+//                 />
+//                 {/* Overlay sutil */}
+//                 <div className={cn(
+//                   "absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent transition-opacity duration-500",
+//                   hoveredCard === 'complete' ? "opacity-70" : "opacity-40"
+//                 )} />
+//               </div>
+
+//               {/* Contenido */}
+//               <div className="p-8">
+//                 <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-[#719428] transition-colors duration-300">
+//                   Dispositivos Completos
+//                 </h3>
+                
+//                 <p className="text-gray-600 mb-6 leading-relaxed">
+//                   Laptops, celulares, tablets y más equipos funcionales
+//                 </p>
+
+//                 {/* Características */}
+//                 <div className="space-y-2.5 mb-6">
+//                   <div className="flex items-center text-sm text-gray-700">
+//                     <div className="w-1.5 h-1.5 rounded-full bg-[#a8c241] mr-3" />
+//                     <span>Incluye accesorios y componentes</span>
+//                   </div>
+//                   <div className="flex items-center text-sm text-gray-700">
+//                     <div className="w-1.5 h-1.5 rounded-full bg-[#a8c241] mr-3" />
+//                     <span>Valuación individual por dispositivo</span>
+//                   </div>
+//                 </div>
+
+//                 {/* CTA */}
+//                 <div className="flex items-center text-[#719428] font-medium group-hover:text-[#a8c241] transition-colors">
+//                   <span>Explorar categorías</span>
+//                   <ArrowRightIcon className={cn(
+//                     "w-5 h-5 ml-2 transition-transform duration-300",
+//                     hoveredCard === 'complete' && "translate-x-2"
+//                   )} />
+//                 </div>
+//               </div>
+
+//               {/* Indicador visual sutil */}
+//               <div className={cn(
+//                 "absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#a8c241] to-[#719428] transition-all duration-500",
+//                 hoveredCard === 'complete' ? "opacity-100" : "opacity-0"
+//               )} />
+//             </button>
+
+//             {/* Componentes y Partes */}
+//             <button
+//               onClick={() => handleDeviceTypeSelect('DISMANTLED_DEVICES')}
+//               onMouseEnter={() => setHoveredCard('dismantled')}
+//               onMouseLeave={() => setHoveredCard(null)}
+//               className="group relative bg-white border border-gray-200 rounded-2xl overflow-hidden hover:border-[#a8c241] transition-all duration-500 hover:shadow-xl text-left"
+//             >
+//               {/* Imagen con aspect ratio controlado */}
+//               <div className="relative h-72 overflow-hidden bg-gray-100">
+//                 <img
+//                   src="/public/assets/componentes3.png"
+//                   alt="Componentes y Partes"
+//                   className={cn(
+//                     "w-full h-full object-cover transition-all duration-700 ease-out",
+//                     hoveredCard === 'dismantled' ? "scale-110" : "scale-100"
+//                   )}
+//                 />
+//                 {/* Overlay sutil */}
+//                 <div className={cn(
+//                   "absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent transition-opacity duration-500",
+//                   hoveredCard === 'dismantled' ? "opacity-70" : "opacity-40"
+//                 )} />
+//               </div>
+
+//               {/* Contenido */}
+//               <div className="p-8">
+//                 <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-[#719428] transition-colors duration-300">
+//                   Componentes & Partes
+//                 </h3>
+                
+//                 <p className="text-gray-600 mb-6 leading-relaxed">
+//                   Motherboards, procesadores, chips y componentes individuales
+//                 </p>
+
+//                 {/* Características */}
+//                 <div className="space-y-2.5 mb-6">
+//                   <div className="flex items-center text-sm text-gray-700">
+//                     <div className="w-1.5 h-1.5 rounded-full bg-[#a8c241] mr-3" />
+//                     <span>Recuperación de metales preciosos</span>
+//                   </div>
+//                   <div className="flex items-center text-sm text-gray-700">
+//                     <div className="w-1.5 h-1.5 rounded-full bg-[#a8c241] mr-3" />
+//                     <span>Valuación por peso y calidad</span>
+//                   </div>
+//                 </div>
+
+//                 {/* CTA */}
+//                 <div className="flex items-center text-[#719428] font-medium group-hover:text-[#a8c241] transition-colors">
+//                   <span>Explorar categorías</span>
+//                   <ArrowRightIcon className={cn(
+//                     "w-5 h-5 ml-2 transition-transform duration-300",
+//                     hoveredCard === 'dismantled' && "translate-x-2"
+//                   )} />
+//                 </div>
+//               </div>
+
+//               {/* Indicador visual sutil */}
+//               <div className={cn(
+//                 "absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#a8c241] to-[#719428] transition-all duration-500",
+//                 hoveredCard === 'dismantled' ? "opacity-100" : "opacity-0"
+//               )} />
+//             </button>
+//           </div>
+
+//           {/* Stats minimalistas */}
+//           <div className="grid grid-cols-3 gap-8 pt-16 mt-8 border-t border-gray-100">
+//             {[
+//               { value: '24h', label: 'Pago rápido', icon: '⚡' },
+//               { value: '100%', label: 'Seguro', icon: '🔒' },
+//               { value: '+5k', label: 'Ventas', icon: '✓' }
+//             ].map((stat, index) => (
+//               <div 
+//                 key={index}
+//                 className="text-center group cursor-default"
+//               >
+//                 <div className="text-2xl mb-2 opacity-50 group-hover:opacity-100 transition-opacity">
+//                   {stat.icon}
+//                 </div>
+//                 <div className="text-3xl font-bold text-gray-900 mb-1">
+//                   {stat.value}
+//                 </div>
+//                 <div className="text-sm text-gray-500">{stat.label}</div>
+//               </div>
+//             ))}
+//           </div>
+//         </div>
+//       ) : currentView === 'category-detail' && selectedCategory ? (
+//         <CategoryDetailView
+//           category={selectedCategory}
+//           onAddToCart={handleAddToCart}
+//           onBack={handleBackToCategories}
+//         />
+//       ) : (
+//         /* ===== VISTA CATEGORÍAS ===== */
+//         <div className="space-y-6">
+//           <div className="flex items-center justify-between pb-4 border-b border-gray-200">
+//             <p className="text-sm text-gray-600">
+//               {filteredCategories.length} {filteredCategories.length === 1 ? 'categoría disponible' : 'categorías disponibles'}
+//             </p>
+            
+//             <select
+//               value={sortBy}
+//               onChange={(e) => setSortBy(e.target.value as any)}
+//               className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#a8c241] focus:border-transparent outline-none transition-all"
+//             >
+//               <option value="popular">Más populares</option>
+//               <option value="price-desc">Mayor precio</option>
+//               <option value="price-asc">Menor precio</option>
+//               <option value="name">Nombre A-Z</option>
+//             </select>
+//           </div>
+
+//           {loading && (
+//             <div className="text-center py-20">
+//               <div className="inline-block animate-spin rounded-full h-10 w-10 border-4 border-gray-200 border-t-[#a8c241]"></div>
+//               <p className="mt-4 text-sm text-gray-600">Cargando categorías...</p>
+//             </div>
+//           )}
+
+//           {error && !loading && (
+//             <div className="text-center py-20">
+//               <div className="text-5xl mb-4">⚠️</div>
+//               <h3 className="text-lg font-semibold text-gray-900 mb-2">Error al cargar categorías</h3>
+//               <p className="text-gray-600 mb-6">{error}</p>
+//               <Button 
+//                 onClick={() => handleDeviceTypeSelect(selectedDeviceType!)}
+//                 className="bg-[#a8c241] hover:bg-[#719428] text-white"
+//               >
+//                 Reintentar
+//               </Button>
+//             </div>
+//           )}
+
+//           {!loading && !error && filteredCategories.length === 0 && (
+//             <div className="text-center py-20">
+//               <div className="text-6xl mb-4">📦</div>
+//               <h3 className="text-lg font-semibold text-gray-900 mb-2">No hay categorías disponibles</h3>
+//               <p className="text-gray-600">Intenta con otro tipo de dispositivo</p>
+//             </div>
+//           )}
+
+//           {!loading && !error && filteredCategories.length > 0 && (
+//             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+//               {filteredCategories.map((category) => (
+//                 <button
+//                   key={category.id}
+//                   onClick={() => handleCategoryClick(category)}
+//                   className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-[#a8c241] hover:shadow-lg transition-all duration-300 text-left"
+//                 >
+//                   {category.thumbnailImage && (
+//                     <div className="w-full h-48 overflow-hidden bg-gray-50">
+//                       <img
+//                         src={category.thumbnailImage}
+//                         alt={category.name}
+//                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+//                       />
+//                     </div>
+//                   )}
+
+//                   <div className="p-5">
+//                     <div className="flex items-start justify-between mb-2">
+//                       <h3 className="font-semibold text-gray-900 group-hover:text-[#719428] transition-colors flex-1 pr-2">
+//                         {category.name}
+//                       </h3>
+//                       {category.isLeaf && (
+//                         <Badge className="bg-green-50 text-green-700 border-green-200 text-xs flex-shrink-0">
+//                           Seleccionable
+//                         </Badge>
+//                       )}
+//                     </div>
+
+//                     {category.description && (
+//                       <p className="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">
+//                         {category.description}
+//                       </p>
+//                     )}
+
+//                     <div className="flex items-center text-sm text-[#719428] font-medium group-hover:text-[#a8c241] transition-colors">
+//                       <span>
+//                         {category.isLeaf ? 'Ver detalles' : 'Ver subcategorías'}
+//                       </span>
+//                       <ChevronRightIcon className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+//                     </div>
+//                   </div>
+
+//                   {/* Línea de acento inferior */}
+//                   <div className="h-1 bg-gradient-to-r from-[#a8c241] to-[#719428] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+//                 </button>
+//               ))}
+//             </div>
+//           )}
+//         </div>
+//       )}
+
+//       {showCartModal && (
+//         <SellCartModal
+//           cart={cart}
+//           onClose={() => setShowCartModal(false)}
+//           onRemoveItem={handleRemoveFromCart}
+//           onCheckout={handleCheckout}
+//         />
+//       )}
+//     </div>
+//   );
+// };
+
+// export default SellPage;
+
+
+
+
+
+
+
+// src/pages/dashboard/SellPage.tsx - CON IMÁGENES DE CATEGORÍAS DEL BACKEND
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  MagnifyingGlassIcon,
-  ShoppingBagIcon,
-  StarIcon,
-  InformationCircleIcon,
+import {
   ChevronRightIcon,
-  CurrencyDollarIcon,
-  ScaleIcon,
+  ShoppingCartIcon,
+  HomeIcon,
+  ArrowRightIcon,
   PhotoIcon,
-  TruckIcon,
-  CheckBadgeIcon,
-  ArrowLeftIcon,
-  FilmIcon
 } from '@heroicons/react/24/outline';
-import { 
-  StarIcon as StarSolidIcon,
-  ChevronDownIcon
-} from '@heroicons/react/24/solid';
+import { Category, CartItem } from '@/types/categories';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { Card } from '@/components/ui/Card';
-import { categoryService } from '@/services/categoryService';
-import { Category } from '@/types/categories';
-import { CartItem } from '@/types/cart';
+import categoryService from '@/services/categoryService';
 import { cn } from '@/utils/cn';
-import { ValidationUtils, safeArray, safeArrayLength } from '@/utils/validation.utils';
+import { ValidationUtils } from '@/utils/validation.utils';
 import SellCartModal from '@/components/sell/SellCartModal';
-import CategoryDetailModal from '@/components/sell/CategoryDetailModal';
+import CategoryDetailView from '@/components/sell/CategoryDetailView';
+import { useCart } from '@/hooks/useCart';
+import toast from 'react-hot-toast';
+import { categories } from '@/components/sell/CategorySelector';
 
-// Hardcoded category IDs - Reemplaza con los IDs reales de tu BD
-const COMPLETE_DEVICES_ROOT_ID = 'cmfr2mc1z00010py8ljs9os94';
-const DISMANTLED_DEVICES_ROOT_ID = 'cmfr2mcac001t0py8bs6j3uy0';
+const COMPLETE_DEVICES_ROOT_ID = 'cmgy4jpc800010pk0un0u88fq';
+const DISMANTLED_DEVICES_ROOT_ID = 'cmgy4jpfa001t0pk0d57s1oeu';
 
 const SellPage: React.FC = () => {
   const navigate = useNavigate();
+  const { cart, addToCart, removeFromCart, clearCart, isLoading, isSyncing } = useCart();
+
   
-  // Estados principales
-  const [currentView, setCurrentView] = useState<'marketplace' | 'category-browse'>('marketplace');
+  const [currentView, setCurrentView] = useState<'marketplace' | 'category-browse' | 'category-detail'>('marketplace');
   const [selectedDeviceType, setSelectedDeviceType] = useState<'COMPLETE_DEVICES' | 'DISMANTLED_DEVICES' | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [breadcrumb, setBreadcrumb] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [loading, setLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [showFilters, setShowFilters] = useState(false);
+  // const [cart, setCart] = useState<CartItem[]>([]);
   const [showCartModal, setShowCartModal] = useState(false);
-  const [showCategoryModal, setShowCategoryModal] = useState(false);
-  const [selectedCategoryForModal, setSelectedCategoryForModal] = useState<Category | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<'price-desc' | 'price-asc' | 'name' | 'popular'>('popular');
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 
-  // Filtros
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
-  const [sortBy, setSortBy] = useState<'price-desc' | 'price-asc' | 'name' | 'popular'>('price-desc');
-
-  // Mock data para demostración (eliminar cuando integres con API real)
-  const mockPopularCategories = [
-    { id: '1', name: 'iPhone 13 - 15 Series', pricePerKg: 850, icon: '📱', estimatedReturn: '$340-$680', condition: 'Excelente estado' },
-    { id: '2', name: 'MacBook Pro 2019+', pricePerKg: 1200, icon: '💻', estimatedReturn: '$480-$960', condition: 'Funcional' },
-    { id: '3', name: 'Motherboards Alto Grado', pricePerKg: 45, icon: '🔧', estimatedReturn: '$18-$36/kg', condition: 'Con componentes' },
-    { id: '4', name: 'Samsung Galaxy S20+', pricePerKg: 650, icon: '📱', estimatedReturn: '$260-$520', condition: 'Buen estado' },
-  ];
-
-  const mockRecentSales = [
-    { device: 'iPhone 14 Pro', soldFor: '$580', timeAgo: '2 mins ago', seller: 'Maria G.' },
-    { device: 'MacBook Air M2', soldFor: '$720', timeAgo: '5 mins ago', seller: 'Carlos R.' },
-    { device: 'PlayStation 5', soldFor: '$420', timeAgo: '8 mins ago', seller: 'Ana L.' },
-  ];
-
-  // Manejar selección directa de tipo (saltando el GET inicial)
   const handleDeviceTypeSelect = async (type: 'COMPLETE_DEVICES' | 'DISMANTLED_DEVICES') => {
     setSelectedDeviceType(type);
     setCurrentView('category-browse');
@@ -2106,24 +6101,15 @@ const SellPage: React.FC = () => {
     setError(null);
 
     try {
-      // Ir directo al ID específico sin hacer GET /root
       const rootId = type === 'COMPLETE_DEVICES' ? COMPLETE_DEVICES_ROOT_ID : DISMANTLED_DEVICES_ROOT_ID;
-      
-      console.log(`🔄 Attempting to load children for: ${rootId}`);
       const children = await categoryService.getCategoryChildren(rootId);
-      
-      console.log('🎯 Received children response:', children);
-      console.log('📊 Children type:', typeof children);
-      console.log('📋 Is array?', Array.isArray(children));
-      console.log('📏 Length:', children?.length || 'No length property');
-      
-      // Validar y limpiar las categorías recibidas
       const validCategories = ValidationUtils.cleanCategoryArray(children);
       
-      console.log('✅ Valid categories after cleaning:', validCategories.length);
+      if (validCategories.length === 0) {
+        setError('No se encontraron categorías disponibles');
+      }
       
       setCategories(validCategories);
-      
       setBreadcrumb([{
         id: rootId,
         name: type === 'COMPLETE_DEVICES' ? 'Dispositivos Completos' : 'Componentes & Partes',
@@ -2136,24 +6122,21 @@ const SellPage: React.FC = () => {
         isLeaf: false,
         sortOrder: 0,
         images: [],
-        createdAt: '',
-        updatedAt: ''
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       }]);
     } catch (error) {
-      console.error('❌ Error in handleDeviceTypeSelect:', error);
       setError(ValidationUtils.getErrorMessage(error));
-      setCategories([]); // Asegurar array vacío en caso de error
+      setCategories([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Navegar por subcategorías
   const handleCategoryClick = async (category: Category) => {
     if (category.isLeaf) {
-      // Es categoría final - abrir modal de detalles
-      setSelectedCategoryForModal(category);
-      setShowCategoryModal(true);
+      setSelectedCategory(category);
+      setCurrentView('category-detail');
       return;
     }
 
@@ -2163,512 +6146,493 @@ const SellPage: React.FC = () => {
     try {
       const children = await categoryService.getCategoryChildren(category.id);
       const validCategories = ValidationUtils.cleanCategoryArray(children);
+      
+      if (validCategories.length === 0) {
+        setError('No se encontraron subcategorías disponibles');
+      }
+      
       setCategories(validCategories);
       setBreadcrumb(prev => [...prev, category]);
     } catch (error) {
-      console.error('Error loading subcategories:', error);
       setError(ValidationUtils.getErrorMessage(error));
-      setCategories([]); // Asegurar array vacío en caso de error
+      setCategories([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Volver en breadcrumb
-  const handleBreadcrumbClick = async (category: Category, index: number) => {
-    const newBreadcrumb = breadcrumb.slice(0, index + 1);
-    setBreadcrumb(newBreadcrumb);
+  const handleBreadcrumbClick = async (index: number) => {
+    if (index === breadcrumb.length - 1) return;
     
+    const targetCategory = breadcrumb[index];
     setLoading(true);
     setError(null);
     
     try {
-      const children = await categoryService.getCategoryChildren(category.id);
+      const children = await categoryService.getCategoryChildren(targetCategory.id);
       const validCategories = ValidationUtils.cleanCategoryArray(children);
+      
       setCategories(validCategories);
+      setBreadcrumb(prev => prev.slice(0, index + 1));
+      setCurrentView('category-browse');
     } catch (error) {
-      console.error('Error loading categories:', error);
       setError(ValidationUtils.getErrorMessage(error));
-      setCategories([]); // Asegurar array vacío en caso de error
     } finally {
       setLoading(false);
     }
   };
 
-  // Calcular valor total del carrito
-  const cartTotal = safeArray(cart).reduce((sum, item) => {
-    const price = ValidationUtils.safeNumber(item.estimatedPrice);
-    const quantity = ValidationUtils.safeNumber(item.quantity, 1);
-    return sum + (price * quantity);
-  }, 0);
+  const handleBackToMarketplace = () => {
+    setCurrentView('marketplace');
+    setSelectedDeviceType(null);
+    setCategories([]);
+    setBreadcrumb([]);
+    setSelectedCategory(null);
+    setError(null);
+  };
 
-  // Handlers para el carrito
-  const handleAddToCart = (item: CartItem) => {
-    // Validar el item antes de agregarlo
-    if (!ValidationUtils.isValidCartItem(item)) {
-      console.error('Invalid cart item:', item);
-      return;
-    }
+  const handleBackToCategories = () => {
+    setCurrentView('category-browse');
+    setSelectedCategory(null);
+  };
 
-    setCart(prevCart => {
-      const safeCart = safeArray(prevCart);
-      const existingIndex = safeCart.findIndex(cartItem => 
-        cartItem.categoryId === item.categoryId && 
-        cartItem.condition === item.condition
-      );
-      
-      if (existingIndex >= 0) {
-        // Si ya existe, actualizar cantidad
-        const newCart = [...safeCart];
-        newCart[existingIndex].quantity += item.quantity;
-        newCart[existingIndex].estimatedPrice = item.estimatedPrice; // Actualizar precio por si cambió
-        return newCart;
-      } else {
-        // Si no existe, agregar nuevo item con ID temporal
-        const newItem = { 
-          ...item, 
-          id: item.id || ValidationUtils.generateTempId()
-        };
-        return [...safeCart, newItem];
+  // const handleAddToCart = (item: CartItem) => {
+  //   setCart(prev => [...prev, item]);
+  //   setCurrentView('category-browse');
+  //   setSelectedCategory(null);
+  // };
+
+  // const handleRemoveFromCart = (index: number) => {
+  //   setCart(prev => prev.filter((_, i) => i !== index));
+  // };
+
+  // const handleCheckout = () => {
+
+  //   console.log('Navegando a checkout con carrito:', cart);
+
+  // setShowCartModal(false);
+  
+  // // Navegar al checkout con el estado del carrito
+  // navigate('/dashboard/sell/checkout', { 
+  //   state: { 
+  //     cart: cart 
+  //   } 
+  // });
+
+  const handleAddToCart = async (item: CartItem) => {
+    await addToCart(item);
+    setCurrentView('category-browse');
+    setSelectedCategory(null);
+  };
+
+  const handleRemoveFromCart = async (itemId: string) => {
+    await removeFromCart(itemId);
+  };
+
+const handleCheckout = () => {
+  if (!cart || cart.length === 0) {
+    toast.error('Tu carrito está vacío');
+    return;
+  }
+
+  // Mostrar loading mientras sincroniza
+  {isSyncing && (
+    <div className="fixed top-4 right-4 bg-white shadow-lg rounded-lg p-4 z-50">
+      <div className="flex items-center space-x-3">
+        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#a8c241]"></div>
+        <span className="text-sm text-gray-600">Sincronizando carrito...</span>
+      </div>
+    </div>
+  )}
+
+  setShowCartModal(false);
+  
+  navigate('/dashboard/sell/checkout', {
+    state: {
+      cart: cart,
+    },
+  });
+};
+
+const filteredCategories = useMemo(() => {
+    let filtered = [...categories];
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'price-desc':
+          return (parseFloat(b.pricePerKg?.toString() || '0')) - (parseFloat(a.pricePerKg?.toString() || '0'));
+        case 'price-asc':
+          return (parseFloat(a.pricePerKg?.toString() || '0')) - (parseFloat(b.pricePerKg?.toString() || '0'));
+        case 'name':
+          return a.name.localeCompare(b.name);
+        default:
+          return 0;
       }
     });
+    return filtered;
+  }, [categories, sortBy]);
+
+  const getPageTitle = () => {
+    if (currentView === 'marketplace') return 'Vender';
+    if (currentView === 'category-detail' && selectedCategory) return selectedCategory.name;
+    if (breadcrumb.length > 0) return breadcrumb[breadcrumb.length - 1].name;
+    return 'Vender';
   };
 
-  const handleUpdateCartQuantity = (itemId: string, quantity: number) => {
-    if (!ValidationUtils.isValidId(itemId) || !ValidationUtils.isValidNumber(quantity) || quantity < 1) {
-      return;
-    }
-
-    setCart(prevCart => 
-      safeArray(prevCart).map(item => 
-        item.id === itemId ? { ...item, quantity } : item
-      )
-    );
+  const getPageDescription = () => {
+    if (currentView === 'marketplace') return 'Selecciona el tipo de material que deseas reciclar';
+    if (currentView === 'category-detail' && selectedCategory) return 'Completa los detalles de tu venta';
+    return 'Selecciona la categoría de tu dispositivo';
   };
 
-  const handleRemoveFromCart = (itemId: string) => {
-    if (!ValidationUtils.isValidId(itemId)) {
-      return;
-    }
-
-    setCart(prevCart => safeArray(prevCart).filter(item => item.id !== itemId));
-  };
-
-  const handleCheckout = () => {
-    // Validar el carrito antes del checkout
-    const validItems = ValidationUtils.cleanCartItemArray(cart);
-    
-    if (validItems.length === 0) {
-      setError('No hay items válidos en el carrito para proceder');
-      return;
-    }
-
-    // Navegar al checkout o siguiente paso
-    console.log('Proceeding to checkout with cart:', validItems);
-    // navigate('/checkout', { state: { cartItems: validItems } });
+  // Obtener imagen de categoría (thumbnailImage o primera imagen)
+  const getCategoryImage = (category: Category): string | null => {
+    if (category.thumbnailImage) return category.thumbnailImage;
+    if (category.images && category.images.length > 0) return category.images[0];
+    return null;
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header estilo Amazon */}
-      <div className="bg-white shadow-sm border-b sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Navegación y búsqueda */}
-            <div className="flex items-center space-x-4 flex-1">
-              {currentView === 'category-browse' && (
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => setCurrentView('marketplace')}
-                  className="text-gray-600 hover:text-gray-900"
-                >
-                  <ArrowLeftIcon className="h-4 w-4 mr-1" />
-                  Volver
-                </Button>
-              )}
-              
-              <div className="flex-1 max-w-lg">
-                <div className="relative">
-                  <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="¿Qué dispositivo quieres vender hoy?"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Carrito y acciones */}
-            <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <div className="text-sm text-gray-600">Estimación total</div>
-                <div className="text-lg font-bold text-green-600">${cartTotal.toFixed(2)}</div>
-              </div>
-              
-              <Button className="bg-orange-500 hover:bg-orange-600 text-white relative"
-                onClick={() => setShowCartModal(true)}>
-                <ShoppingBagIcon className="h-4 w-4 mr-2" />
-                Mi Venta ({safeArrayLength(cart)})
-                {safeArrayLength(cart) > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    {safeArrayLength(cart)}
-                  </span>
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <div className="mb-10">
+        {/* Breadcrumb */}
+        <div className="flex items-center space-x-2 text-sm text-gray-500 mb-4">
+          <button 
+            onClick={() => navigate('/dashboard')}
+            className="hover:text-gray-700 transition-colors"
+          >
+            <HomeIcon className="w-4 h-4" />
+          </button>
+          <ChevronRightIcon className="w-4 h-4" />
+          <button 
+            onClick={handleBackToMarketplace}
+            className={cn(
+              "hover:text-gray-700 transition-colors",
+              currentView === 'marketplace' && "text-gray-900 font-medium"
+            )}
+          >
+            Vender
+          </button>
+          
+          {breadcrumb.map((crumb, index) => (
+            <React.Fragment key={crumb.id}>
+              <ChevronRightIcon className="w-4 h-4" />
+              <button
+                onClick={() => handleBreadcrumbClick(index)}
+                className={cn(
+                  "hover:text-gray-700 transition-colors",
+                  index === breadcrumb.length - 1 && currentView === 'category-browse' && "text-gray-900 font-medium"
                 )}
-              </Button>
-            </div>
+              >
+                {crumb.name}
+              </button>
+            </React.Fragment>
+          ))}
+
+          {currentView === 'category-detail' && selectedCategory && (
+            <>
+              <ChevronRightIcon className="w-4 h-4" />
+              <span className="text-gray-900 font-medium">{selectedCategory.name}</span>
+            </>
+          )}
+        </div>
+
+        {/* Título y descripción */}
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              {getPageTitle()}
+            </h1>
+            <p className="text-gray-600">
+              {getPageDescription()}
+            </p>
           </div>
+
+          {(currentView === 'category-browse' || currentView === 'category-detail') && (
+            <button
+              onClick={() => setShowCartModal(true)}
+              className="relative flex items-center space-x-2 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <ShoppingCartIcon className="w-5 h-5 text-gray-700" />
+              <span className="text-sm font-medium text-gray-700">
+                Mi Venta ({cart.length})
+              </span>
+              {cart.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-[#a8c241] text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                  {cart.length}
+                </span>
+              )}
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Vista Marketplace Principal */}
-      {currentView === 'marketplace' && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          
-          {/* Hero Section */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-700 rounded-2xl text-white p-8 mb-8">
-            <div className="grid md:grid-cols-2 gap-8 items-center">
-              <div>
-                <h1 className="text-4xl font-bold mb-4">
-                  Convierte tu electrónica en dinero 💰
-                </h1>
-                <p className="text-lg mb-6 text-blue-100">
-                  Millones de personas confían en Wiru para vender sus dispositivos. 
-                  Evaluación instantánea, pago garantizado en 24h.
+      {/* Contenido principal */}
+      {currentView === 'marketplace' ? (
+        /* ===== MARKETPLACE ===== */
+        <div className="space-y-6">
+          {/* Grid de tarjetas */}
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Dispositivos Completos */}
+            <button
+              onClick={() => handleDeviceTypeSelect('COMPLETE_DEVICES')}
+              onMouseEnter={() => setHoveredCard('complete')}
+              onMouseLeave={() => setHoveredCard(null)}
+              className="group relative bg-white border border-gray-200 rounded-2xl overflow-hidden transition-all duration-500 hover:shadow-xl text-left flex flex-col"
+            >
+              <div className="relative h-72 overflow-hidden bg-gray-100 flex-shrink-0">
+                <img
+                  src="/public/assets/completos3.png"
+                  alt="Dispositivos Completos"
+                  className={cn(
+                    "w-full h-full object-cover transition-all duration-700 ease-out",
+                    hoveredCard === 'complete' ? "scale-110" : "scale-100"
+                  )}
+                />
+                <div className={cn(
+                  "absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent transition-opacity duration-500",
+                  hoveredCard === 'complete' ? "opacity-70" : "opacity-40"
+                )} />
+              </div>
+
+              <div className="p-8 flex flex-col flex-1">
+                <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-[#719428] transition-colors duration-300 min-h-[64px] flex items-start">
+                  Dispositivos Completos
+                </h3>
+                
+                <p className="text-gray-600 mb-6 leading-relaxed min-h-[56px]">
+                  Laptops, celulares, tablets y más equipos funcionales
                 </p>
-                <div className="flex space-x-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold">$2.4M+</div>
-                    <div className="text-sm text-blue-200">Pagado este mes</div>
+
+                <div className="space-y-2.5 mb-6 min-h-[60px]">
+                  <div className="flex items-center text-sm text-gray-700">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#a8c241] mr-3 flex-shrink-0" />
+                    <span>Incluye accesorios y componentes</span>
                   </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold">15k+</div>
-                    <div className="text-sm text-blue-200">Dispositivos vendidos</div>
+                  <div className="flex items-center text-sm text-gray-700">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#a8c241] mr-3 flex-shrink-0" />
+                    <span>Valuación individual por dispositivo</span>
                   </div>
                 </div>
+
+                <div className="flex items-center text-[#719428] font-medium group-hover:text-[#a8c241] transition-colors mt-auto">
+                  <span>Explorar categorías</span>
+                  <ArrowRightIcon className={cn(
+                    "w-5 h-5 ml-2 transition-transform duration-300",
+                    hoveredCard === 'complete' && "translate-x-2"
+                  )} />
+                </div>
               </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                {mockRecentSales.map((sale, i) => (
-                  <div key={i} className="bg-white/10 backdrop-blur rounded-lg p-3">
-                    <div className="text-sm font-medium">{sale.device}</div>
-                    <div className="text-lg font-bold text-green-300">{sale.soldFor}</div>
-                    <div className="text-xs text-blue-200">{sale.timeAgo}</div>
+            </button>
+
+            {/* Componentes y Partes */}
+            <button
+              onClick={() => handleDeviceTypeSelect('DISMANTLED_DEVICES')}
+              onMouseEnter={() => setHoveredCard('dismantled')}
+              onMouseLeave={() => setHoveredCard(null)}
+              className="group relative bg-white border border-gray-200 rounded-2xl overflow-hidden transition-all duration-500 hover:shadow-xl text-left flex flex-col"
+            >
+              <div className="relative h-72 overflow-hidden bg-gray-100 flex-shrink-0">
+                <img
+                  src="/public/assets/componentes3.png"
+                  alt="Componentes y Partes"
+                  className={cn(
+                    "w-full h-full object-cover transition-all duration-700 ease-out",
+                    hoveredCard === 'dismantled' ? "scale-110" : "scale-100"
+                  )}
+                />
+                <div className={cn(
+                  "absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent transition-opacity duration-500",
+                  hoveredCard === 'dismantled' ? "opacity-70" : "opacity-40"
+                )} />
+              </div>
+
+              <div className="p-8 flex flex-col flex-1">
+                <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-[#719428] transition-colors duration-300 min-h-[64px] flex items-start">
+                  Componentes & Partes
+                </h3>
+                
+                <p className="text-gray-600 mb-6 leading-relaxed min-h-[56px]">
+                  Motherboards, procesadores, chips y componentes individuales
+                </p>
+
+                <div className="space-y-2.5 mb-6 min-h-[60px]">
+                  <div className="flex items-center text-sm text-gray-700">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#a8c241] mr-3 flex-shrink-0" />
+                    <span>Recuperación de metales preciosos</span>
                   </div>
-                ))}
+                  <div className="flex items-center text-sm text-gray-700">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#a8c241] mr-3 flex-shrink-0" />
+                    <span>Valuación por peso y calidad</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center text-[#719428] font-medium group-hover:text-[#a8c241] transition-colors mt-auto">
+                  <span>Explorar categorías</span>
+                  <ArrowRightIcon className={cn(
+                    "w-5 h-5 ml-2 transition-transform duration-300",
+                    hoveredCard === 'dismantled' && "translate-x-2"
+                  )} />
+                </div>
               </div>
-            </div>
+            </button>
           </div>
 
-          {/* Selección de Tipo - Estilo Amazon */}
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-6">¿Qué tienes para vender?</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              
-              {/* Dispositivos Completos */}
-              <Card 
-                className="cursor-pointer hover:shadow-lg transition-all duration-200 border-2 hover:border-blue-500 p-6"
-                onClick={() => handleDeviceTypeSelect('COMPLETE_DEVICES')}
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-8 pt-16 mt-8 border-t border-gray-100">
+            {[
+              { value: '24h', label: 'Pago rápido', icon: '⚡' },
+              { value: '100%', label: 'Seguro', icon: '🔒' },
+              { value: '+5k', label: 'Ventas', icon: '✓' }
+            ].map((stat, index) => (
+              <div 
+                key={index}
+                className="text-center group cursor-default"
               >
-                <div className="flex items-start space-x-4">
-                  <div className="bg-blue-100 p-3 rounded-lg">
-                    <div className="text-3xl">📱</div>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold mb-2">Dispositivos Completos</h3>
-                    <p className="text-gray-600 mb-4">
-                      iPhones, laptops, tablets, consolas y más dispositivos funcionales
-                    </p>
-                    
-                    {/* Precios destacados */}
-                    <div className="space-y-2 mb-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">iPhone 13-15</span>
-                        <span className="font-semibold text-green-600">$340-$680</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">MacBook Pro</span>
-                        <span className="font-semibold text-green-600">$480-$960</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <Badge variant="secondary" className="text-blue-700">
-                        💰 Mayores valores
-                      </Badge>
-                      <ChevronRightIcon className="h-5 w-5 text-gray-400" />
-                    </div>
-                  </div>
+                <div className="text-2xl mb-2 opacity-50 group-hover:opacity-100 transition-opacity">
+                  {stat.icon}
                 </div>
-              </Card>
-
-              {/* Componentes y Partes */}
-              <Card 
-                className="cursor-pointer hover:shadow-lg transition-all duration-200 border-2 hover:border-green-500 p-6"
-                onClick={() => handleDeviceTypeSelect('DISMANTLED_DEVICES')}
-              >
-                <div className="flex items-start space-x-4">
-                  <div className="bg-green-100 p-3 rounded-lg">
-                    <div className="text-3xl">🔧</div>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold mb-2">Componentes & Partes</h3>
-                    <p className="text-gray-600 mb-4">
-                      Motherboards, procesadores, chips y componentes individuales
-                    </p>
-                    
-                    {/* Precios por peso */}
-                    <div className="space-y-2 mb-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Alto Grado</span>
-                        <span className="font-semibold text-green-600">$45/kg</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Pentium IV</span>
-                        <span className="font-semibold text-green-600">$12/kg</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <Badge variant="secondary" className="text-green-700">
-                        ⚖️ Precio por peso
-                      </Badge>
-                      <ChevronRightIcon className="h-5 w-5 text-gray-400" />
-                    </div>
-                  </div>
+                <div className="text-3xl font-bold text-gray-900 mb-1">
+                  {stat.value}
                 </div>
-              </Card>
-            </div>
-          </div>
-
-          {/* Sección de Populares */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">Más vendidos hoy 🔥</h2>
-              <Button variant="ghost" className="text-blue-600">
-                Ver todos
-              </Button>
-            </div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {mockPopularCategories.map((item) => (
-                <Card key={item.id} className="cursor-pointer hover:shadow-md transition-shadow p-4">
-                  <div className="text-center">
-                    <div className="text-3xl mb-2">{item.icon}</div>
-                    <h3 className="font-medium text-sm mb-1">{item.name}</h3>
-                    <div className="text-lg font-bold text-green-600">{item.estimatedReturn}</div>
-                    <div className="text-xs text-gray-500">{item.condition}</div>
-                    <div className="flex items-center justify-center mt-2">
-                      {[...Array(5)].map((_, i) => (
-                        <StarSolidIcon key={i} className="h-3 w-3 text-yellow-400" />
-                      ))}
-                      <span className="text-xs text-gray-500 ml-1">(4.8)</span>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
-
-          {/* Beneficios y Garantías */}
-          <div className="grid md:grid-cols-3 gap-6 mb-8">
-            <div className="text-center p-6">
-              <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckBadgeIcon className="h-8 w-8 text-blue-600" />
+                <div className="text-sm text-gray-500">{stat.label}</div>
               </div>
-              <h3 className="font-semibold mb-2">Evaluación Gratuita</h3>
-              <p className="text-gray-600 text-sm">Expertos certificados evalúan tu dispositivo sin costo</p>
-            </div>
-            <div className="text-center p-6">
-              <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CurrencyDollarIcon className="h-8 w-8 text-green-600" />
-              </div>
-              <h3 className="font-semibold mb-2">Pago Garantizado</h3>
-              <p className="text-gray-600 text-sm">Recibe tu dinero en máximo 24 horas hábiles</p>
-            </div>
-            <div className="text-center p-6">
-              <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <TruckIcon className="h-8 w-8 text-purple-600" />
-              </div>
-              <h3 className="font-semibold mb-2">Recolección Gratis</h3>
-              <p className="text-gray-600 text-sm">Recogemos en tu domicilio o punto Servientrega</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Vista de Navegación por Categorías */}
-      {currentView === 'category-browse' && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          
-          {/* Breadcrumb estilo Amazon */}
-          <div className="flex items-center space-x-2 mb-6 text-sm">
-            <span className="text-gray-500">Vender</span>
-            {breadcrumb && breadcrumb.map((item, index) => (
-              <React.Fragment key={item.id}>
-                <ChevronRightIcon className="h-4 w-4 text-gray-400" />
-                <button 
-                  onClick={() => handleBreadcrumbClick(item, index)}
-                  className="text-blue-600 hover:underline"
-                >
-                  {item.name}
-                </button>
-              </React.Fragment>
             ))}
           </div>
-
-          {/* Filtros y ordenamiento */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setShowFilters(!showFilters)}
-                className="border"
-              >
-                <FilmIcon className="h-4 w-4 mr-2" />
-                Filtros
-              </Button>
-              
-              <select 
-                value={sortBy} 
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className="border border-gray-300 rounded-md px-3 py-1 text-sm"
-              >
-                <option value="price-desc">Mayor precio</option>
-                <option value="price-asc">Menor precio</option>
-                <option value="name">A-Z</option>
-                <option value="popular">Más populares</option>
-              </select>
-            </div>
-
-            <div className="text-sm text-gray-600">
-              {safeArrayLength(categories)} categorías disponibles
-            </div>
+        </div>
+      ) : currentView === 'category-detail' && selectedCategory ? (
+        <CategoryDetailView
+          category={selectedCategory}
+          onAddToCart={handleAddToCart}
+          onBack={handleBackToCategories}
+        />
+      ) : (
+        /* ===== VISTA CATEGORÍAS CON IMÁGENES DEL BACKEND ===== */
+        <div className="space-y-6">
+          <div className="flex items-center justify-between pb-4 border-b border-gray-200">
+            <p className="text-sm text-gray-600">
+              {filteredCategories.length} {filteredCategories.length === 1 ? 'categoría disponible' : 'categorías disponibles'}
+            </p>
+            
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#a8c241] focus:border-transparent outline-none transition-all"
+            >
+              <option value="popular">Más populares</option>
+              <option value="price-desc">Mayor precio</option>
+              <option value="price-asc">Menor precio</option>
+              <option value="name">Nombre A-Z</option>
+            </select>
           </div>
 
-          {/* Grid de categorías estilo producto */}
-          {loading ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {[...Array(8)].map((_, i) => (
-                <div key={i} className="bg-gray-200 animate-pulse rounded-lg h-64"></div>
-              ))}
+          {loading && (
+            <div className="text-center py-20">
+              <div className="inline-block animate-spin rounded-full h-10 w-10 border-4 border-gray-200 border-t-[#a8c241]"></div>
+              <p className="mt-4 text-sm text-gray-600">Cargando categorías...</p>
             </div>
-          ) : error ? (
-            <div className="text-center py-12">
-              <div className="text-red-500 text-4xl mb-4">⚠️</div>
+          )}
+
+          {error && !loading && (
+            <div className="text-center py-20">
+              <div className="text-5xl mb-4">⚠️</div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Error al cargar categorías</h3>
-              <p className="text-gray-600 mb-4">{error}</p>
+              <p className="text-gray-600 mb-6">{error}</p>
               <Button 
                 onClick={() => handleDeviceTypeSelect(selectedDeviceType!)}
-                className="bg-blue-500 hover:bg-blue-600 text-white"
+                className="bg-[#a8c241] hover:bg-[#719428] text-white"
               >
                 Reintentar
               </Button>
             </div>
-          ) : !ValidationUtils.isValidArray(categories) ? (
-            <div className="text-center py-12">
-              <div className="text-gray-400 text-4xl mb-4">📦</div>
+          )}
+
+          {!loading && !error && filteredCategories.length === 0 && (
+            <div className="text-center py-20">
+              <div className="text-6xl mb-4">📦</div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">No hay categorías disponibles</h3>
-              <p className="text-gray-600">No se encontraron categorías para este tipo de dispositivo.</p>
+              <p className="text-gray-600">Intenta con otro tipo de dispositivo</p>
             </div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {safeArray(categories).map((category) => (
-                <Card 
-                  key={category.id}
-                  className="cursor-pointer hover:shadow-lg transition-all duration-200 group"
-                  onClick={() => handleCategoryClick(category)}
-                >
-                  <div className="aspect-square bg-gray-100 rounded-t-lg relative overflow-hidden">
-                    {category.thumbnailImage ? (
-                      <img 
-                        src={category.thumbnailImage} 
-                        alt={category.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                      />
+          )}
+
+          {!loading && !error && filteredCategories.length > 0 && (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filteredCategories.map((category) => {
+                const categoryImage = getCategoryImage(category);
+                
+                return (
+                  <button
+                    key={category.id}
+                    onClick={() => handleCategoryClick(category)}
+                    className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-[#a8c241] hover:shadow-lg transition-all duration-300 text-left"
+                  >
+                    {/* Imagen de la categoría */}
+                    {categoryImage ? (
+                      <div className="w-full h-48 overflow-hidden bg-gray-50">
+                        <img
+                          src={categoryImage}
+                          alt={category.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          onError={(e) => {
+                            // Fallback si la imagen falla
+                            e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%23f3f4f6" width="200" height="200"/%3E%3C/svg%3E';
+                          }}
+                        />
+                      </div>
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <PhotoIcon className="h-12 w-12 text-gray-400" />
+                      // Placeholder si no hay imagen
+                      <div className="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                        <PhotoIcon className="w-16 h-16 text-gray-400" />
                       </div>
                     )}
-                    
-                    {/* Badge de precio si es categoría final */}
-                    {category.isLeaf && category.pricePerKg && (
-                      <div className="absolute top-2 right-2">
-                        <Badge className="bg-green-500 text-white">
-                          ${category.pricePerKg}/kg
-                        </Badge>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="p-4">
-                    <h3 className="font-medium mb-2 group-hover:text-blue-600 transition-colors">
-                      {category.name}
-                    </h3>
-                    
-                    {category.description && (
-                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                        {category.description}
-                      </p>
-                    )}
-                    
-                    {category.isLeaf ? (
-                      <div className="space-y-2">
-                        {category.pricePerKg && (
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm text-gray-500">Precio base:</span>
-                            <span className="font-semibold text-green-600">
-                              ${category.pricePerKg}/kg
-                            </span>
-                          </div>
+
+                    <div className="p-5">
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className="font-semibold text-gray-900 group-hover:text-[#719428] transition-colors flex-1 pr-2">
+                          {category.name}
+                        </h3>
+                        {category.isLeaf && (
+                          <Badge className="bg-green-50 text-green-700 border-green-200 text-xs flex-shrink-0">
+                            Seleccionable
+                          </Badge>
                         )}
-                        <Button size="sm" className="w-full">
-                          <CurrencyDollarIcon className="h-4 w-4 mr-1" />
-                          Vender aquí
-                        </Button>
                       </div>
-                    ) : (
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-blue-600">Ver subcategorías</span>
-                        <ChevronRightIcon className="h-4 w-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
+
+                      {category.description && (
+                        <p className="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">
+                          {category.description}
+                        </p>
+                      )}
+
+                      <div className="flex items-center text-sm text-[#719428] font-medium group-hover:text-[#a8c241] transition-colors">
+                        <span>
+                          {category.isLeaf ? 'Ver detalles' : 'Ver subcategorías'}
+                        </span>
+                        <ChevronRightIcon className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
                       </div>
-                    )}
-                  </div>
-                </Card>
-              ))}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
       )}
 
-      {/* Modales */}
-      <SellCartModal
-        isOpen={showCartModal}
-        onClose={() => setShowCartModal(false)}
-        items={cart}
-        onUpdateQuantity={handleUpdateCartQuantity}
-        onRemoveItem={handleRemoveFromCart}
-        onCheckout={handleCheckout}
-      />
-
-      <CategoryDetailModal
-        isOpen={showCategoryModal}
-        onClose={() => setShowCategoryModal(false)}
-        category={selectedCategoryForModal}
-        onAddToCart={(item) => {
-          // Ensure item has an id for CartItem type
-          const cartItem = {
-            ...item,
-            id: item.id || ValidationUtils.generateTempId(),
-          };
-          handleAddToCart(cartItem);
-        }}
-      />
+      {showCartModal && (
+        <SellCartModal
+          cart={cart}
+          onClose={() => setShowCartModal(false)}
+          onRemoveItem={(index: number) => {
+            const item = cart && cart[index];
+            if (item && item.id) {
+              // call async remover but don't return the Promise to match expected void signature
+              void handleRemoveFromCart(item.id);
+            }
+          }}
+          onCheckout={handleCheckout}
+        />
+      )}
     </div>
   );
 };

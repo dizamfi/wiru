@@ -8,7 +8,7 @@ export const DashboardLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Sidebar para móvil */}
       <DashboardSidebar 
         isOpen={sidebarOpen} 

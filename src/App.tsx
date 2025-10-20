@@ -1171,6 +1171,10 @@ import  OrdersPage  from '@/pages/dashboard/OrdersPage';
 import  ReferralsPage  from '@/pages/dashboard/ReferralsPage';
 import { ProfilePage } from '@/pages/dashboard/ProfilePage';
 // import { SettingsPage } from '@/pages/dashboard/SettingsPage';
+import CheckoutPage from '@/pages/dashboard/CheckoutPage';
+import OrderConfirmationPage from '@/pages/dashboard/OrderConfirmationPage';
+
+
 
 // Components
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
@@ -1182,6 +1186,7 @@ import { ResetPasswordPage } from './pages/auth/ResetPasswordPage';
 import { EliteForgotPasswordPage } from './pages/auth/elite/EliteForgotPasswordPage';
 import { EliteResetPasswordPage } from './pages/auth/elite/EliteResetPasswordPage';
 import { EliteVerifyEmailPage } from './pages/auth/elite/EliteVerifyEmailPage';
+import { OrderDetailPage } from './pages/dashboard';
 
 function App() {
   const { isLoading } = useAuth();
@@ -1283,14 +1288,25 @@ function App() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<DashboardPage />} />
-        <Route path="sell" element={<SellPage />} />
-        <Route path="orders" element={<OrdersPage />} />
-        {/* <Route path="wallet" element={<WalletPage />} /> */}
-        <Route path="referrals" element={<ReferralsPage />} />
-        <Route path="profile" element={<ProfilePage />} />
-        {/* <Route path="settings" element={<SettingsPage />} /> */}
-      </Route>
+          {/* ORDEN CORRECTO: index primero */}
+          <Route index element={<DashboardPage />} />
+          
+          {/* Rutas de sell */}
+          <Route path="sell" element={<SellPage />} />
+          <Route path="sell/checkout" element={<CheckoutPage />} />
+          
+          {/* Otras rutas del dashboard */}
+          <Route path="orders" element={<OrdersPage />} />
+          <Route path="referrals" element={<ReferralsPage />} />
+          <Route path="profile" element={<ProfilePage />} />
+          
+          {/* Confirmación de orden */}
+          <Route path="order/confirmation" element={<OrderConfirmationPage />} />
+
+          <Route path="orders" element={<OrdersPage />} />
+  <Route path="orders/:orderId" element={<OrderDetailPage />} />
+  
+        </Route>
 
       {/* ===== RUTAS DE ERROR ===== */}
       <Route path="/unauthorized" element={<div>No autorizado</div>} />

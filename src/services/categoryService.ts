@@ -533,7 +533,607 @@
 
 
 
-// src/services/categoryService.ts - Actualizado para llamadas directas
+// // src/services/categoryService.ts - Actualizado para llamadas directas
+// import axios from 'axios';
+// import { 
+//   Category, 
+//   CategoryTreeNode, 
+//   BreadcrumbItem, 
+//   CategorySearchResult,
+//   CategoryStats,
+//   CategoryFilters 
+// } from '@/types/categories';
+
+// const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1';
+
+// class CategoryService {
+//   private apiClient = axios.create({
+//     baseURL: `${API_BASE_URL}/categories`,
+//     timeout: 10000
+//   });
+
+//   constructor() {
+//     // Interceptor para incluir token de autenticación si existe
+//     this.apiClient.interceptors.request.use(
+//       (config) => {
+//         const token = localStorage.getItem('accessToken');
+//         if (token) {
+//           config.headers.Authorization = `Bearer ${token}`;
+//         }
+//         return config;
+//       },
+//       (error) => Promise.reject(error)
+//     );
+
+//     // Interceptor para manejo de errores
+//     this.apiClient.interceptors.response.use(
+//       (response) => {
+//         // Debug: Log de la respuesta completa
+//         console.log('🔍 API Response Structure:', {
+//           status: response.status,
+//           data: response.data,
+//           headers: response.headers
+//         });
+
+//         // El backend envía: { success: true, data: [...], message: "..." }
+//         // Extraer solo los datos si la estructura es correcta
+//         if (response.data && response.data.success && response.data.data !== undefined) {
+//           return response.data.data.data; // Devolver solo el array de datos
+//         }
+        
+//         // Si la respuesta no tiene la estructura esperada, devolver tal como está
+//         return response.data.data;
+//       },
+//       (error) => {
+//         console.error('CategoryService Error:', error.response?.data || error.message);
+//         throw new Error(error.response?.data?.message || 'Error en el servicio de categorías');
+//       }
+//     );
+//   }
+
+//   /**
+//    * 🚀 NUEVO: Obtener hijos directos de una categoría específica
+//    * Este método salta el GET /root y va directo a la categoría
+//    */
+//   async getCategoryChildren(categoryId: string): Promise<Category[]> {
+//     console.log(`🎯 Loading children for category: ${categoryId}`);
+    
+//     try {
+//       const response = await this.apiClient.get(`/${categoryId}/children`);
+      
+//       console.log('✅ Raw response received:', response);
+//       console.log('📊 Categories data type:', typeof response);
+//       console.log('📋 Categories array length:', Array.isArray(response) ? response.length : 'Not an array');
+      
+//       // Validar que la respuesta sea un array
+//       if (!Array.isArray(response)) {
+//         console.warn('⚠️ Response is not an array:', response);
+//         return [];
+//       }
+      
+//       console.log('🎉 Successfully loaded categories:', response.length);
+//       return response.data.data;
+      
+//     } catch (error) {
+//       console.error('❌ Error in getCategoryChildren:', error);
+//       throw error;
+//     }
+//   }
+
+//   /**
+//    * Obtener categorías raíz (mantener para compatibilidad)
+//    */
+//   async getRootCategories(type?: string): Promise<Category[]> {
+//     const params: any = {};
+//     if (type) params.type = type;
+
+//     console.log('🌳 Loading root categories with params:', params);
+//     const response = await this.apiClient.get('/root', { params });
+//     return response.data;
+//   }
+
+//   /**
+//    * Obtener árbol completo de categorías
+//    */
+//   async getCategoryTree(type?: string): Promise<CategoryTreeNode[]> {
+//     const params: any = {};
+//     if (type) params.type = type;
+
+//     const response = await this.apiClient.get('/tree', { params });
+//     return response.data;
+//   }
+
+//   /**
+//    * Obtener categoría por ID con opciones
+//    */
+//   async getCategoryById(
+//     categoryId: string, 
+//     options: { 
+//       includeChildren?: boolean; 
+//       includeBreadcrumb?: boolean;
+//       includeImages?: boolean;
+//     } = {}
+//   ): Promise<{
+//     category: Category;
+//     children?: Category[];
+//     breadcrumb?: BreadcrumbItem[];
+//   }> {
+//     const params: any = {};
+//     if (options.includeChildren) params.includeChildren = true;
+//     if (options.includeBreadcrumb) params.includeBreadcrumb = true;
+//     if (options.includeImages) params.includeImages = true;
+
+//     const response = await this.apiClient.get(`/${categoryId}`, { params });
+//     return response.data;
+//   }
+
+//   /**
+//    * Obtener breadcrumb/path de una categoría
+//    */
+//   async getCategoryBreadcrumb(categoryId: string): Promise<BreadcrumbItem[]> {
+//     const response = await this.apiClient.get(`/${categoryId}/breadcrumb`);
+//     return response.data;
+//   }
+
+//   /**
+//    * Buscar categorías
+//    */
+//   async searchCategories(
+//     query: string, 
+//     filters: CategoryFilters = {}
+//   ): Promise<CategorySearchResult[]> {
+//     const params: any = { q: query, ...filters };
+    
+//     const response = await this.apiClient.get('/search', { params });
+//     return response.data;
+//   }
+
+//   /**
+//    * Obtener categorías de tipo específico (todas, no solo raíz)
+//    */
+//   async getCategoriesByType(type: 'COMPLETE_DEVICES' | 'DISMANTLED_DEVICES'): Promise<Category[]> {
+//     const response = await this.apiClient.get('/leaf', { 
+//       params: { type } 
+//     });
+//     return response.data;
+//   }
+
+//   /**
+//    * Obtener solo categorías finales (seleccionables)
+//    */
+//   async getLeafCategories(type?: string): Promise<Category[]> {
+//     const params: any = {};
+//     if (type) params.type = type;
+
+//     const response = await this.apiClient.get('/leaf', { params });
+//     return response.data;
+//   }
+
+//   /**
+//    * Calcular precio estimado basado en categoría y condiciones
+//    */
+//   calculateEstimatedPrice(
+//     category: Category,
+//     weight: number,
+//     condition: 'EXCELLENT' | 'VERY_GOOD' | 'GOOD' | 'FAIR' | 'POOR' = 'GOOD'
+//   ): number {
+//     if (!category.pricePerKg) return 0;
+
+//     // Factores de ajuste según condición
+//     const conditionMultipliers = {
+//       EXCELLENT: 1.0,
+//       VERY_GOOD: 0.85,
+//       GOOD: 0.70,
+//       FAIR: 0.50,
+//       POOR: 0.30
+//     };
+
+//     const basePrice = category.pricePerKg * weight;
+//     const multiplier = conditionMultipliers[condition];
+    
+//     return Math.round(basePrice * multiplier * 100) / 100;
+//   }
+
+//   /**
+//    * Validar si una categoría puede ser seleccionada
+//    */
+//   validateCategorySelection(category: Category): { valid: boolean; message?: string } {
+//     if (!category.isLeaf) {
+//       return { 
+//         valid: false, 
+//         message: 'Debes seleccionar una categoría específica' 
+//       };
+//     }
+
+//     if (category.status !== 'ACTIVE') {
+//       return { 
+//         valid: false, 
+//         message: 'Esta categoría no está disponible actualmente' 
+//       };
+//     }
+
+//     if (!category.pricePerKg || category.pricePerKg <= 0) {
+//       return { 
+//         valid: false, 
+//         message: 'No hay precio disponible para esta categoría' 
+//       };
+//     }
+
+//     return { valid: true };
+//   }
+
+//   /**
+//    * Obtener estadísticas de una categoría
+//    */
+//   async getCategoryStats(categoryId: string): Promise<CategoryStats> {
+//     const response = await this.apiClient.get(`/${categoryId}/stats`);
+//     return response.data;
+//   }
+
+//   /**
+//    * Obtener categorías populares/trending
+//    */
+//   async getPopularCategories(
+//     type?: 'COMPLETE_DEVICES' | 'DISMANTLED_DEVICES',
+//     limit: number = 10
+//   ): Promise<Category[]> {
+//     const params: any = { limit };
+//     if (type) params.type = type;
+
+//     const response = await this.apiClient.get('/popular', { params });
+//     return response.data;
+//   }
+
+//   /**
+//    * 🆕 Método específico para SellPage - Carga directa de categorías por tipo
+//    */
+//   async getDirectCategoriesForSelling(type: 'COMPLETE_DEVICES' | 'DISMANTLED_DEVICES'): Promise<{
+//     rootCategory: Category;
+//     children: Category[];
+//   }> {
+//     // IDs hardcodeados - deberían venir de configuración o API
+//     const rootIds = {
+//       'COMPLETE_DEVICES': 'cmfr2mc1z00010py8ljs9os94',
+//       'DISMANTLED_DEVICES': 'cmfr2mc1z00020py8ljs9os95'
+//     };
+
+//     const rootId = rootIds[type];
+    
+//     try {
+//       // Cargar información del root y sus hijos en paralelo
+//       const [rootInfo, children] = await Promise.all([
+//         this.getCategoryById(rootId),
+//         this.getCategoryChildren(rootId)
+//       ]);
+
+//       return {
+//         rootCategory: rootInfo.category,
+//         children: children
+//       };
+//     } catch (error) {
+//       console.error(`Error loading direct categories for ${type}:`, error);
+//       throw new Error(`No se pudieron cargar las categorías de ${type}`);
+//     }
+//   }
+
+//   /**
+//    * Cache simple para mejorar performance
+//    */
+//   private cache = new Map<string, { data: any; timestamp: number; ttl: number }>();
+
+//   private getCacheKey(method: string, ...args: any[]): string {
+//     return `${method}_${args.join('_')}`;
+//   }
+
+//   private setCache(key: string, data: any, ttlMinutes: number = 5): void {
+//     this.cache.set(key, {
+//       data,
+//       timestamp: Date.now(),
+//       ttl: ttlMinutes * 60 * 1000
+//     });
+//   }
+
+//   private getCache(key: string): any | null {
+//     const cached = this.cache.get(key);
+//     if (!cached) return null;
+
+//     const isExpired = Date.now() - cached.timestamp > cached.ttl;
+//     if (isExpired) {
+//       this.cache.delete(key);
+//       return null;
+//     }
+
+//     return cached.data;
+//   }
+
+//   /**
+//    * Versión con cache de getCategoryChildren
+//    */
+//   async getCategoryChildrenCached(categoryId: string): Promise<Category[]> {
+//     const cacheKey = this.getCacheKey('children', categoryId);
+//     const cached = this.getCache(cacheKey);
+    
+//     if (cached) {
+//       console.log(`📦 Using cached children for category: ${categoryId}`);
+//       return cached;
+//     }
+
+//     const children = await this.getCategoryChildren(categoryId);
+//     this.setCache(cacheKey, children, 10); // Cache por 10 minutos
+    
+//     return children;
+//   }
+
+//   /**
+//    * Limpiar cache
+//    */
+//   clearCache(): void {
+//     this.cache.clear();
+//     console.log('🗑️ Category cache cleared');
+//   }
+
+//   /**
+//    * Obtener estimación de precio rápida sin validaciones
+//    */
+//   getQuickPriceEstimate(
+//     pricePerKg: number, 
+//     weight: number, 
+//     condition: string = 'GOOD'
+//   ): { min: number; max: number; estimated: number } {
+//     const conditionRanges = {
+//       'EXCELLENT': { min: 0.9, max: 1.0 },
+//       'VERY_GOOD': { min: 0.8, max: 0.9 },
+//       'GOOD': { min: 0.6, max: 0.8 },
+//       'FAIR': { min: 0.4, max: 0.6 },
+//       'POOR': { min: 0.2, max: 0.4 }
+//     };
+
+//     const range = conditionRanges[condition as keyof typeof conditionRanges] || conditionRanges.GOOD;
+//     const basePrice = pricePerKg * weight;
+
+//     return {
+//       min: Math.round(basePrice * range.min * 100) / 100,
+//       max: Math.round(basePrice * range.max * 100) / 100,
+//       estimated: Math.round(basePrice * ((range.min + range.max) / 2) * 100) / 100
+//     };
+//   }
+
+//   /**
+//    * Obtener información de precios para mostrar rangos
+//    */
+//   getPriceRange(category: Category, weightRange: [number, number] = [0.5, 5]): {
+//     minPrice: number;
+//     maxPrice: number;
+//     avgPrice: number;
+//   } {
+//     if (!category.pricePerKg) return { minPrice: 0, maxPrice: 0, avgPrice: 0 };
+
+//     const [minWeight, maxWeight] = weightRange;
+//     const pricePerKg = category.pricePerKg;
+
+//     // Considerando el rango de condiciones (30% - 100%)
+//     const minConditionMultiplier = 0.30; // POOR condition
+//     const maxConditionMultiplier = 1.0;  // EXCELLENT condition
+
+//     const minPrice = Math.round(pricePerKg * minWeight * minConditionMultiplier * 100) / 100;
+//     const maxPrice = Math.round(pricePerKg * maxWeight * maxConditionMultiplier * 100) / 100;
+//     const avgPrice = Math.round((minPrice + maxPrice) / 2 * 100) / 100;
+
+//     return { minPrice, maxPrice, avgPrice };
+//   }
+
+//   /**
+//    * Validar peso según categoría
+//    */
+//   validateWeight(category: Category, weight: number): { valid: boolean; message?: string } {
+//     if (weight <= 0) {
+//       return { valid: false, message: 'El peso debe ser mayor a 0' };
+//     }
+
+//     if (category.minWeight && weight < category.minWeight) {
+//       return { 
+//         valid: false, 
+//         message: `El peso mínimo para esta categoría es ${category.minWeight}kg` 
+//       };
+//     }
+
+//     if (category.maxWeight && weight > category.maxWeight) {
+//       return { 
+//         valid: false, 
+//         message: `El peso máximo para esta categoría es ${category.maxWeight}kg` 
+//       };
+//     }
+
+//     return { valid: true };
+//   }
+
+//   /**
+//    * Obtener sugerencias de categorías similares
+//    */
+//   async getSimilarCategories(categoryId: string, limit: number = 5): Promise<Category[]> {
+//     try {
+//       const response = await this.apiClient.get(`/${categoryId}/similar`, { 
+//         params: { limit } 
+//       });
+//       return response.data;
+//     } catch (error) {
+//       console.log('Similar categories not available:', error);
+//       return [];
+//     }
+//   }
+
+//   /**
+//    * Obtener estimación de tiempo de procesamiento
+//    */
+//   getProcessingTimeEstimate(category: Category): {
+//     evaluation: string;
+//     payment: string;
+//     total: string;
+//   } {
+//     // Tiempos base según tipo de categoría
+//     const baseTime = {
+//       'COMPLETE_DEVICES': {
+//         evaluation: '1-2 días hábiles',
+//         payment: '24 horas',
+//         total: '2-3 días hábiles'
+//       },
+//       'DISMANTLED_DEVICES': {
+//         evaluation: '2-4 horas',
+//         payment: '24 horas', 
+//         total: '1-2 días hábiles'
+//       }
+//     };
+
+//     return baseTime[category.type] || baseTime['COMPLETE_DEVICES'];
+//   }
+
+//   /**
+//    * Formatear información de categoría para display
+//    */
+//   formatCategoryForDisplay(category: Category): {
+//     displayName: string;
+//     shortDescription: string;
+//     priceRange: string;
+//     condition: string;
+//   } {
+//     const priceRange = this.getPriceRange(category);
+    
+//     return {
+//       displayName: category.name,
+//       shortDescription: category.description || 'Sin descripción disponible',
+//       priceRange: priceRange.maxPrice > 0 
+//         ? `${priceRange.minPrice} - ${priceRange.maxPrice}`
+//         : 'Precio no disponible',
+//       condition: category.status === 'ACTIVE' ? 'Disponible' : 'No disponible'
+//     };
+//   }
+
+//   /**
+//    * Métodos para manejo de imágenes
+//    */
+//   async uploadCategoryImages(categoryId: string, images: File[]): Promise<string[]> {
+//     // Este método debería integrar con el servicio de upload
+//     // Por ahora retorna URLs mock
+//     const uploadedUrls = images.map((file, index) => 
+//       `https://api.example.com/uploads/${categoryId}_${index}_${Date.now()}.jpg`
+//     );
+    
+//     console.log('🖼️ Mock upload of images:', uploadedUrls);
+//     return uploadedUrls;
+//   }
+
+//   /**
+//    * Obtener categorías por ubicación (si aplica geolocalización)
+//    */
+//   async getCategoriesByLocation(
+//     lat?: number, 
+//     lng?: number, 
+//     radius: number = 50
+//   ): Promise<Category[]> {
+//     try {
+//       const params: any = { radius };
+//       if (lat && lng) {
+//         params.lat = lat;
+//         params.lng = lng;
+//       }
+
+//       const response = await this.apiClient.get('/location', { params });
+//       return response.data;
+//     } catch (error) {
+//       console.log('Location-based categories not available:', error);
+//       return [];
+//     }
+//   }
+
+//   /**
+//    * Reportar problema con categoría
+//    */
+//   async reportCategoryIssue(
+//     categoryId: string, 
+//     issue: {
+//       type: 'wrong_price' | 'wrong_description' | 'missing_image' | 'other';
+//       description: string;
+//       userEmail?: string;
+//     }
+//   ): Promise<boolean> {
+//     try {
+//       await this.apiClient.post(`/${categoryId}/report`, issue);
+//       return true;
+//     } catch (error) {
+//       console.error('Error reporting category issue:', error);
+//       return false;
+//     }
+//   }
+
+//   /**
+//    * Obtener métricas de rendimiento del servicio
+//    */
+//   getPerformanceMetrics(): {
+//     cacheHitRate: number;
+//     avgResponseTime: number;
+//     errorRate: number;
+//   } {
+//     // Mock metrics - en producción esto vendría de un sistema de monitoreo
+//     return {
+//       cacheHitRate: 0.75,
+//       avgResponseTime: 250, // ms
+//       errorRate: 0.02
+//     };
+//   }
+
+//   /**
+//    * Configuración dinámica del servicio
+//    */
+//   updateConfiguration(config: {
+//     cacheTTL?: number;
+//     timeout?: number;
+//     retries?: number;
+//   }): void {
+//     if (config.timeout) {
+//       this.apiClient.defaults.timeout = config.timeout;
+//     }
+    
+//     console.log('🔧 CategoryService configuration updated:', config);
+//   }
+// }
+
+// // Crear instancia singleton del servicio
+// export const categoryService = new CategoryService();
+
+// // Exportar clase para casos especiales
+// export default CategoryService;
+
+// // Tipos de utilidad exportados
+// export type PriceEstimate = {
+//   min: number;
+//   max: number;
+//   estimated: number;
+// };
+
+// export type ValidationResult = {
+//   valid: boolean;
+//   message?: string;
+// };
+
+// export type ProcessingTime = {
+//   evaluation: string;
+//   payment: string;
+//   total: string;
+// };
+
+
+
+
+
+
+
+
+
+
+
+
+
+// src/services/categoryService.ts
 import axios from 'axios';
 import { 
   Category, 
@@ -549,87 +1149,119 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000
 class CategoryService {
   private apiClient = axios.create({
     baseURL: `${API_BASE_URL}/categories`,
-    timeout: 10000
+    timeout: 10000,
+    headers: {
+      'Content-Type': 'application/json',
+    },
   });
 
   constructor() {
-    // Interceptor para incluir token de autenticación si existe
+    // Interceptor para incluir token de autenticación
     this.apiClient.interceptors.request.use(
       (config) => {
         const token = localStorage.getItem('accessToken');
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
+        
+        console.log('📤 Request:', {
+          method: config.method?.toUpperCase(),
+          url: config.url,
+          baseURL: config.baseURL,
+          fullURL: `${config.baseURL}${config.url}`
+        });
+        
         return config;
       },
-      (error) => Promise.reject(error)
+      (error) => {
+        console.error('❌ Request interceptor error:', error);
+        return Promise.reject(error);
+      }
     );
 
-    // Interceptor para manejo de errores
+    // Interceptor para manejo de respuestas
     this.apiClient.interceptors.response.use(
       (response) => {
-        // Debug: Log de la respuesta completa
-        console.log('🔍 API Response Structure:', {
+        console.log('📥 Response received:', {
           status: response.status,
           data: response.data,
-          headers: response.headers
+          dataType: typeof response.data,
+          isArray: Array.isArray(response.data),
+          hasSuccess: response.data?.success,
+          hasData: response.data?.data !== undefined
         });
-
+        
         // El backend envía: { success: true, data: [...], message: "..." }
-        // Extraer solo los datos si la estructura es correcta
         if (response.data && response.data.success && response.data.data !== undefined) {
-          return response.data.data.data; // Devolver solo el array de datos
+          const extractedData = response.data.data;
+          console.log('✅ Extracted data:', {
+            type: typeof extractedData,
+            isArray: Array.isArray(extractedData),
+            length: Array.isArray(extractedData) ? extractedData.length : 'N/A',
+            sample: Array.isArray(extractedData) ? extractedData[0] : extractedData
+          });
+          
+          return extractedData; // Devolver directamente el array
         }
         
-        // Si la respuesta no tiene la estructura esperada, devolver tal como está
-        return response.data.data;
+        console.warn('⚠️ Unexpected response structure, returning raw data');
+        return response.data;
       },
       (error) => {
-        console.error('CategoryService Error:', error.response?.data || error.message);
-        throw new Error(error.response?.data?.message || 'Error en el servicio de categorías');
+        console.error('❌ Response error:', {
+          message: error.message,
+          response: error.response?.data,
+          status: error.response?.status
+        });
+        
+        const errorMessage = error.response?.data?.message || error.message || 'Error en el servicio de categorías';
+        throw new Error(errorMessage);
       }
     );
   }
 
   /**
-   * 🚀 NUEVO: Obtener hijos directos de una categoría específica
-   * Este método salta el GET /root y va directo a la categoría
+   * Obtener hijos directos de una categoría específica
    */
   async getCategoryChildren(categoryId: string): Promise<Category[]> {
-    console.log(`🎯 Loading children for category: ${categoryId}`);
+    console.log(`🎯 [getCategoryChildren] Loading children for: ${categoryId}`);
     
     try {
-      const response = await this.apiClient.get(`/${categoryId}/children`);
+      // El interceptor ya extrae response.data.data y devuelve el array directamente
+      const categories = await this.apiClient.get(`/${categoryId}/children`);
       
-      console.log('✅ Raw response received:', response);
-      console.log('📊 Categories data type:', typeof response);
-      console.log('📋 Categories array length:', Array.isArray(response) ? response.length : 'Not an array');
+      console.log('✅ [getCategoryChildren] Categories received:', {
+        type: typeof categories,
+        isArray: Array.isArray(categories),
+        length: Array.isArray(categories) ? categories.length : 'N/A',
+        firstItem: Array.isArray(categories) && categories.length > 0 ? categories[0] : null
+      });
       
-      // Validar que la respuesta sea un array
-      if (!Array.isArray(response)) {
-        console.warn('⚠️ Response is not an array:', response);
-        return [];
+      // Validar que sea un array
+      if (!Array.isArray(categories)) {
+        console.error('❌ [getCategoryChildren] Response is not an array:', categories);
+        throw new Error('La respuesta del servidor no es un array de categorías');
       }
       
-      console.log('🎉 Successfully loaded categories:', response.length);
-      return response.data.data;
+      console.log(`🎉 [getCategoryChildren] Successfully loaded ${categories.length} categories`);
+      return categories;
       
     } catch (error) {
-      console.error('❌ Error in getCategoryChildren:', error);
+      console.error('❌ [getCategoryChildren] Error:', error);
       throw error;
     }
   }
 
   /**
-   * Obtener categorías raíz (mantener para compatibilidad)
+   * Obtener categorías raíz
    */
   async getRootCategories(type?: string): Promise<Category[]> {
     const params: any = {};
     if (type) params.type = type;
 
     console.log('🌳 Loading root categories with params:', params);
-    const response = await this.apiClient.get('/root', { params });
-    return response.data;
+    const categories = await this.apiClient.get('/root', { params });
+    return Array.isArray(categories) ? categories : [];
   }
 
   /**
@@ -639,12 +1271,12 @@ class CategoryService {
     const params: any = {};
     if (type) params.type = type;
 
-    const response = await this.apiClient.get('/tree', { params });
-    return response.data;
+    const tree = await this.apiClient.get('/tree', { params });
+    return Array.isArray(tree) ? tree : [];
   }
 
   /**
-   * Obtener categoría por ID con opciones
+   * Obtener categoría por ID
    */
   async getCategoryById(
     categoryId: string, 
@@ -653,26 +1285,21 @@ class CategoryService {
       includeBreadcrumb?: boolean;
       includeImages?: boolean;
     } = {}
-  ): Promise<{
-    category: Category;
-    children?: Category[];
-    breadcrumb?: BreadcrumbItem[];
-  }> {
+  ): Promise<any> {
     const params: any = {};
-    if (options.includeChildren) params.includeChildren = true;
-    if (options.includeBreadcrumb) params.includeBreadcrumb = true;
-    if (options.includeImages) params.includeImages = true;
+    if (options.includeChildren) params.includeChildren = 'true';
+    if (options.includeBreadcrumb) params.includeBreadcrumb = 'true';
+    if (options.includeImages) params.includeImages = 'true';
 
-    const response = await this.apiClient.get(`/${categoryId}`, { params });
-    return response.data;
+    return await this.apiClient.get(`/${categoryId}`, { params });
   }
 
   /**
-   * Obtener breadcrumb/path de una categoría
+   * Obtener breadcrumb de una categoría
    */
   async getCategoryBreadcrumb(categoryId: string): Promise<BreadcrumbItem[]> {
-    const response = await this.apiClient.get(`/${categoryId}/breadcrumb`);
-    return response.data;
+    const breadcrumb = await this.apiClient.get(`/${categoryId}/breadcrumb`);
+    return Array.isArray(breadcrumb) ? breadcrumb : [];
   }
 
   /**
@@ -680,443 +1307,24 @@ class CategoryService {
    */
   async searchCategories(
     query: string, 
-    filters: CategoryFilters = {}
+    options: { type?: string; leafOnly?: boolean } = {}
   ): Promise<CategorySearchResult[]> {
-    const params: any = { q: query, ...filters };
-    
-    const response = await this.apiClient.get('/search', { params });
-    return response.data;
-  }
+    const params: any = { q: query };
+    if (options.type) params.type = options.type;
+    if (options.leafOnly) params.leafOnly = 'true';
 
-  /**
-   * Obtener categorías de tipo específico (todas, no solo raíz)
-   */
-  async getCategoriesByType(type: 'COMPLETE_DEVICES' | 'DISMANTLED_DEVICES'): Promise<Category[]> {
-    const response = await this.apiClient.get('/leaf', { 
-      params: { type } 
-    });
-    return response.data;
-  }
-
-  /**
-   * Obtener solo categorías finales (seleccionables)
-   */
-  async getLeafCategories(type?: string): Promise<Category[]> {
-    const params: any = {};
-    if (type) params.type = type;
-
-    const response = await this.apiClient.get('/leaf', { params });
-    return response.data;
-  }
-
-  /**
-   * Calcular precio estimado basado en categoría y condiciones
-   */
-  calculateEstimatedPrice(
-    category: Category,
-    weight: number,
-    condition: 'EXCELLENT' | 'VERY_GOOD' | 'GOOD' | 'FAIR' | 'POOR' = 'GOOD'
-  ): number {
-    if (!category.pricePerKg) return 0;
-
-    // Factores de ajuste según condición
-    const conditionMultipliers = {
-      EXCELLENT: 1.0,
-      VERY_GOOD: 0.85,
-      GOOD: 0.70,
-      FAIR: 0.50,
-      POOR: 0.30
-    };
-
-    const basePrice = category.pricePerKg * weight;
-    const multiplier = conditionMultipliers[condition];
-    
-    return Math.round(basePrice * multiplier * 100) / 100;
-  }
-
-  /**
-   * Validar si una categoría puede ser seleccionada
-   */
-  validateCategorySelection(category: Category): { valid: boolean; message?: string } {
-    if (!category.isLeaf) {
-      return { 
-        valid: false, 
-        message: 'Debes seleccionar una categoría específica' 
-      };
-    }
-
-    if (category.status !== 'ACTIVE') {
-      return { 
-        valid: false, 
-        message: 'Esta categoría no está disponible actualmente' 
-      };
-    }
-
-    if (!category.pricePerKg || category.pricePerKg <= 0) {
-      return { 
-        valid: false, 
-        message: 'No hay precio disponible para esta categoría' 
-      };
-    }
-
-    return { valid: true };
-  }
-
-  /**
-   * Obtener estadísticas de una categoría
-   */
-  async getCategoryStats(categoryId: string): Promise<CategoryStats> {
-    const response = await this.apiClient.get(`/${categoryId}/stats`);
-    return response.data;
-  }
-
-  /**
-   * Obtener categorías populares/trending
-   */
-  async getPopularCategories(
-    type?: 'COMPLETE_DEVICES' | 'DISMANTLED_DEVICES',
-    limit: number = 10
-  ): Promise<Category[]> {
-    const params: any = { limit };
-    if (type) params.type = type;
-
-    const response = await this.apiClient.get('/popular', { params });
-    return response.data;
-  }
-
-  /**
-   * 🆕 Método específico para SellPage - Carga directa de categorías por tipo
-   */
-  async getDirectCategoriesForSelling(type: 'COMPLETE_DEVICES' | 'DISMANTLED_DEVICES'): Promise<{
-    rootCategory: Category;
-    children: Category[];
-  }> {
-    // IDs hardcodeados - deberían venir de configuración o API
-    const rootIds = {
-      'COMPLETE_DEVICES': 'cmfr2mc1z00010py8ljs9os94',
-      'DISMANTLED_DEVICES': 'cmfr2mc1z00020py8ljs9os95'
-    };
-
-    const rootId = rootIds[type];
-    
-    try {
-      // Cargar información del root y sus hijos en paralelo
-      const [rootInfo, children] = await Promise.all([
-        this.getCategoryById(rootId),
-        this.getCategoryChildren(rootId)
-      ]);
-
-      return {
-        rootCategory: rootInfo.category,
-        children: children
-      };
-    } catch (error) {
-      console.error(`Error loading direct categories for ${type}:`, error);
-      throw new Error(`No se pudieron cargar las categorías de ${type}`);
-    }
-  }
-
-  /**
-   * Cache simple para mejorar performance
-   */
-  private cache = new Map<string, { data: any; timestamp: number; ttl: number }>();
-
-  private getCacheKey(method: string, ...args: any[]): string {
-    return `${method}_${args.join('_')}`;
-  }
-
-  private setCache(key: string, data: any, ttlMinutes: number = 5): void {
-    this.cache.set(key, {
-      data,
-      timestamp: Date.now(),
-      ttl: ttlMinutes * 60 * 1000
-    });
-  }
-
-  private getCache(key: string): any | null {
-    const cached = this.cache.get(key);
-    if (!cached) return null;
-
-    const isExpired = Date.now() - cached.timestamp > cached.ttl;
-    if (isExpired) {
-      this.cache.delete(key);
-      return null;
-    }
-
-    return cached.data;
-  }
-
-  /**
-   * Versión con cache de getCategoryChildren
-   */
-  async getCategoryChildrenCached(categoryId: string): Promise<Category[]> {
-    const cacheKey = this.getCacheKey('children', categoryId);
-    const cached = this.getCache(cacheKey);
-    
-    if (cached) {
-      console.log(`📦 Using cached children for category: ${categoryId}`);
-      return cached;
-    }
-
-    const children = await this.getCategoryChildren(categoryId);
-    this.setCache(cacheKey, children, 10); // Cache por 10 minutos
-    
-    return children;
+    const results = await this.apiClient.get('/search', { params });
+    return Array.isArray(results) ? results : [];
   }
 
   /**
    * Limpiar cache
    */
   clearCache(): void {
-    this.cache.clear();
-    console.log('🗑️ Category cache cleared');
-  }
-
-  /**
-   * Obtener estimación de precio rápida sin validaciones
-   */
-  getQuickPriceEstimate(
-    pricePerKg: number, 
-    weight: number, 
-    condition: string = 'GOOD'
-  ): { min: number; max: number; estimated: number } {
-    const conditionRanges = {
-      'EXCELLENT': { min: 0.9, max: 1.0 },
-      'VERY_GOOD': { min: 0.8, max: 0.9 },
-      'GOOD': { min: 0.6, max: 0.8 },
-      'FAIR': { min: 0.4, max: 0.6 },
-      'POOR': { min: 0.2, max: 0.4 }
-    };
-
-    const range = conditionRanges[condition as keyof typeof conditionRanges] || conditionRanges.GOOD;
-    const basePrice = pricePerKg * weight;
-
-    return {
-      min: Math.round(basePrice * range.min * 100) / 100,
-      max: Math.round(basePrice * range.max * 100) / 100,
-      estimated: Math.round(basePrice * ((range.min + range.max) / 2) * 100) / 100
-    };
-  }
-
-  /**
-   * Obtener información de precios para mostrar rangos
-   */
-  getPriceRange(category: Category, weightRange: [number, number] = [0.5, 5]): {
-    minPrice: number;
-    maxPrice: number;
-    avgPrice: number;
-  } {
-    if (!category.pricePerKg) return { minPrice: 0, maxPrice: 0, avgPrice: 0 };
-
-    const [minWeight, maxWeight] = weightRange;
-    const pricePerKg = category.pricePerKg;
-
-    // Considerando el rango de condiciones (30% - 100%)
-    const minConditionMultiplier = 0.30; // POOR condition
-    const maxConditionMultiplier = 1.0;  // EXCELLENT condition
-
-    const minPrice = Math.round(pricePerKg * minWeight * minConditionMultiplier * 100) / 100;
-    const maxPrice = Math.round(pricePerKg * maxWeight * maxConditionMultiplier * 100) / 100;
-    const avgPrice = Math.round((minPrice + maxPrice) / 2 * 100) / 100;
-
-    return { minPrice, maxPrice, avgPrice };
-  }
-
-  /**
-   * Validar peso según categoría
-   */
-  validateWeight(category: Category, weight: number): { valid: boolean; message?: string } {
-    if (weight <= 0) {
-      return { valid: false, message: 'El peso debe ser mayor a 0' };
-    }
-
-    if (category.minWeight && weight < category.minWeight) {
-      return { 
-        valid: false, 
-        message: `El peso mínimo para esta categoría es ${category.minWeight}kg` 
-      };
-    }
-
-    if (category.maxWeight && weight > category.maxWeight) {
-      return { 
-        valid: false, 
-        message: `El peso máximo para esta categoría es ${category.maxWeight}kg` 
-      };
-    }
-
-    return { valid: true };
-  }
-
-  /**
-   * Obtener sugerencias de categorías similares
-   */
-  async getSimilarCategories(categoryId: string, limit: number = 5): Promise<Category[]> {
-    try {
-      const response = await this.apiClient.get(`/${categoryId}/similar`, { 
-        params: { limit } 
-      });
-      return response.data;
-    } catch (error) {
-      console.log('Similar categories not available:', error);
-      return [];
-    }
-  }
-
-  /**
-   * Obtener estimación de tiempo de procesamiento
-   */
-  getProcessingTimeEstimate(category: Category): {
-    evaluation: string;
-    payment: string;
-    total: string;
-  } {
-    // Tiempos base según tipo de categoría
-    const baseTime = {
-      'COMPLETE_DEVICES': {
-        evaluation: '1-2 días hábiles',
-        payment: '24 horas',
-        total: '2-3 días hábiles'
-      },
-      'DISMANTLED_DEVICES': {
-        evaluation: '2-4 horas',
-        payment: '24 horas', 
-        total: '1-2 días hábiles'
-      }
-    };
-
-    return baseTime[category.type] || baseTime['COMPLETE_DEVICES'];
-  }
-
-  /**
-   * Formatear información de categoría para display
-   */
-  formatCategoryForDisplay(category: Category): {
-    displayName: string;
-    shortDescription: string;
-    priceRange: string;
-    condition: string;
-  } {
-    const priceRange = this.getPriceRange(category);
-    
-    return {
-      displayName: category.name,
-      shortDescription: category.description || 'Sin descripción disponible',
-      priceRange: priceRange.maxPrice > 0 
-        ? `${priceRange.minPrice} - ${priceRange.maxPrice}`
-        : 'Precio no disponible',
-      condition: category.status === 'ACTIVE' ? 'Disponible' : 'No disponible'
-    };
-  }
-
-  /**
-   * Métodos para manejo de imágenes
-   */
-  async uploadCategoryImages(categoryId: string, images: File[]): Promise<string[]> {
-    // Este método debería integrar con el servicio de upload
-    // Por ahora retorna URLs mock
-    const uploadedUrls = images.map((file, index) => 
-      `https://api.example.com/uploads/${categoryId}_${index}_${Date.now()}.jpg`
-    );
-    
-    console.log('🖼️ Mock upload of images:', uploadedUrls);
-    return uploadedUrls;
-  }
-
-  /**
-   * Obtener categorías por ubicación (si aplica geolocalización)
-   */
-  async getCategoriesByLocation(
-    lat?: number, 
-    lng?: number, 
-    radius: number = 50
-  ): Promise<Category[]> {
-    try {
-      const params: any = { radius };
-      if (lat && lng) {
-        params.lat = lat;
-        params.lng = lng;
-      }
-
-      const response = await this.apiClient.get('/location', { params });
-      return response.data;
-    } catch (error) {
-      console.log('Location-based categories not available:', error);
-      return [];
-    }
-  }
-
-  /**
-   * Reportar problema con categoría
-   */
-  async reportCategoryIssue(
-    categoryId: string, 
-    issue: {
-      type: 'wrong_price' | 'wrong_description' | 'missing_image' | 'other';
-      description: string;
-      userEmail?: string;
-    }
-  ): Promise<boolean> {
-    try {
-      await this.apiClient.post(`/${categoryId}/report`, issue);
-      return true;
-    } catch (error) {
-      console.error('Error reporting category issue:', error);
-      return false;
-    }
-  }
-
-  /**
-   * Obtener métricas de rendimiento del servicio
-   */
-  getPerformanceMetrics(): {
-    cacheHitRate: number;
-    avgResponseTime: number;
-    errorRate: number;
-  } {
-    // Mock metrics - en producción esto vendría de un sistema de monitoreo
-    return {
-      cacheHitRate: 0.75,
-      avgResponseTime: 250, // ms
-      errorRate: 0.02
-    };
-  }
-
-  /**
-   * Configuración dinámica del servicio
-   */
-  updateConfiguration(config: {
-    cacheTTL?: number;
-    timeout?: number;
-    retries?: number;
-  }): void {
-    if (config.timeout) {
-      this.apiClient.defaults.timeout = config.timeout;
-    }
-    
-    console.log('🔧 CategoryService configuration updated:', config);
+    console.log('🧹 Cache cleared');
   }
 }
 
-// Crear instancia singleton del servicio
+// Exportar instancia singleton
 export const categoryService = new CategoryService();
-
-// Exportar clase para casos especiales
-export default CategoryService;
-
-// Tipos de utilidad exportados
-export type PriceEstimate = {
-  min: number;
-  max: number;
-  estimated: number;
-};
-
-export type ValidationResult = {
-  valid: boolean;
-  message?: string;
-};
-
-export type ProcessingTime = {
-  evaluation: string;
-  payment: string;
-  total: string;
-};
+export default categoryService;

@@ -1,453 +1,348 @@
-// src/components/sell/CategoryDetailModal.tsx - Modal para agregar dispositivo al carrito
-import React, { useState, useRef } from 'react';
-import { 
-  XMarkIcon,
-  PhotoIcon,
-  PlusIcon,
-  MinusIcon,
-  CameraIcon,
-  InformationCircleIcon,
-  ScaleIcon,
-  CurrencyDollarIcon,
-  StarIcon,
-  CheckCircleIcon
-} from '@heroicons/react/24/outline';
+// src/components/sell/CategoryDetailModal.tsx
+import React, { useState } from 'react';
+import { XMarkIcon, PhotoIcon, ScaleIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
+import { Category, CartItem } from '@/types/categories';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
-import { Category } from '@/types/categories';
-import { categoryService } from '@/services/categoryService';
+import { Badge } from '@/components/ui/Badge';
+import toast from 'react-hot-toast';
 
 interface CategoryDetailModalProps {
-  isOpen: boolean;
+  category: Category;
   onClose: () => void;
-  category: Category | null;
-  onAddToCart: (item: {
-    id: string;
-    categoryId: string;
-    categoryName: string;
-    estimatedPrice: number;
-    weight: number;
-    quantity: number;
-    condition: string;
-    images: string[];
-    description?: string;
-    pricePerKg?: number;
-  }) => void;
+  onAddToCart: (item: CartItem) => void;
 }
 
-const CONDITIONS = [
-  { value: 'EXCELLENT', label: 'Excelente', description: 'Como nuevo, sin signos de uso', multiplier: 1.0 },
-  { value: 'VERY_GOOD', label: 'Muy bueno', description: 'Signos mínimos de uso', multiplier: 0.85 },
-  { value: 'GOOD', label: 'Bueno', description: 'Uso normal, funciona perfectamente', multiplier: 0.70 },
-  { value: 'FAIR', label: 'Regular', description: 'Uso evidente pero funcional', multiplier: 0.50 },
-  { value: 'POOR', label: 'Malo', description: 'Funcional pero con problemas estéticos', multiplier: 0.30 }
-];
-
 const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
-  isOpen,
-  onClose,
   category,
+  onClose,
   onAddToCart
 }) => {
-  const [weight, setWeight] = useState<number>(1);
+  const [weight, setWeight] = useState<string>('');
   const [quantity, setQuantity] = useState<number>(1);
-  const [condition, setCondition] = useState<string>('GOOD');
-  const [images, setImages] = useState<string[]>([]);
-  const [description, setDescription] = useState<string>('');
-  const [loading, setLoading] = useState(false);
-  
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [notes, setNotes] = useState<string>('');
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
 
-  if (!isOpen || !category) return null;
+  // Calcular valor estimado
+  const pricePerKg = category.pricePerKg ? parseFloat(category.pricePerKg.toString()) : 0;
+  const weightNum = parseFloat(weight) || 0;
+  const estimatedValue = pricePerKg * weightNum * quantity;
 
-  // Calcular precio estimado
-  const selectedCondition = CONDITIONS.find(c => c.value === condition) || CONDITIONS[2];
-  const priceEstimate = categoryService.getQuickPriceEstimate(
-    category.pricePerKg || 0, 
-    weight, 
-    condition
-  );
-  const totalEstimated = priceEstimate.estimated * quantity;
+  // Manejo de imágenes
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    
+    if (selectedImages.length + files.length > 5) {
+      toast.error('Máximo 5 imágenes permitidas');
+      return;
+    }
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files) return;
+    // Generar URLs de preview
+    const newPreviewUrls = files.map(file => URL.createObjectURL(file));
+    
+    setSelectedImages(prev => [...prev, ...files]);
+    setPreviewUrls(prev => [...prev, ...newPreviewUrls]);
+  };
 
-    // Simular upload de imágenes (reemplazar con lógica real)
-    Array.from(files).forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target?.result) {
-          setImages(prev => [...prev, e.target!.result as string]);
-        }
-      };
-      reader.readAsDataURL(file);
+  const handleRemoveImage = (index: number) => {
+    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+    setPreviewUrls(prev => {
+      // Liberar URL del objeto
+      URL.revokeObjectURL(prev[index]);
+      return prev.filter((_, i) => i !== index);
     });
   };
 
-  const handleAddToCart = async () => {
-    setLoading(true);
-    
-    try {
-      const item = {
-        id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2), // Generate a unique id
-        categoryId: category.id,
-        categoryName: category.name,
-        estimatedPrice: priceEstimate.estimated,
-        weight,
-        quantity,
-        condition: selectedCondition.label,
-        images,
-        description: description.trim() || undefined,
-        pricePerKg: category.pricePerKg
-      };
-      
-      onAddToCart(item);
-      onClose();
-      
-      // Reset form
-      setWeight(1);
-      setQuantity(1);
-      setCondition('GOOD');
-      setImages([]);
-      setDescription('');
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-    } finally {
-      setLoading(false);
+  // Agregar al carrito
+  const handleAddToCart = () => {
+    // Validaciones
+    if (!weight || weightNum <= 0) {
+      toast.error('Por favor ingresa un peso válido');
+      return;
     }
+
+    if (category.minWeight && weightNum < parseFloat(category.minWeight.toString())) {
+      toast.error(`El peso mínimo es ${category.minWeight} kg`);
+      return;
+    }
+
+    if (category.maxWeight && weightNum > parseFloat(category.maxWeight.toString())) {
+      toast.error(`El peso máximo es ${category.maxWeight} kg`);
+      return;
+    }
+
+    if (selectedImages.length === 0) {
+      toast.error('Por favor agrega al menos una imagen');
+      return;
+    }
+
+    // Crear item del carrito
+    const cartItem: CartItem = {
+      id: `${category.id}-${Date.now()}`,
+      categoryId: category.id,
+      categoryName: category.name,
+      categoryPath: category.fullPath,
+      weight: weightNum,
+      quantity,
+      pricePerKg,
+      estimatedValue,
+      images: selectedImages,
+      notes,
+      createdAt: new Date().toISOString(),
+      estimatedPrice: 0
+    };
+
+    onAddToCart(cartItem);
+    toast.success('Agregado al carrito');
+    onClose();
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-        
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
-          <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              {category.thumbnailImage ? (
-                <img 
-                  src={category.thumbnailImage} 
-                  alt={category.name}
-                  className="w-full h-full object-cover rounded-lg"
-                />
-              ) : (
-                <PhotoIcon className="h-6 w-6 text-blue-600" />
-              )}
-            </div>
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      {/* Overlay */}
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+        onClick={onClose}
+      />
+
+      {/* Modal */}
+      <div className="flex min-h-full items-center justify-center p-4">
+        <div 
+          className="relative bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between z-10">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">{category.name}</h2>
-              <p className="text-sm text-gray-600">{category.description}</p>
+              <h2 className="text-2xl font-bold text-gray-900">{category.name}</h2>
+              <p className="text-sm text-gray-500 mt-1">{category.fullPath}</p>
             </div>
-          </div>
-          
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <XMarkIcon className="h-5 w-5" />
-          </Button>
-        </div>
-
-        {/* Content */}
-        <div className="grid md:grid-cols-2 gap-6 p-6 overflow-y-auto max-h-[60vh]">
-          
-          {/* Left Column - Product Info and Images */}
-          <div className="space-y-6">
-            
-            {/* Price Display */}
-            <Card className="p-4 bg-green-50 border-green-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-sm text-gray-600">Precio base</div>
-                  <div className="text-2xl font-bold text-green-600">
-                    ${category.pricePerKg}/kg
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm text-gray-600">Estimación actual</div>
-                  <div className="text-xl font-bold text-green-600">
-                    ${priceEstimate.estimated.toFixed(2)}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    ${priceEstimate.min.toFixed(2)} - ${priceEstimate.max.toFixed(2)}
-                  </div>
-                </div>
-              </div>
-            </Card>
-
-            {/* Image Upload */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Fotos del dispositivo *
-              </label>
-              
-              <div className="grid grid-cols-3 gap-3">
-                {images.map((image, index) => (
-                  <div key={index} className="aspect-square relative">
-                    <img 
-                      src={image} 
-                      alt={`Imagen ${index + 1}`}
-                      className="w-full h-full object-cover rounded-lg border"
-                    />
-                    <button
-                      onClick={() => setImages(images.filter((_, i) => i !== index))}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-                
-                {images.length < 5 && (
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors"
-                  >
-                    <CameraIcon className="h-6 w-6 mb-1" />
-                    <span className="text-xs">Agregar</span>
-                  </button>
-                )}
-              </div>
-              
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="hidden"
-              />
-              
-              <p className="text-xs text-gray-500 mt-2">
-                Máximo 5 fotos. Muestra el estado real del dispositivo.
-              </p>
-            </div>
-
-            {/* Reference Images */}
-            {category.images && category.images.length > 0 && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Imágenes de referencia
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {category.images.slice(0, 6).map((image, index) => (
-                    <img 
-                      key={index}
-                      src={image}
-                      alt={`Referencia ${index + 1}`}
-                      className="aspect-square object-cover rounded border opacity-75"
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <XMarkIcon className="w-6 h-6" />
+            </button>
           </div>
 
-          {/* Right Column - Form */}
-          <div className="space-y-6">
-            
-            {/* Weight */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <ScaleIcon className="h-4 w-4 inline mr-1" />
-                Peso estimado (kg) *
-              </label>
-              <div className="flex items-center space-x-3">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setWeight(Math.max(0.1, weight - 0.1))}
-                >
-                  <MinusIcon className="h-3 w-3" />
-                </Button>
-                <input
-                  type="number"
-                  value={weight}
-                  onChange={(e) => setWeight(Math.max(0.1, parseFloat(e.target.value) || 0.1))}
-                  className="w-20 text-center border border-gray-300 rounded-md px-3 py-2"
-                  step="0.1"
-                  min="0.1"
-                />
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setWeight(weight + 0.1)}
-                >
-                  <PlusIcon className="h-3 w-3" />
-                </Button>
-                <span className="text-sm text-gray-500">kg</span>
-              </div>
-              {category.minWeight && (
-                <p className="text-xs text-gray-500 mt-1">
-                  Peso mínimo: {category.minWeight}kg
-                </p>
-              )}
-            </div>
-
-            {/* Quantity */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Cantidad
-              </label>
-              <div className="flex items-center space-x-3">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                >
-                  <MinusIcon className="h-3 w-3" />
-                </Button>
-                <input
-                  type="number"
-                  value={quantity}
-                  onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-16 text-center border border-gray-300 rounded-md px-3 py-2"
-                  min="1"
-                />
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setQuantity(quantity + 1)}
-                >
-                  <PlusIcon className="h-3 w-3" />
-                </Button>
-                <span className="text-sm text-gray-500">unidades</span>
-              </div>
-            </div>
-
-            {/* Condition */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Estado del dispositivo *
-              </label>
-              <div className="space-y-2">
-                {CONDITIONS.map((cond) => (
-                  <label key={cond.value} className="flex items-start space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                    <input
-                      type="radio"
-                      name="condition"
-                      value={cond.value}
-                      checked={condition === cond.value}
-                      onChange={(e) => setCondition(e.target.value)}
-                      className="mt-1 text-blue-600"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2">
-                        <span className="font-medium">{cond.label}</span>
-                        <Badge 
-                          variant="secondary" 
-                          className={`text-xs ${cond.multiplier >= 0.8 ? 'text-green-700' : cond.multiplier >= 0.6 ? 'text-yellow-700' : 'text-orange-700'}`}
-                        >
-                          {Math.round(cond.multiplier * 100)}%
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-gray-600">{cond.description}</p>
-                    </div>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Description */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Descripción adicional (opcional)
-              </label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Detalles sobre el estado, accesorios incluidos, etc."
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-                rows={3}
-                maxLength={500}
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                {description.length}/500 caracteres
-              </p>
-            </div>
-
-            {/* Price Summary */}
+          {/* Content */}
+          <div className="p-6 space-y-6">
+            {/* Información de la categoría */}
             <Card className="p-4 bg-blue-50 border-blue-200">
-              <h3 className="font-medium mb-3 flex items-center">
-                <CurrencyDollarIcon className="h-4 w-4 mr-2" />
-                Resumen de tu venta
-              </h3>
-              
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span>Precio base ({weight}kg × ${category.pricePerKg}/kg)</span>
-                  <span>${(weight * (category.pricePerKg || 0)).toFixed(2)}</span>
-                </div>
-                
-                <div className="flex justify-between">
-                  <span>Estado: {selectedCondition.label} ({Math.round(selectedCondition.multiplier * 100)}%)</span>
-                  <span>${priceEstimate.estimated.toFixed(2)}</span>
-                </div>
-                
-                {quantity > 1 && (
-                  <div className="flex justify-between">
-                    <span>Cantidad × {quantity}</span>
-                    <span>${totalEstimated.toFixed(2)}</span>
-                  </div>
-                )}
-                
-                <div className="flex justify-between font-semibold text-base pt-2 border-t">
-                  <span>Total estimado:</span>
-                  <span className="text-green-600">${totalEstimated.toFixed(2)}</span>
-                </div>
-              </div>
-              
-              <div className="mt-3 p-2 bg-yellow-50 rounded border border-yellow-200">
-                <div className="flex items-start space-x-2">
-                  <InformationCircleIcon className="h-4 w-4 text-yellow-600 mt-0.5" />
-                  <p className="text-xs text-yellow-800">
-                    El precio final puede variar después de la evaluación física del dispositivo.
+              <div className="flex items-start space-x-3">
+                <InformationCircleIcon className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="font-semibold text-blue-900 mb-1">Acerca de esta categoría</h3>
+                  <p className="text-sm text-blue-800">
+                    {category.description || 'Componentes electrónicos para reciclaje'}
                   </p>
                 </div>
               </div>
             </Card>
 
-            {/* Trust Indicators */}
-            <div className="grid grid-cols-3 gap-3 text-center">
-              <div className="p-2">
-                <CheckCircleIcon className="h-6 w-6 text-green-500 mx-auto mb-1" />
-                <div className="text-xs text-gray-600">Evaluación gratuita</div>
-              </div>
-              <div className="p-2">
-                <StarIcon className="h-6 w-6 text-yellow-500 mx-auto mb-1" />
-                <div className="text-xs text-gray-600">Expertos certificados</div>
-              </div>
-              <div className="p-2">
-                <CurrencyDollarIcon className="h-6 w-6 text-blue-500 mx-auto mb-1" />
-                <div className="text-xs text-gray-600">Pago en 24h</div>
-              </div>
-            </div>
-          </div>
-        </div>
+            {/* Grid principal */}
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Columna izquierda - Imágenes de referencia */}
+              <div>
+                <h3 className="font-semibold mb-3">Imágenes de Referencia</h3>
+                {category.images && category.images.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-2 mb-4">
+                    {category.images.map((image, index) => (
+                      <div key={index} className="aspect-square rounded-lg overflow-hidden bg-gray-100">
+                        <img
+                          src={image}
+                          alt={`${category.name} referencia ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="aspect-video rounded-lg bg-gray-100 flex items-center justify-center mb-4">
+                    <PhotoIcon className="w-16 h-16 text-gray-400" />
+                  </div>
+                )}
 
-        {/* Footer */}
-        <div className="border-t bg-gray-50 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm text-gray-600">Ganancia estimada:</div>
-              <div className="text-xl font-bold text-green-600">
-                ${totalEstimated.toFixed(2)}
+                {/* Precio destacado */}
+                <Card className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+                  <div className="text-center">
+                    <p className="text-sm text-gray-600 mb-1">Precio por kilogramo</p>
+                    <p className="text-4xl font-bold text-green-600">
+                      ${pricePerKg.toFixed(2)}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-2">
+                      {category.minWeight && `Mínimo: ${category.minWeight}kg`}
+                      {category.minWeight && category.maxWeight && ' • '}
+                      {category.maxWeight && `Máximo: ${category.maxWeight}kg`}
+                    </p>
+                  </div>
+                </Card>
+              </div>
+
+              {/* Columna derecha - Formulario */}
+              <div className="space-y-4">
+                <h3 className="font-semibold">Detalles de tu venta</h3>
+
+                {/* Peso */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Peso (kg) *
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={weight}
+                      onChange={(e) => setWeight(e.target.value)}
+                      placeholder="0.00"
+                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#D0FF5B] focus:border-transparent"
+                    />
+                    <ScaleIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  </div>
+                  {category.minWeight && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Peso mínimo: {category.minWeight} kg
+                    </p>
+                  )}
+                </div>
+
+                {/* Cantidad */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Cantidad de lotes
+                  </label>
+                  <div className="flex items-center space-x-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      disabled={quantity <= 1}
+                    >
+                      -
+                    </Button>
+                    <input
+                      type="number"
+                      min="1"
+                      value={quantity}
+                      onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                      className="w-20 text-center px-3 py-2 border rounded-lg"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setQuantity(quantity + 1)}
+                    >
+                      +
+                    </Button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Total: {(weightNum * quantity).toFixed(2)} kg
+                  </p>
+                </div>
+
+                {/* Subir fotos */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Fotos de tu material * (Máx. 5)
+                  </label>
+                  
+                  {/* Preview de imágenes */}
+                  {previewUrls.length > 0 && (
+                    <div className="grid grid-cols-3 gap-2 mb-3">
+                      {previewUrls.map((url, index) => (
+                        <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
+                          <img src={url} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
+                          <button
+                            onClick={() => handleRemoveImage(index)}
+                            className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                          >
+                            <XMarkIcon className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Input de archivo */}
+                  {selectedImages.length < 5 && (
+                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                      <PhotoIcon className="w-10 h-10 text-gray-400 mb-2" />
+                      <p className="text-sm text-gray-600">
+                        Click para subir fotos
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {selectedImages.length}/5 imágenes
+                      </p>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleImageSelect}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
+
+                {/* Notas adicionales */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Notas adicionales (opcional)
+                  </label>
+                  <textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Describe el estado, origen, o cualquier detalle relevante..."
+                    rows={3}
+                    className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#D0FF5B] focus:border-transparent resize-none"
+                  />
+                </div>
               </div>
             </div>
-            
-            <div className="flex space-x-3">
-              <Button variant="outline" onClick={onClose}>
-                Cancelar
-              </Button>
-              <Button 
-                onClick={handleAddToCart}
-                loading={loading}
-                disabled={images.length === 0 || weight <= 0}
-                className="bg-orange-500 hover:bg-orange-600 text-white"
-              >
-                {loading ? 'Agregando...' : 'Agregar a mi Venta'}
-              </Button>
-            </div>
+
+            {/* Resumen y acciones */}
+            <Card className="p-6 bg-gray-50">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="text-sm text-gray-600">Valor estimado total</p>
+                  <p className="text-3xl font-bold text-green-600">
+                    ${estimatedValue.toFixed(2)}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {weightNum.toFixed(2)} kg × {quantity} lote(s) × ${pricePerKg.toFixed(2)}/kg
+                  </p>
+                </div>
+                <Badge className="bg-yellow-100 text-yellow-800 text-sm">
+                  📊 Estimado
+                </Badge>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                <p className="text-xs text-blue-800">
+                  <strong>Nota:</strong> El valor final será determinado después de la verificación en bodega. 
+                  Esta es solo una estimación basada en el peso que indicaste.
+                </p>
+              </div>
+
+              <div className="flex space-x-3">
+                <Button
+                  variant="outline"
+                  onClick={onClose}
+                  className="flex-1"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={handleAddToCart}
+                  disabled={!weight || weightNum <= 0 || selectedImages.length === 0}
+                  className="flex-1 bg-[#D0FF5B] text-black hover:bg-[#D0FF5B]/90"
+                >
+                  Agregar al Carrito
+                </Button>
+              </div>
+            </Card>
           </div>
         </div>
       </div>
