@@ -154,8 +154,7 @@
 
 
 
-
-// src/hooks/useProfile.ts
+// src/hooks/useProfile.ts - SOLUCIÓN SIMPLE Y DIRECTA
 import { useState, useEffect, useCallback } from 'react';
 import { profileService, UserProfile, ProfileData, EmailUpdateData } from '@/services/profileService';
 import { useAuth } from '@/hooks/useAuth';
@@ -173,63 +172,33 @@ interface UseProfileReturn {
 }
 
 export const useProfile = (): UseProfileReturn => {
-  const { user, updateProfile: updateAuthProfile } = useAuth();
+  const { user } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
 
   /**
-   * Cargar perfil desde el backend
+   * Cargar perfil desde el backend (solo al inicio)
    */
   const refreshProfile = useCallback(async () => {
     try {
-      console.log('🔄 refreshProfile: Starting...');
       setLoading(true);
       setError(null);
       
-      console.log('🔄 refreshProfile: Fetching profile from API...');
       const data = await profileService.getProfile();
-      console.log('✅ refreshProfile: Profile data received:', data);
-      
-      // Verificar que tengamos los datos mínimos necesarios
-      if (!data || !data.id || !data.email) {
-        console.error('❌ refreshProfile: Invalid profile data structure:', data);
-        throw new Error('Los datos del perfil están incompletos');
-      }
-      
-      console.log('✅ refreshProfile: Setting profile state with valid data...');
       setProfile(data);
-      console.log('✅ refreshProfile: Profile state updated successfully');
       
     } catch (err: any) {
-      console.error('❌ refreshProfile: Error:', err);
-      
-      let errorMessage = 'Error al cargar el perfil';
-      
-      if (err.response) {
-        if (err.response.status === 401) {
-          errorMessage = 'Sesión expirada. Por favor inicia sesión nuevamente.';
-        } else if (err.response.data?.message) {
-          errorMessage = err.response.data.message;
-        } else {
-          errorMessage = err.response.statusText || errorMessage;
-        }
-      } else if (err.request) {
-        errorMessage = 'No se pudo conectar con el servidor.';
-      } else {
-        errorMessage = err.message || errorMessage;
-      }
-      
-      setError(errorMessage);
+      console.error('❌ Error loading profile:', err);
+      setError(err.message || 'Error al cargar el perfil');
     } finally {
-      console.log('🏁 refreshProfile: Setting loading to false');
       setLoading(false);
     }
   }, []);
 
   /**
-   * Cargar perfil al montar el componente
+   * Cargar perfil al montar
    */
   useEffect(() => {
     if (user) {
@@ -238,51 +207,48 @@ export const useProfile = (): UseProfileReturn => {
   }, [user, refreshProfile]);
 
   /**
-   * Actualizar información del perfil
+   * ✅ ACTUALIZAR PERFIL - SOLUCIÓN SIMPLE
+   * 1. Hacer PUT al backend
+   * 2. Actualizar estado local inmediatamente
+   * 3. Listo!
    */
   const updateProfile = useCallback(async (data: ProfileData) => {
+    if (!profile) return;
+
     try {
       setIsUpdating(true);
       setError(null);
 
-      console.log('🔄 useProfile: Updating profile with:', data);
+      console.log('📤 Actualizando perfil:', data);
       
-      // Actualizar en el backend
+      // 1. Enviar al backend
       await profileService.updateProfile(data);
+      console.log('✅ Backend actualizado');
       
-      console.log('✅ useProfile: Profile updated in backend');
+      // 2. Actualizar estado local INMEDIATAMENTE con los datos que enviamos
+      setProfile(prevProfile => {
+        if (!prevProfile) return prevProfile;
+        
+        return {
+          ...prevProfile,
+          ...data, // Fusionar los cambios directamente
+          updatedAt: new Date().toISOString(),
+        };
+      });
       
-      // Forzar refresh completo del perfil desde el backend
-      console.log('🔄 useProfile: Forcing full profile refresh...');
-      await refreshProfile();
-      
-      console.log('✅ useProfile: Profile refreshed successfully');
-
-      // También actualizar el contexto de auth si existe
-      if (updateAuthProfile) {
-        try {
-          console.log('🔄 useProfile: Updating auth context...');
-          await updateAuthProfile(data);
-          console.log('✅ useProfile: Auth context updated');
-        } catch (authError) {
-          console.warn('⚠️ Could not update auth context:', authError);
-        }
-      }
-
+      console.log('✅ Estado local actualizado');
       toast.success('Perfil actualizado exitosamente');
       
     } catch (err: any) {
-      console.error('❌ useProfile: Error updating profile:', err);
-      
-      const errorMessage = err.message || err.response?.data?.message || 'Error al actualizar el perfil';
+      console.error('❌ Error updating profile:', err);
+      const errorMessage = err.message || 'Error al actualizar el perfil';
       setError(errorMessage);
       toast.error(errorMessage);
       throw err;
     } finally {
-      console.log('🏁 useProfile: Setting isUpdating to false');
       setIsUpdating(false);
     }
-  }, [updateAuthProfile, refreshProfile]);
+  }, [profile]);
 
   /**
    * Actualizar email
@@ -292,19 +258,27 @@ export const useProfile = (): UseProfileReturn => {
       setIsUpdating(true);
       setError(null);
 
-      const updatedProfile = await profileService.updateEmail(data);
-      setProfile(updatedProfile);
+      await profileService.updateEmail(data);
+      
+      // Actualizar solo el email en el estado local
+      if (profile) {
+        setProfile({
+          ...profile,
+          email: data.email,
+          isEmailVerified: false, // Requiere nueva verificación
+        });
+      }
 
       toast.success('Email actualizado. Se requiere verificación.');
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || err.message || 'Error al actualizar el email';
+      const errorMessage = err.message || 'Error al actualizar el email';
       setError(errorMessage);
       toast.error(errorMessage);
       throw err;
     } finally {
       setIsUpdating(false);
     }
-  }, []);
+  }, [profile]);
 
   /**
    * Subir avatar
@@ -316,14 +290,17 @@ export const useProfile = (): UseProfileReturn => {
 
       const avatarUrl = await profileService.uploadAvatar(file);
       
-      // Actualizar el perfil local
+      // Actualizar avatar en el estado local inmediatamente
       if (profile) {
-        setProfile({ ...profile, avatar: avatarUrl });
+        setProfile({
+          ...profile,
+          avatar: avatarUrl,
+        });
       }
 
       toast.success('Avatar actualizado exitosamente');
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || err.message || 'Error al subir el avatar';
+      const errorMessage = err.message || 'Error al subir el avatar';
       setError(errorMessage);
       toast.error(errorMessage);
       throw err;
