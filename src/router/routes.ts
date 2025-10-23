@@ -29,7 +29,9 @@ const ReferralsPage = lazy(() => import('@/pages/dashboard/ReferralsPage'));
 const StatsPage = lazy(() => import('@/pages/dashboard/StatsPage'));
 // const ProfilePage = lazy(() => import('@/pages/dashboard/ProfilePage'));
 // const SettingsPage = lazy(() => import('@/pages/dashboard/SettingsPage'));
-// const NotificationsPage = lazy(() => import('@/pages/dashboard/NotificationsPage'));
+
+const NotificationsPage = lazy(() => import('@/pages/dashboard/NotificationsPage'));
+
 
 // // Error pages
 // const NotFoundPage = lazy(() => import('@/pages/errors/NotFoundPage'));
@@ -238,14 +240,14 @@ export const protectedRoutes: RouteConfig[] = [
 //     title: 'Configuración',
 //     description: 'Ajustes de cuenta y preferencias'
 //   },
-//   {
-//     path: '/notifications',
-//     component: NotificationsPage,
-//     requireAuth: true,
-//     layout: 'dashboard',
-//     title: 'Notificaciones',
-//     description: 'Centro de notificaciones'
-//   },
+   {
+    path: '/notifications',
+    component: NotificationsPage,
+    requireAuth: true,
+    layout: 'dashboard',
+    title: 'Notificaciones',
+    description: 'Centro de notificaciones'
+  },
 ];
 
 // Admin routes (require admin role)

@@ -698,6 +698,7 @@ import { cn } from '@/utils/cn';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { useAuth } from '@/hooks/useAuth';
+import NotificationDropdown from '../notifications/NotificationDropdown';
 
 // Importar el logo SVG existente
 // import {WiruLogo} from '@/assets/logo.svg'
@@ -838,7 +839,7 @@ export const Header: React.FC<HeaderProps> = ({
                   </Link>
 
                   {/* Notificaciones - ICONO NEGRO con hover #D0FF5B */}
-                  <Button
+                  {/* <Button
                     variant="ghost"
                     size="sm"
                     className="relative text-black hover:bg-[#D0FF5B]/10 hover:text-black"
@@ -851,7 +852,9 @@ export const Header: React.FC<HeaderProps> = ({
                         {notifications}
                       </Badge>
                     )}
-                  </Button>
+                  </Button> */}
+
+                   <NotificationDropdown />
 
                   {/* Usuario Dropdown - ICONOS NEGROS */}
                   <Menu as="div" className="relative">

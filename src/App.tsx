@@ -1187,6 +1187,7 @@ import { EliteForgotPasswordPage } from './pages/auth/elite/EliteForgotPasswordP
 import { EliteResetPasswordPage } from './pages/auth/elite/EliteResetPasswordPage';
 import { EliteVerifyEmailPage } from './pages/auth/elite/EliteVerifyEmailPage';
 import { OrderDetailPage } from './pages/dashboard';
+import NotificationsPage from './pages/dashboard/NotificationsPage';
 
 function App() {
   const { isLoading } = useAuth();
@@ -1299,6 +1300,7 @@ function App() {
           <Route path="orders" element={<OrdersPage />} />
           <Route path="referrals" element={<ReferralsPage />} />
           <Route path="profile" element={<ProfilePage />} />
+          <Route path="notifications" element={<NotificationsPage />} />
           
           {/* Confirmación de orden */}
           <Route path="order/confirmation" element={<OrderConfirmationPage />} />

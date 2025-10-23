@@ -14,6 +14,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/utils/cn';
+import NotificationDropdown from '../notifications/NotificationDropdown';
 
 interface DashboardHeaderProps {
   onMenuClick: () => void;
@@ -82,17 +83,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onMenuClick })
           {/* Right section */}
           <div className="flex items-center space-x-4">
             {/* Notifications */}
-            <button
-              type="button"
-              className="relative rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#a8c241] focus:ring-offset-2"
-            >
-              <span className="sr-only">Ver notificaciones</span>
-              <BellIcon className="h-6 w-6" />
-              {/* Badge de notificación */}
-              <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 flex items-center justify-center">
-                <span className="text-xs font-medium text-white">3</span>
-              </span>
-            </button>
+             <NotificationDropdown />
 
             {/* User menu */}
             <Menu as="div" className="relative">
